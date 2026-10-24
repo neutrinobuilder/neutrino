@@ -33,8 +33,18 @@ func TestBuildFormat(t *testing.T) {
 }
 
 func TestFull(t *testing.T) {
+	saved := Dev
+	defer func() { Dev = saved }()
+
+	Dev = ""
 	want := AppVersion + " (build " + Build + ")"
 	if got := Full(); got != want {
-		t.Fatalf("Full() = %q, want %q", got, want)
+		t.Fatalf("Full() with Dev unset = %q, want %q", got, want)
+	}
+
+	Dev = "15"
+	want = AppVersion + " (build " + Build + ") Dev.15"
+	if got := Full(); got != want {
+		t.Fatalf("Full() with Dev=15 = %q, want %q", got, want)
 	}
 }

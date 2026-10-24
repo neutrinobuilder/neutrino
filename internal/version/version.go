@@ -17,24 +17,29 @@
 // source of truth for the whole project.
 package version
 
-// AppVersion is a manually incremented counter, not computed from build or
-// commit metadata: the last digit increases by one on every completed unit
-// of work, the middle digit increases by hand for a larger body of work
-// (e.g. a full architectural redesign). Not a build number or a date — a
-// plain progressive counter that lets the running instance be identified
-// at a glance against a previous one. Shown by: the TUI (/info-app),
-// `neutrino version`/`--version`, and the `neutrino --help` header.
+// AppVersion identifies a published release: it changes only when a new
+// release is published, together with Build. Not computed from build or
+// commit metadata. Shown by: the TUI (/info-app), `neutrino
+// version`/`--version`, and the `neutrino --help` header.
 const AppVersion = "0.0.49"
 
 // Build is a finer-grained identifier than AppVersion — YYMMDDNNNN (two-digit
 // year, month, day, a 4-digit sequence within that day), updated by hand
-// alongside AppVersion, never computed automatically. Distinguishes which of
-// several builds made on the same day is running.
+// alongside AppVersion, never computed automatically.
 const Build = "2610230007"
 
-// Full returns AppVersion and Build combined — the single string shown
-// everywhere the project displays its own version (TUI /info-app,
-// `neutrino version`/`--version`/`--help`).
+// Dev is the development counter of builds made between two releases, set
+// only by maintainer builds (build tag neutrino_personal). Empty in release
+// builds, which therefore show only AppVersion and Build.
+var Dev string
+
+// Full returns AppVersion and Build combined, followed by " Dev.<n>" when Dev
+// is set — the single string shown everywhere the project displays its own
+// version (TUI /info-app, `neutrino version`/`--version`/`--help`).
 func Full() string {
-	return AppVersion + " (build " + Build + ")"
+	s := AppVersion + " (build " + Build + ")"
+	if Dev != "" {
+		s += " Dev." + Dev
+	}
+	return s
 }
