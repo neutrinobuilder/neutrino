@@ -143,7 +143,7 @@ A colored dot may precede the tab name:
 
 The Console, Contacts, Groups, Tor and File tabs never change color.
 
-The full legend of every color used across the interface — tab bar, address book, room member bar, chat message tags, command palette — is kept in a standalone reference, [`color-map.html`](color-map.html).
+The full legend of every color used across the interface — tab bar, address book, room member bar, chat message tags, command palette — is kept in a standalone reference, [`color-map.html`](https://neutrinobuilder.github.io/neutrino/color-map.html).
 
 **Tab navigation:**
 - `Tab` / `Shift+Tab` — next / previous tab

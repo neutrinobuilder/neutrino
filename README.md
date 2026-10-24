@@ -8,7 +8,7 @@ Fully encrypted — not just end-to-end at the chat level — and cryptographica
 
 ## Who this isn't for
 
-This isn't a tool for planning a night out with friends, booking a table, or sending memes to the family group chat — for that, [other messengers](docs/messenger-comparison.html) already exist, with calls, stickers, channels, bots. Neutrino has none of that, and it's not an oversight: every extra feature is one more place where metadata can leak out. If you need an app that does everything, you're not the audience for this project.
+This isn't a tool for planning a night out with friends, booking a table, or sending memes to the family group chat — for that, [other messengers](https://neutrinobuilder.github.io/neutrino/messenger-comparison.html) already exist, with calls, stickers, channels, bots. Neutrino has none of that, and it's not an oversight: every extra feature is one more place where metadata can leak out. If you need an app that does everything, you're not the audience for this project.
 
 It's built for people who have a concrete reason not to trust a middleman company — journalists with sources to protect, people working in contexts where communications are monitored, anyone who simply rejects, as a matter of principle, the idea that a third party should be able to read or store their conversations. Fewer features, smaller attack surface: it's a deliberate tradeoff, not unfinished work.
 
@@ -100,7 +100,7 @@ Corrections are welcome: if you're a native speaker and spot a wrong or awkward 
 | **[Termux Manual](docs/termux-manual.md)**                 | Running the same binary on Android via Termux: install, updates, background/battery, autostart       |
 | **[Technical Manual](docs/technical-manual.md)**           | Architecture, protocol, module layout, wire format                                                   |
 | **[Cryptography Manual](docs/cryptography-manual.md)**     | Threat model, handshake, ratchets, hybrid post-quantum cryptography, key derivation                  |
-| **[Messenger Comparison](docs/messenger-comparison.html)** | How Neutrino compares to Signal, Session, Briar, SimpleX, and others                                 |
+| **[Messenger Comparison](https://neutrinobuilder.github.io/neutrino/messenger-comparison.html)** | How Neutrino compares to Signal, Session, Briar, SimpleX, and others                                 |
 
 ---
 
