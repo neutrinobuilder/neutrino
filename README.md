@@ -112,7 +112,6 @@ Corrections are welcome: if you're a native speaker and spot a wrong or awkward 
   - **Remote-wipe guarantee on every path** — relationship-key revocation already covers `/nukex`, the lock timeout (timeNuke), remote wipe and in-session duress, including when the wipe doesn't fully complete; still to come: the decoy-password login and sibling identities in the same file.
   - **Auto-update** — built-in signed update mechanism, no manual download needed.
   - **Location sharing** — optional, encrypted, via OpenStreetMap, with explicit expiry.
-  - **Reproducible builds** — verify that a published binary matches the published source, byte for byte.
 - **Android** — native app with a graphical interface, same protocol as desktop; developed and undergoing live testing on real devices.
 - **macOS** — same TUI binary as Linux (Intel and Apple Silicon), already built; live testing still to be done.
 - **Windows** — native build, currently under evaluation.

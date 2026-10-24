@@ -42,6 +42,24 @@ gpg --verify verified-binary.asc verified-binary            # proves that conten
 
 All the checks in whichever path you use are required: the signature alone doesn't tie the hash to *that specific* file, the hash alone proves nothing about provenance, and skipping the keyserver lookup means trusting a key you never verified. If any check fails (unknown key, invalid signature, mismatched hash), **do not run the binary**.
 
+### Verifying that the binary matches the source
+
+The signature proves *who* produced a binary; it doesn't prove the binary was built from the published source. Neutrino's builds are reproducible: building the release's source with the same Go version produces exactly the same bytes as the published binary, minus the signature appended to its end. Anyone can check it:
+
+```bash
+# 1. from the source of the release, with the Go version named on the "go" line of go.mod
+bash build_neutrino.sh ux                      # or ux-arm for neutrino-ux-arm64-*
+
+# 2. strip the appended signature from the downloaded binary
+off=$(grep -aob -- '-----BEGIN PGP SIGNATURE-----' neutrino-ux-amd64-v<version>-b<build> | head -1 | cut -d: -f1)
+head -c "${off}" neutrino-ux-amd64-v<version>-b<build> > downloaded.unsigned
+
+# 3. the two hashes must be identical
+sha256sum downloaded.unsigned dist/neutrino-ux-amd64-v<version>-b<build>
+```
+
+Compare against the unsigned binary, never against `neutrino-manifest`: the manifest lists the hashes of the *signed* files, and the signature changes at every signing. Details — the pinned inputs that make the build deterministic — are in the Technical Manual, "Reproducible builds".
+
 ### macOS (in testing)
 
 macOS builds (Intel and Apple Silicon) are in testing and are not part of the releases yet. The notes below apply to them.

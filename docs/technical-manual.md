@@ -2024,19 +2024,27 @@ The first two commands prove the key you're about to trust really is the one pub
 codesign --sign - neutrino-macos-arm64-v<version>-b<build>
 ```
 
-### Reproducible builds
+### Tests
+
+```bash
+go test ./...                 # all packages
+go test -race ./...           # with race detector (important — RWMutex used everywhere)
+go test ./internal/shared/... # crypto only
+```
+
+## Reproducible builds
 
 Motivation: a GPG signature (above) proves the binary was produced by whoever holds the signing key — it does not prove the binary actually corresponds to the published source. Reproducible builds close that second gap: anyone can rebuild from the same git commit on their own machine and confirm, byte-for-byte, that they get the same binary the project published.
 
 Determinism rests on these pinned inputs:
 
 - **`-trimpath -buildvcs=false`** (`GO_BUILD_FLAGS` in `build_neutrino.sh`) — strips the local filesystem's absolute paths from the binary (only module-relative paths remain, e.g. `neutrino/cmd/main.go`) and omits VCS stamping (commit hash, dirty-tree flag), both of which would otherwise make the binary depend on where and from which checkout state it was built, not just on its content.
-- **The same Go toolchain version** — a different Go release produces different machine code from the same source.
+- **The same Go toolchain version** — the one on the `go` line of `go.mod`; a different Go release produces different machine code from the same source.
 - **The embedded Tor/i2pd binaries** — `tor_linux_<arch>`/`i2pd_linux_<arch>` are committed to the repository and embedded as-is, so a rebuild of the same commit embeds exactly the same bytes. Whoever wants to regenerate them too uses `download_build_tor-core.sh`/`download_build_i2pd.sh`, which build against a specific Alpine Docker image referenced by digest (`ALPINE_DIGEST_AMD64`/`ALPINE_DIGEST_ARM64`, not a floating tag), the exact Alpine packages frozen in the build-dependency archive (see "Build requirements"), upstream sources verified against the bundled release keys (`internal/tornode/tor-release-key.asc`, `internal/i2pnode/i2pd-release-key.asc`), and their own fixed `SOURCE_DATE_EPOCH`.
 
 Verifying a published binary against the source:
 ```bash
-# 1. build the release's commit with the same Go version
+# 1. build the release's commit with the Go version on the "go" line of go.mod
 bash build_neutrino.sh ux                      # or ux-arm for neutrino-ux-arm64-*
 
 # 2. strip the tail-appended signature from the downloaded binary
@@ -2047,14 +2055,6 @@ head -c "${off}" FILE > FILE.unsigned
 sha256sum FILE.unsigned dist/neutrino-ux-amd64-v<version>-b<build>
 ```
 Matching hashes prove the published binary is exactly what the published source produces. The comparison is only meaningful against a build without `pack`: the released binaries are not `upx`-compressed.
-
-### Tests
-
-```bash
-go test ./...                 # all packages
-go test -race ./...           # with race detector (important — RWMutex used everywhere)
-go test ./internal/shared/... # crypto only
-```
 
 ## Platforms and anonymous networks
 
