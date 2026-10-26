@@ -34,7 +34,7 @@ import (
 
 // ErrInvalidServerSig signals that ServerHello.Sig (or SigMLDSA) failed
 // verification against the host's locally known
-// IdentityKey-per-relationship — distinct from a network/transport
+// IdentityKey-per-relationship, distinct from a network/transport
 // error, checkable by the caller with errors.Is even after
 // Connect/ConnectWithRetry have wrapped the error in a localized message
 // (see client.go:Connect). One real cause: the local copy of the host's
@@ -47,10 +47,10 @@ var ErrInvalidServerSig = errors.New("invalid server signature")
 
 // ErrAlreadyConnectedElsewhere signals that the server rejected this
 // connection because a DIFFERENT device of OUR OWN identity is already
-// connected to this room — "one device per identity per room"
+// connected to this room, "one device per identity per room"
 // (shared.ErrAlreadyConnected). Checkable with errors.Is even after the
 // localized wrapping by Connect/ConnectWithRetry, the same principle as
-// ErrInvalidServerSig above — distinguishes this case (which resolves
+// ErrInvalidServerSig above, distinguishes this case (which resolves
 // ONLY when the other device disconnects, never a network issue) from a
 // generic failure, for which the caller (tui.go) uses a
 // dedicated retry loop instead of the ordinary exponential backoff.
@@ -142,7 +142,7 @@ func DoClientHandshake(
 	var srvHello shared.ServerHello
 	if err := wsjson.Read(ctx, conn, &srvHello); err != nil {
 		// The server closes BEFORE sending ServerHello for
-		// shared.ErrAlreadyConnected (post-handshake rejection) —
+		// shared.ErrAlreadyConnected (post-handshake rejection),
 		// distinguished here from a generic network/read failure,
 		// because the caller must be able to choose a dedicated retry
 		// loop instead of the ordinary backoff.
@@ -154,7 +154,7 @@ func DoClientHandshake(
 	}
 	Dbg("hs[%s]: ServerHello received", username)
 
-	// 7. verify Sig with the host's IdentityKey-per-relationship — known
+	// 7. verify Sig with the host's IdentityKey-per-relationship, known
 	// from the invite bootstrap, never a global key nor a fingerprint to
 	// resolve (the same principle already applied server-side for
 	// ClientHello.Sig, see server/handshake.go). SigMLDSA (if the host

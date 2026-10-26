@@ -24,7 +24,7 @@ import (
 )
 
 // Sender generates a potentially infinite stream of QR frames for a fixed
-// payload — the caller scans through it, showing each text as a QR code for
+// payload, the caller scans through it, showing each text as a QR code for
 // a fixed time, in a loop, until manually stopped: there is no "end" signal
 // in the protocol, the receiver stops on its own (Receiver.Done) once it
 // has collected enough symbols.
@@ -59,13 +59,13 @@ func NewSender(data []byte, blockSize int) (*Sender, error) {
 	}, nil
 }
 
-// K returns the transfer's number of source blocks — useful for the caller
+// K returns the transfer's number of source blocks, useful for the caller
 // to estimate a minimum number of frames to show (K, plus a typical 10-40%
 // margin depending on K, see internal/fountain.TestOverheadStaysReasonable)
 // before expecting an attentive receiver to already have completed.
 func (s *Sender) K() int { return s.enc.K() }
 
-// NextFrame produces the text of the next QR frame — each call advances an
+// NextFrame produces the text of the next QR frame, each call advances an
 // internal counter, never the same ID twice within the same Sender.
 func (s *Sender) NextFrame() string {
 	id := s.nextID

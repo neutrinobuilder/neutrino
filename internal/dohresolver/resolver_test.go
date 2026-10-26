@@ -24,7 +24,7 @@ import (
 )
 
 // TestLookupLiteralIPv4 checks the shortcut that skips a DNS-over-HTTPS
-// query entirely when host is already an IP address — the only path through
+// query entirely when host is already an IP address, the only path through
 // Lookup testable without real network access, since actual DoH queries hit
 // Cloudflare/Quad9/Google.
 func TestLookupLiteralIPv4(t *testing.T) {
@@ -59,7 +59,7 @@ func TestRootCAsLoadsEmbeddedBundle(t *testing.T) {
 	}
 	// Counts the PEM blocks of the embedded bundle directly (rather than
 	// going through x509.CertPool, whose only inspection API, Subjects(),
-	// is deprecated) — if cacert.pem were empty or corrupt,
+	// is deprecated), if cacert.pem were empty or corrupt,
 	// AppendCertsFromPEM would add nothing without failing loudly.
 	n := 0
 	rest := caBundlePEM

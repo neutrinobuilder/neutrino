@@ -31,7 +31,7 @@ import (
 // caller's own session (system bus, org.freedesktop.login1) and returns
 // a channel that receives one value each time the signal fires. Returns
 // nil if the system bus or logind session cannot be reached (no logind,
-// no D-Bus, session not tracked by logind) — same "feature unavailable"
+// no D-Bus, session not tracked by logind), same "feature unavailable"
 // contract as ScanCamera on this platform. Never reacts to "Unlock": this
 // project's interface lock is only ever released through its own
 // configured secret, never by an OS signal.

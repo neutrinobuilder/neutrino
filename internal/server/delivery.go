@@ -23,13 +23,13 @@ import (
 
 // roomDelivery implements the server-side reliable delivery of a room's
 // broadcast messages: a global sequence number (gseq) assigned on arrival,
-// and for each KNOWN MEMBER of the room (stable root identityPub —
+// and for each KNOWN MEMBER of the room (stable root identityPub,
 // RoomRegistry.MemberIdentities, never an ephemeral session userID) an
 // independent FIFO queue (contactQueue) of messages not yet acknowledged
 // by them. A member stays a recipient even while temporarily offline: the
 // queue survives their disconnection and is delivered on reconnection
 // (live, below, resolves whichever session is connected at this instant).
-// Each server↔member pair lives on its own — the same "pairwise
+// Each server↔member pair lives on its own, the same "pairwise
 // flattening" already used client-side for direct relationships (see
 // pending.go): a slow or isolated member accumulates messages in its own
 // queue without blocking or delaying anyone else, strict order for THEM
@@ -40,14 +40,14 @@ type roomDelivery struct {
 	nextGSeq uint64
 	queues   map[string]*contactQueue // root identityPub (string) → queue
 	// live maps root identityPub → the session userID currently connected
-	// for that identity — updated by SetLive/ClearLive (called from
+	// for that identity, updated by SetLive/ClearLive (called from
 	// roomState.ClaimIdentitySlot/ReleaseIdentitySlot, the same identity
 	// already used for "one device per identity per room"). Absent = the
 	// member is offline at this instant: Dispatch/RetryAndEvict leave the
 	// entry queued without attempting delivery, never an error.
 	live map[string]string
 
-	// dispatched remembers, per msgID, the gseq already assigned — a
+	// dispatched remembers, per msgID, the gseq already assigned, a
 	// retransmission of the same msgID (the sender didn't receive its own
 	// self-echo/self_relay_ack in time and retries, or re-encrypted it
 	// under a new generation past the message TTL, pending.go) reuses the
@@ -64,27 +64,27 @@ type dispatchRecord struct {
 	at   time.Time
 }
 
-// dispatchDedupWindow — past this age a dispatched entry is forgotten:
+// dispatchDedupWindow, past this age a dispatched entry is forgotten:
 // wider than the typical retransmission backoffs (doubling
 // deliveryRetryDelay), so it covers the common case without retaining
 // memory for messages long since acknowledged or abandoned.
 const dispatchDedupWindow = 5 * time.Minute
 
 // relayItem is a broadcast message, already serialized with gseq included,
-// awaiting ONE specific member's ack — each queue holds its own copy of
+// awaiting ONE specific member's ack, each queue holds its own copy of
 // data, replaced (under contactQueue.mu) only by a later Dispatch of the
 // same msgID.
 type relayItem struct {
 	gseq            uint64
 	msgID           string
-	fromIdentityPub []byte // original sender (root identityPub) — informational, to route any kick/cleanup
+	fromIdentityPub []byte // original sender (root identityPub), informational, to route any kick/cleanup
 	data            []byte
 	queuedAt        time.Time
 	nextRetry       time.Time
 	backoff         time.Duration
 }
 
-// contactQueue is ONE member's FIFO queue — items ordered by increasing
+// contactQueue is ONE member's FIFO queue, items ordered by increasing
 // gseq (insertion order always matches gseq order, since
 // roomDelivery.Dispatch appends to all queues at the same moment it
 // assigns the gseq).
@@ -93,7 +93,7 @@ type contactQueue struct {
 	items []*relayItem
 }
 
-// deliveryRetryDelay — same scheme (20s doubling) already established
+// deliveryRetryDelay, same scheme (20s doubling) already established
 // client-side for the direct sender→recipient relationship
 // (config.MessageRetryDelay), reused identically here for the server→contact
 // last mile.
@@ -104,7 +104,7 @@ func newRoomDelivery() *roomDelivery {
 }
 
 // SetLive registers that identityPub is now reachable at userID (connection
-// just registered) — called from roomState.ClaimIdentitySlot, the same
+// just registered), called from roomState.ClaimIdentitySlot, the same
 // root identity already used for "one device per identity per room". No-op
 // if identityPub is empty.
 func (rd *roomDelivery) SetLive(identityPub []byte, userID string) {
@@ -119,7 +119,7 @@ func (rd *roomDelivery) SetLive(identityPub []byte, userID string) {
 	rd.mu.Unlock()
 }
 
-// ClearLive removes identityPub from live ONLY if userID still owns it —
+// ClearLive removes identityPub from live ONLY if userID still owns it,
 // same guard as roomState.ReleaseIdentitySlot: a more recent reconnection
 // of the same identity may have already replaced the entry, a late release
 // of the old session must not erase it. No-op if identityPub is empty.
@@ -136,17 +136,17 @@ func (rd *roomDelivery) ClearLive(identityPub []byte, userID string) {
 }
 
 // Dispatch assigns the next gseq (or reuses the one already assigned to
-// msgID — see dispatched), builds the frame (buildFrame receives gseq and
-// returns the JSON ready for that recipient — identical for everyone in
+// msgID, see dispatched), builds the frame (buildFrame receives gseq and
+// returns the JSON ready for that recipient, identical for everyone in
 // this protocol, a single parameter instead of a per-recipient closure),
 // queues it for each KNOWN member of the room in recipients (SENDER
-// included — see below) and sends it right away to whoever is connected at
+// included, see below) and sends it right away to whoever is connected at
 // this instant (live). Returns the assigned gseq.
 //
 // recipients is the list of known root identityPubs (RoomRegistry.
 // MemberIdentities), not just those connected at this instant: an
 // offline member still remains a recipient, the backlog is delivered to
-// them on reconnection (RetryAndEvict, when they reappear in live) —
+// them on reconnection (RetryAndEvict, when they reappear in live),
 // without this, a message arriving while a member is temporarily offline
 // would be lost to them forever, with no fast-forward ever possible.
 //
@@ -157,7 +157,7 @@ func (rd *roomDelivery) ClearLive(identityPub []byte, userID string) {
 // The
 // sender's queue empties via the "self_relay_ack" frame it sends to the
 // server itself as soon as it recognizes its own self-echo
-// (parseMessage/TakeSentText, see ws.go/tui.go) — same mechanism as
+// (parseMessage/TakeSentText, see ws.go/tui.go), same mechanism as
 // msg_ack, never a substitute.
 func (rd *roomDelivery) Dispatch(hub *Hub, recipients [][]byte, msgID string, fromIdentityPub []byte, buildFrame func(gseq uint64) []byte) uint64 {
 	rd.mu.Lock()
@@ -238,7 +238,7 @@ func (rd *roomDelivery) queueFor(key string) *contactQueue {
 	return cq
 }
 
-// Ack removes identityPub's entry matching msgID, if present — called from
+// Ack removes identityPub's entry matching msgID, if present, called from
 // ws.go when a msg_ack or self_relay_ack arrives from a member (its root
 // identity, never its ephemeral session userID), before the ack is
 // forwarded to the original sender.
@@ -261,7 +261,7 @@ func (rd *roomDelivery) Ack(identityPub []byte, msgID string) {
 	}
 }
 
-// Forget removes identityPub's entire queue — called when a member is
+// Forget removes identityPub's entire queue, called when a member is
 // kicked for overload (the queue that caused the kick must not survive: a
 // return starts from scratch, consistent with "no history") or banned
 // (RemoveSecret, /grp-ban: no future delivery makes sense anymore).
@@ -283,8 +283,8 @@ func (rd *roomDelivery) Forget(identityPub []byte) {
 
 // RetryAndEvict scans every queue: retransmits (verbatim, never a new
 // frame) entries whose backoff has expired TO WHOEVER IS CONNECTED AT THIS
-// INSTANT (live) — an offline member stays queued with no delivery attempt,
-// never an error — and kicks (hub.KickOverloaded + Forget) whoever has a
+// INSTANT (live), an offline member stays queued with no delivery attempt,
+// never an error, and kicks (hub.KickOverloaded + Forget) whoever has a
 // queue that reached outboundQueueSize (only if currently connected: a
 // long-offline member has no session to close, just Forget). Meant for a
 // periodic ticker on server.RunOnListener's side, same principle already

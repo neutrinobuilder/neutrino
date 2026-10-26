@@ -22,7 +22,7 @@ import (
 
 // TestFormatContactTimestampFixedWidth checks that every returned string
 // always has the same width (ContactTimestampWidth), whether the day of
-// the month is one or two digits — needed for the Contacts list's column
+// the month is one or two digits, needed for the Contacts list's column
 // alignment (tui.go:renderContactLine).
 func TestFormatContactTimestampFixedWidth(t *testing.T) {
 	orig := active
@@ -47,7 +47,7 @@ func TestFormatContactTimestampFixedWidth(t *testing.T) {
 
 // TestContactTimestampPlaceholderWidth checks that the placeholder used
 // for a never-probed contact has the same width as a real timestamp
-// (ContactTimestampWidth) — otherwise the online/seenByPeer dot column in
+// (ContactTimestampWidth), otherwise the online/seenByPeer dot column in
 // the Contacts list would misalign (tui.go:renderContactLine).
 func TestContactTimestampPlaceholderWidth(t *testing.T) {
 	if len([]rune(ContactTimestampPlaceholder)) != ContactTimestampWidth {

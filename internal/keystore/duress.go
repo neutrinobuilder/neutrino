@@ -41,11 +41,11 @@ const (
 )
 
 // DuressConfig is the plaintext verifier for the automatic NUKE
-// password — Salt+Hash (Argon2id, same parameters as the regular
+// password, Salt+Hash (Argon2id, same parameters as the regular
 // password), written OUTSIDE the keystore's encrypted payload on
 // purpose: it must be checkable before/without decrypting anything, to
 // distinguish "wrong password" from "NUKE password" without ever
-// revealing which of the two was typed (see CheckDuress) — an Argon2id
+// revealing which of the two was typed (see CheckDuress), an Argon2id
 // verifier is one-way, it doesn't allow recovering the password from a
 // stolen file.
 type DuressConfig struct {
@@ -75,7 +75,7 @@ func (d *DuressConfig) Matches(password string) bool {
 }
 
 // SetDuress sets (or replaces) the automatic NUKE password for the
-// whole file — shared by every linked identity (see the siblings
+// whole file, shared by every linked identity (see the siblings
 // field), never per-identity: a keystore file has a single duress
 // verifier. password must not coincide with the keystore's real one
 // (the caller guarantees this: there's no way to know it here, the two
@@ -107,7 +107,7 @@ func (ks *Keystore) HasDuress() bool {
 
 // CheckDuress reads ONLY the file's plaintext header (never the
 // encrypted payload, never the real password) and reports whether
-// password matches the automatic NUKE password, if one is configured —
+// password matches the automatic NUKE password, if one is configured,
 // usable even when password is NOT the keystore's real one: that's
 // exactly the point, distinguishing the two without decrypting anything.
 // False if the file doesn't exist, has no header, or has no NUKE
@@ -126,7 +126,7 @@ func CheckDuress(path, password string) bool {
 
 // readDuressHeader recognizes the plaintext header (if present) at the
 // start of data: returns the DuressConfig if present and the rest of the
-// file (salt||nonce||ciphertext). ok is false if data has no header — in
+// file (salt||nonce||ciphertext). ok is false if data has no header, in
 // that case rest == data, unchanged, and decryptFile reads it directly.
 func readDuressHeader(data []byte) (cfg *DuressConfig, rest []byte, ok bool) {
 	if len(data) < len(fileMagic)+2 || !bytes.Equal(data[:len(fileMagic)], fileMagic[:]) {
@@ -149,7 +149,7 @@ func readDuressHeader(data []byte) (cfg *DuressConfig, rest []byte, ok bool) {
 }
 
 // writeDuressHeader serializes the plaintext header to prepend to
-// salt||nonce||ciphertext in Save — cfg nil is a valid header (no NUKE
+// salt||nonce||ciphertext in Save, cfg nil is a valid header (no NUKE
 // password configured), not the absence of a header: Save always writes
 // it, so a NUKE password set later requires no format change.
 func writeDuressHeader(cfg *DuressConfig) []byte {

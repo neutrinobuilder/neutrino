@@ -19,7 +19,7 @@ import "testing"
 
 // On this host (Linux desktop, not Android) nativeLibraryDirViaJNI is
 // always the "!android" stub (fixed error) and nativeLibraryDirViaProcMaps
-// depends on this process's real /proc/self/maps content — not
+// depends on this process's real /proc/self/maps content, not
 // controllable from a test (depends on whether the test binary is
 // dynamically linked against something under */lib/*.so). The tests are
 // therefore smoke tests: no panic, a consistent result shape across both

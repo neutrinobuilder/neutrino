@@ -17,7 +17,7 @@ package keystore
 
 // CandidateIsDuressPassword reports whether candidate (combined with
 // u's own, already-known password_file) is the shared duress
-// identity's own password_identity — checked via K_i_duress
+// identity's own password_identity, checked via K_i_duress
 // (u.Identity.DuressAccess), without needing duress's own password
 // known separately.
 func (u *UnlockedSlot) CandidateIsDuressPassword(candidate string) bool {

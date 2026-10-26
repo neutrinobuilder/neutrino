@@ -5,7 +5,7 @@
 // Package clipboard is a drop-in replacement for github.com/atotto/clipboard
 // (same import path, wired via a `replace` directive in the main module's
 // go.mod), swapped in only to avoid a syscall that crashes on Android/Termux
-// — see lookpath.go for the actual reason. Public API identical to upstream.
+// see lookpath.go for the actual reason. Public API identical to upstream.
 package clipboard
 
 // ReadAll read string from clipboard

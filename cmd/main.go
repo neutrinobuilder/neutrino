@@ -64,13 +64,13 @@ import (
 
 // qrPersonalOverlay, when non-nil, renders a QR image with a center
 // overlay for one specific identity (matched by username) instead of the
-// plain code — populated only by a build-tag-gated file not part of the
+// plain code, populated only by a build-tag-gated file not part of the
 // default build (nil here). pixelsPerModule, not a total image size: see
 // qrscan.PixelsPerModule for why a fixed total size is unreliable at a
 // large QR version.
 var qrPersonalOverlay func(username string, content []byte, pixelsPerModule int) (image.Image, bool)
 
-// agentMain runs the "agent" subcommand — populated only by a
+// agentMain runs the "agent" subcommand, populated only by a
 // build-tag-gated file (neutrino_agent) not part of the default build
 // (nil here, the subcommand doesn't exist).
 var agentMain func(args []string, bridgesFile, netFlag string)
@@ -89,7 +89,7 @@ func usage() string {
 }
 
 // loadActiveLang reads the language saved in config (if any) without
-// unlocking the encrypted keystore — localizes CLI messages from the very
+// unlocking the encrypted keystore, localizes CLI messages from the very
 // first moment, before even knowing which subcommand was invoked.
 func loadActiveLang() i18n.Lang {
 	ksPath, err := keystore.DefaultPath()
@@ -138,7 +138,7 @@ func main() {
 
 	switch remaining[0] {
 	case "__pod":
-		// Hidden subcommand, reached only via spawnPod's self-exec —
+		// Hidden subcommand, reached only via spawnPod's self-exec,
 		// never meant to be typed by a user, not listed in usage().
 		runPod()
 	case "add-bridges":
@@ -226,7 +226,7 @@ func main() {
 // ── main bootstrap ─────────────────────────────────────────────────────────
 
 // addressFromPubForNet computes the network address reachable from an
-// Ed25519 public key, using the right algorithm for netKind — Tor
+// Ed25519 public key, using the right algorithm for netKind, Tor
 // (OnionAddressFromPub) or I2P (I2PAddressFromPub, requires the
 // birational Ed25519↔X25519 map, see internal/shared/i2p.go). Only the
 // public key is needed, never the private one: applies equally to one's
@@ -253,7 +253,7 @@ func filterBridgesByTransport(bc *tornode.BridgeConfig, transport string) *torno
 }
 
 // fmtDuration formats a duration as "Xs" under a minute, "Ym Zs" otherwise
-// — used to show how long each individual startup phase takes (Tor/I2P
+// used to show how long each individual startup phase takes (Tor/I2P
 // bootstrap, hidden service publication), never the cumulative time since
 // the start.
 func fmtDuration(d time.Duration) string {
@@ -269,10 +269,10 @@ func fmtDuration(d time.Duration) string {
 // runMain is the interactive startup entry point. A single call to
 // runOnce (below) covers the whole process lifetime: a duress secret
 // typed at the interface lock DURING an already-active session, or at
-// the login screen itself (unlockKeystoreSession — by construction of
+// the login screen itself (unlockKeystoreSession, by construction of
 // the N-slot format, indistinguishable from any other identity's
 // password at that point), or a nuke trigger (/nukex, the automatic
-// "nuke a tempo", remote_nuke on the target side) — none of them ever
+// "nuke a tempo", remote_nuke on the target side), none of them ever
 // make runOnce return early: its own internal loop promotes to the
 // shared duress identity and keeps going, on the same Tor/I2P node,
 // never back to a login prompt. runOnce only returns on an ordinary
@@ -284,7 +284,7 @@ func runMain(bridgesFile, netFlag string) {
 // buildFakeContact builds one fabricated contact for duress's mirrored
 // address book: a name via keystore.DecoyContactName (cfg's decoy_*
 // parameters), plus relationship key material of the same shape as a
-// real contact's Devices[""] entry — generated, never used for any
+// real contact's Devices[""] entry, generated, never used for any
 // actual handshake.
 func buildFakeContact(cfg config.Config, existingFirstNames map[string]bool) keystore.Contact {
 	genderByte := make([]byte, 1)
@@ -332,7 +332,7 @@ func rejectedTombstoneRows(ks *keystore.Keystore, rejected [][]byte) []keystore.
 
 // applyTombstoneReplies adopts each row (deleting any matching live
 // contact, merging ConfirmedSiblings, persisting immediately) and
-// returns the IdentityPubs to ack — shared by every sync channel's
+// returns the IdentityPubs to ack, shared by every sync channel's
 // reconciliation step (LAN's TombstoneRound, the knock-based
 // ApplyContactTombstoneReplies).
 func applyTombstoneReplies(session *keystore.UnlockedSlot, ksPath string, rows []keystore.DeletedContact) [][]byte {
@@ -403,10 +403,10 @@ func buildTombstoneRound(session *keystore.UnlockedSlot, ksPath string) indoor.T
 }
 
 // runOnce runs a single complete session (wizard/unlock → network
-// bootstrap → server → TUI) — returns true if the session ended because of
+// bootstrap → server → TUI), returns true if the session ended because of
 // a duress secret typed at the interface lock while already active (the
 // caller, runMain above, must call it again), false for any other exit
-// (normal quit, /nukex — which terminates the process itself via os.Exit).
+// (normal quit, /nukex, which terminates the process itself via os.Exit).
 func runOnce(bridgesFile, netFlag string) {
 	ksPath, err := keystore.DefaultPath()
 	if err != nil {
@@ -426,8 +426,8 @@ func runOnce(bridgesFile, netFlag string) {
 			fmt.Fprintln(os.Stderr, i18n.T("cli.warn_invalid_config", err))
 		}
 		i18n.SetActive(i18n.ParseLang(cfg.Lang))
-		// Which identity this password combination opens — real or the
-		// shared duress one — is decided purely by which slot answers
+		// Which identity this password combination opens, real or the
+		// shared duress one, is decided purely by which slot answers
 		// (see keystore.LoadAndUnlock): there is no separate "duress
 		// detected" branch at login. Every identity, duress included,
 		// starts the same session; the few places that behave
@@ -491,19 +491,19 @@ func runOnce(bridgesFile, netFlag string) {
 			// cancel(), not os.Exit(): at this point transport.Start
 			// (below) may have already spawned the embedded Tor/I2P
 			// subprocess, still blocked on the same goroutine as runMain
-			// — a direct os.Exit() here would orphan it (none of
+			// a direct os.Exit() here would orphan it (none of
 			// runMain's defers ever run). Cancelling ctx propagates to
 			// the processCtx derived inside tor.StartTor/i2pnode.StartI2p
 			// (both pass it to exec.CommandContext), terminating the
 			// process even while still blocked in startup;
 			// transport.Start then unblocks and returns an error, handled
-			// by the "if err != nil" path further below — the actual
+			// by the "if err != nil" path further below, the actual
 			// exit happens there, after the subprocess is already dead.
 			cancel()
 		}
 	}()
 
-	// Phase 1: network bootstrap — shows real percentage by parsing the
+	// Phase 1: network bootstrap, shows real percentage by parsing the
 	// logs. Bridges are a Tor-only concept (bypassing censorship of public
 	// Tor relays): an explicit --bridges-file always takes priority (a
 	// single manually specified file, no fallback concept there);
@@ -540,7 +540,7 @@ func runOnce(bridgesFile, netFlag string) {
 	}
 	var bootLog []string
 	elapsed := shared.Now
-	// First line of the boot, always — both on the raw terminal (visible
+	// First line of the boot, always, both on the raw terminal (visible
 	// before the TUI takes over the screen) and in Console once it's
 	// running: the running version is the first thing visible in any log
 	// provided for diagnosis, without having to ask for it separately or
@@ -576,7 +576,7 @@ func runOnce(bridgesFile, netFlag string) {
 		// option.
 		OnBridgeFallback: func() {
 			// The bridgeCfg (bridge_default) attempt didn't complete the
-			// bootstrap in time — restarts from scratch with
+			// bootstrap in time, restarts from scratch with
 			// bridgeFallbackCfg (bridge_fallback), a new Tor process:
 			// without this notice the percentage would seem to stall or
 			// go backward with no explanation.
@@ -591,7 +591,7 @@ func runOnce(bridgesFile, netFlag string) {
 		fmt.Println()
 		if ctx.Err() != nil {
 			// Exit triggered by the bootstrap watchdog above (cancel()),
-			// not a real network error — the timeout message was already
+			// not a real network error, the timeout message was already
 			// printed there, no subprocess to close (node was never
 			// assigned: the subprocess is already dead from ctx's
 			// cancellation propagated inside transport.Start).
@@ -607,7 +607,7 @@ func runOnce(bridgesFile, netFlag string) {
 	}
 	defer node.Close()
 	// netCleanup manually redoes, in order, exactly what the two defers
-	// above (cancel/node.Close) would do on runMain's natural return —
+	// above (cancel/node.Close) would do on runMain's natural return,
 	// needed before any exit going through fatal()/os.Exit() further
 	// below, since os.Exit() skips this function's entire defer stack,
 	// orphaning the already-started Tor/I2P subprocess. Calling it takes
@@ -623,7 +623,7 @@ func runOnce(bridgesFile, netFlag string) {
 	fmt.Println(netBootstrapDoneMsg)
 	bootLog = append(bootLog, strings.TrimSpace(netBootstrapDoneMsg))
 
-	// sysLockCh is tied to ctx, not to any identity — a single
+	// sysLockCh is tied to ctx, not to any identity, a single
 	// subscription survives every iteration of the loop below (an OS
 	// session-lock signal means the same thing regardless of which
 	// identity is currently active).
@@ -631,7 +631,7 @@ func runOnce(bridgesFile, netFlag string) {
 
 	// Forces exit after 4 seconds if shutdown stalls (Tor or pending
 	// connections). Declared ONCE, outside the loop below: this defer
-	// only fires on the function's actual return — never on a `continue`
+	// only fires on the function's actual return, never on a `continue`
 	// (a nuke or duress trigger promoting to the next identity never
 	// returns at all, see nukeRequested/duressWipeRequested below), so a
 	// single registration here correctly covers however many identities
@@ -645,20 +645,20 @@ func runOnce(bridgesFile, netFlag string) {
 	}()
 
 	// From here on, the loop below re-runs this process AS the identity
-	// currently held in session/ks — once per identity ever activated in
+	// currently held in session/ks, once per identity ever activated in
 	// this run: the first pass (the one just unlocked above), then once
 	// more per nuke-triggered promotion to duress (see nukeRequested
 	// below), for as long as that keeps happening. node/ctx/netCleanup
-	// are shared across every pass — Tor/I2P is never restarted, and the
+	// are shared across every pass, Tor/I2P is never restarted, and the
 	// PREVIOUS identity's hidden service/server goroutine is never torn
 	// down either: it's simply abandoned, left running with its own
-	// (by then emptied) contacts — same anti-forensic principle as the
+	// (by then emptied) contacts, same anti-forensic principle as the
 	// client-side session abandonment elsewhere in this design, never a
 	// new observable signal like an onion address suddenly going dark.
 	for {
 		ks := session.Identity
 
-		// Phase 2: hidden service publication (up to 3 attempts — an EOF on
+		// Phase 2: hidden service publication (up to 3 attempts, an EOF on
 		// the control port can happen if Tor hasn't stabilized the control
 		// connection yet).
 		phase2Start := time.Now()
@@ -700,9 +700,9 @@ func runOnce(bridgesFile, netFlag string) {
 		}
 
 		// Forwards internal/server's internal diagnostics (KnockDHTag mutuality
-		// filter, DecryptKnock outcomes — see internal/server/debug.go) to the
+		// filter, DecryptKnock outcomes, see internal/server/debug.go) to the
 		// same sink as client.Dbg, already activatable with `neutrino debug
-		// <file>` or `/debug on|off` — a single debug mechanism for the user,
+		// <file>` or `/debug on|off`, a single debug mechanism for the user,
 		// not two. client.Dbg is already a no-op when debug isn't active: no
 		// cost to wiring it up unconditionally here.
 		server.SetDebug(func(msg string) { client.Dbg("%s", msg) })
@@ -719,9 +719,9 @@ func runOnce(bridgesFile, netFlag string) {
 		// publishRootHiddenService publishes a NEW hidden service under ks's
 		// CURRENT root and starts a second server.RunOnListener on it,
 		// sharing the same registry/knockCh/cfg as the startup listener above
-		// — used by StartRootRotation/AdoptRootRotation. The old listener
+		// used by StartRootRotation/AdoptRootRotation. The old listener
 		// stays active (no explicit teardown): online contacts migrate
-		// immediately, offline ones will on their return — no need to shut it
+		// immediately, offline ones will on their return, no need to shut it
 		// down specifically for them.
 		publishRootHiddenService := func() (string, error) {
 			newLn, newMyAddr, _, err := node.AddHiddenService(ctx, ks.NetworkIdentityPrivKey())
@@ -736,7 +736,7 @@ func runOnce(bridgesFile, netFlag string) {
 			return newMyAddr, nil
 		}
 
-		// Own local server address — used to connect to every room created/
+		// Own local server address, used to connect to every room created/
 		// reopened (client.New(lhost, portNum, ...), passed below as
 		// LocalHost/LocalPort).
 		lhost, lport, err := net.SplitHostPort(localAddr)
@@ -763,22 +763,22 @@ func runOnce(bridgesFile, netFlag string) {
 			})
 		}
 
-		// Known devices to route a remote_nuke command to — populated by
+		// Known devices to route a remote_nuke command to, populated by
 		// "indoor" synchronization, empty until it's run at least once.
 
 		// remote_nuke commands issued by this identity and not yet confirmed
-		// by an ack — retried on every startup.
+		// by an ack, retried on every startup.
 		pendingRemoteNukeTargets := convertDeviceRecords(ks.PendingRemoteNukeTargets())
 
 		// The authority's danger_broadcast/danger_end not yet confirmed by
-		// each contact — retried on every probeContacts cycle (independent
+		// each contact, retried on every probeContacts cycle (independent
 		// queues, preliminary vs. final).
 		dangerBroadcasts, dangerEnds := ks.DangerPendingSnapshot()
 		pendingDangerBroadcasts := convertDangerPending(dangerBroadcasts)
 		pendingDangerEnds := convertDangerPending(dangerEnds)
 
 		// Just a health check at startup (warns immediately if /sec-backup
-		// won't work) — the 24 words themselves aren't kept: GetBackupMnemonic
+		// won't work), the 24 words themselves aren't kept: GetBackupMnemonic
 		// below recomputes them on demand, only after password verification,
 		// and the TUI zeroes them as soon as the popup closes.
 		if _, err := ks.Mnemonic(); err != nil {
@@ -788,7 +788,7 @@ func runOnce(bridgesFile, netFlag string) {
 
 		// Nudge for a keystore with no DeviceLabel: without a name chosen
 		// by the user, /sec-remote-nuke and /sec-devices would show only
-		// this device's raw DeviceID — not a real blocker, but a
+		// this device's raw DeviceID, not a real blocker, but a
 		// "nameless" device is hard to recognize if stolen. The wizard
 		// asks for it on every new keystore (createIdentity in runWizard).
 		if ks.DeviceLabel == "" {
@@ -856,7 +856,7 @@ func runOnce(bridgesFile, netFlag string) {
 			LocalHost:      lhost,
 			LocalPort:      portNum,
 			// RoomRegistry.AddSecret/ReplaceSecret take a resolver, never an
-			// already-resolved key pair — tui.go builds it
+			// already-resolved key pair, tui.go builds it
 			// (model.relKeysResolver) around ResolveRelKeysForDevice below,
 			// which just exposes ks.RelKeysForDevice: re-read on every
 			// handshake verification, never cached, so a relationship
@@ -938,7 +938,7 @@ func runOnce(bridgesFile, netFlag string) {
 				// not here. No peer device is known yet at this point: the
 				// entry lives under the placeholder key "" (see
 				// tui.RelKeyUpdate) until applyRelInit promotes it to the
-				// real DevicePub of the first device that responds —
+				// real DevicePub of the first device that responds,
 				// per-device model.
 				identKey, err := shared.GenerateRelSigningKey()
 				if err != nil {
@@ -1057,14 +1057,14 @@ func runOnce(bridgesFile, netFlag string) {
 			},
 			// ResetRelInitConfirmed: the only way to bring
 			// RelIdentityConfirmedByPeer/RelContentConfirmedByPeer back to
-			// false — UpdateContactRelKeys/RelKeyUpdate above only ever turn
+			// false, UpdateContactRelKeys/RelKeyUpdate above only ever turn
 			// them on (together), never off, by design. which
 			// ("identity"|"content") picks the flag relevant to the observed
 			// self-heal case: a handshake that always fails with "invalid
 			// signature" against an otherwise reachable host
 			// (case roomErrMsg/client.ErrInvalidServerSig, tui.go) is an
 			// Identity problem; a CONTENT signature verification that never
-			// checks out (messages/files) is a Content problem — resetting
+			// checks out (messages/files) is a Content problem, resetting
 			// only the relevant one avoids also blocking
 			// ReadyDevices()/invites over an issue isolated to the other key.
 			// devicePub identifies the exact device; empty or non-matching
@@ -1095,8 +1095,8 @@ func runOnce(bridgesFile, netFlag string) {
 				return session.SaveSlot(ksPath)
 			},
 			// SetPendingRelKeys records a relationship-key conflict (TrustDanger)
-			// — see tui.applyRelInit. pending.DevicePub identifies the exact
-			// entry in conflict — never the placeholder "" (a conflict only
+			// see tui.applyRelInit. pending.DevicePub identifies the exact
+			// entry in conflict, never the placeholder "" (a conflict only
 			// happens on an already-confirmed device, see RelKeyUpdate).
 			SetPendingRelKeys: func(pub []byte, pending tui.PendingRelKeys) error {
 				devFound := false
@@ -1119,7 +1119,7 @@ func runOnce(bridgesFile, netFlag string) {
 				return session.SaveSlot(ksPath)
 			},
 			// ConfirmPendingRelKeys closes the conflict above after the user's
-			// explicit out-of-band confirmation (/sec-verify) — see
+			// explicit out-of-band confirmation (/sec-verify), see
 			// keystore.ConfirmPendingRelKeys.
 			ConfirmPendingRelKeys: func(pub []byte) bool {
 				if !ks.ConfirmPendingRelKeys(pub) {
@@ -1130,12 +1130,12 @@ func runOnce(bridgesFile, netFlag string) {
 			},
 			// PromoteEphemeralContact persists a real Contact starting from an
 			// ephemeral relationship already established and promoted by both
-			// sides (see tui.finalizePromotion) — unlike AddContact it
+			// sides (see tui.finalizePromotion), unlike AddContact it
 			// generates no new key: myIdentKey/myContentKey and the peer's
 			// pubkeys are already the ones exchanged in the room's ephemeral
 			// bootstrap, only written to disk here. The peer's device is
 			// never known in this flow (room ephemeral bootstrap, no
-			// DevicePub exchange) — the entry lives under the placeholder key
+			// DevicePub exchange), the entry lives under the placeholder key
 			// "" as with AddContact, promoted to the real DevicePub by the
 			// first real rel_init/rel_init_ack that follows (the same
 			// treatment as a contact added from scratch).
@@ -1241,16 +1241,16 @@ func runOnce(bridgesFile, netFlag string) {
 				}
 				return session.SaveSlot(ksPath)
 			},
-			// KeystorePassword exposed as password_identity only — the
+			// KeystorePassword exposed as password_identity only, the
 			// file-level password (session.PasswordFile) stays constant
 			// for the whole session and is never surfaced here; the TUI's
 			// lock check compares against password_identity only.
 			KeystorePassword: session.PasswordIdentity,
 			ChangePassword: func(oldPwd, newPwd string) error {
 				// Verifies oldPwd against the ALREADY-unlocked slot (no
-				// password is cached separately — see
+				// password is cached separately, see
 				// UnlockedSlot.VerifyPasswordIdentity), then re-wraps K_i
-				// under the new combination — the content itself is never
+				// under the new combination, the content itself is never
 				// touched.
 				if !session.VerifyPasswordIdentity(oldPwd) {
 					return errors.New(i18n.T("cli.err_wrong_current_password"))
@@ -1265,9 +1265,9 @@ func runOnce(bridgesFile, netFlag string) {
 			},
 			SetDuress: func(newPwd string) error {
 				// The shared duress identity always exists structurally in
-				// the N-slot format — it can't be removed, only its own
+				// the N-slot format, it can't be removed, only its own
 				// password_identity can change. Reached via K_i_duress
-				// (session.Identity.DuressAccess) — never duress's own OLD
+				// (session.Identity.DuressAccess), never duress's own OLD
 				// password, which this session doesn't need to know.
 				if newPwd == "" {
 					return errors.New(i18n.T("wizard.err_empty_duress_password"))
@@ -1752,7 +1752,7 @@ func runOnce(bridgesFile, netFlag string) {
 			fatal(err.Error())
 		}
 		if clearAllRequested {
-			// /sec-clear-all, confirmed in the TUI — unlike
+			// /sec-clear-all, confirmed in the TUI, unlike
 			// nukeRequested/duressWipeRequested below, this terminates the
 			// process: the keystore file itself must no longer exist
 			// afterward, never just a swap to the duress identity.
@@ -1763,11 +1763,11 @@ func runOnce(bridgesFile, netFlag string) {
 		if nukeRequested || duressWipeRequested {
 			// This identity (ks, this iteration's session.Identity) may
 			// ALREADY be the
-			// shared duress one — a SECOND /nukex (or any other trigger
+			// shared duress one, a SECOND /nukex (or any other trigger
 			// sharing this path: time, lock-screen duress, remote_nuke)
 			// fired after an earlier one already promoted this same
 			// process. The sequence below ends with
-			// ObliterateSlot(session.Container, session.Idx) — at this
+			// ObliterateSlot(session.Container, session.Idx), at this
 			// point session.Idx would be duress's OWN slot, the single
 			// structural anchor every real identity in the file reaches
 			// via DuressAccess: destroying it would leave the file
@@ -1776,7 +1776,7 @@ func runOnce(bridgesFile, netFlag string) {
 			// protection scheme of its own (see PromoteDuress's own doc
 			// comment), so a repeat trigger has no further state to
 			// swap into anyway. No-op, loop back into this same
-			// already-duress session completely unchanged — same "never
+			// already-duress session completely unchanged, same "never
 			// print anything" principle as every other step of this
 			// sequence: an observer must see no difference between a
 			// trigger that did something and one that had nothing left
@@ -1784,16 +1784,16 @@ func runOnce(bridgesFile, netFlag string) {
 			if ks.IsDuress {
 				continue
 			}
-			// Same swap sequence for every trigger — /nukex, the timed
+			// Same swap sequence for every trigger, /nukex, the timed
 			// nuke, remote_nuke on the TARGET side (nukeRequested), and a
 			// duress secret recognized at the interface lock screen while
 			// the session was already active (duressWipeRequested: the
 			// TUI's own armDuressWipe already runs the same device-sync
-			// fan-out as cmdNukeX before setting this flag — see
+			// fan-out as cmdNukeX before setting this flag, see
 			// internal/client/tui/tui.go). The file is never deleted.
 			//
 			// Rescue pod: assembled and spawned WHILE ks is still
-			// its pre-overwrite self (its real contacts) — must happen
+			// its pre-overwrite self (its real contacts), must happen
 			// BEFORE OverwriteAllContacts below empties them. node stays
 			// alive (never netCleanup() here): the whole point of this
 			// loop is that Tor/I2P and this process never stop. Covers
@@ -1813,7 +1813,7 @@ func runOnce(bridgesFile, netFlag string) {
 			runNukeOverwriteInPlace(session, ksPath)
 			promoted, perr := session.PromoteDuress()
 			if perr != nil {
-				// Should never happen in practice — every real identity's
+				// Should never happen in practice, every real identity's
 				// shared duress exists structurally in this slot format.
 				// Safe fallback rather than looping with a broken
 				// session: tear down and exit. The file itself was never
@@ -1825,11 +1825,11 @@ func runOnce(bridgesFile, netFlag string) {
 			}
 			session = promoted
 			// This device's hidden service/server goroutine above is now
-			// abandoned, not torn down — see the loop's own doc comment
+			// abandoned, not torn down, see the loop's own doc comment
 			// above: never a new observable signal like an onion address
 			// going dark. The loop republishes a NEW hidden service for
 			// the promoted identity and runs the TUI again, on the SAME
-			// node/ctx — no password prompt, no network restart.
+			// node/ctx, no password prompt, no network restart.
 			continue
 		}
 		netCleanup()
@@ -1842,7 +1842,7 @@ func runOnce(bridgesFile, netFlag string) {
 // chooseLang asks for the interface language. It's the only text in the
 // program that must stay literal in every supported language: the
 // catalogs can't be consulted yet, since this very answer determines
-// which one to use — each language name is written in that language
+// which one to use, each language name is written in that language
 // itself (never translated).
 func chooseLang() i18n.Lang {
 	fmt.Println("Language / Lingua / Langue / Sprache / Idioma / Limbă / Язык:")
@@ -1873,7 +1873,7 @@ func chooseLang() i18n.Lang {
 }
 
 // zeroBytes overwrites b with zeros so the raw bytes read by
-// term.ReadPassword don't stay in the heap beyond their use — doesn't
+// term.ReadPassword don't stay in the heap beyond their use, doesn't
 // eliminate the immutable copy made by string(b) (a Go limitation:
 // strings can't be zeroed), but closes the exposure window of the
 // original slice, the only one under direct control.
@@ -1883,16 +1883,16 @@ func zeroBytes(b []byte) {
 	}
 }
 
-// promptNewKeystorePassword asks for a new password — promptKey picks
+// promptNewKeystorePassword asks for a new password, promptKey picks
 // the label shown (the file password or a specific identity's own
 // password: the two are independent in the N-slot format, see
-// unlockKeystoreSession) — offering automatic generation of a secure
-// passphrase (7 BIP-39 wordlist words, ~77 bits of entropy — see
+// unlockKeystoreSession), offering automatic generation of a secure
+// passphrase (7 BIP-39 wordlist words, ~77 bits of entropy, see
 // shared.GeneratePassphrase) as an alternative to manual typing. With
 // manual typing it still shows a strength estimate after entry, purely
 // informational: it doesn't block weak passwords, the real defense
 // against offline brute-force remains Argon2id. Shared by the initial
-// wizard, "neutrino add-identity" and "neutrino restore" — the field
+// wizard, "neutrino add-identity" and "neutrino restore", the field
 // itself is always the same generic "Password: " prompt, never specific
 // to file/identity/duress: the caller prints its own intro line right
 // before this is called, so the field never needs to repeat it.
@@ -1946,11 +1946,11 @@ func promptNewKeystorePassword() string {
 	}
 }
 
-// promptDuressSetup sets up the shared decoy identity — mandatory in
+// promptDuressSetup sets up the shared decoy identity, mandatory in
 // the N-slot keystore format, never optional (a file always has
 // exactly one duress identity, structurally). Asks for a username (the
 // decoy is in every respect a second real identity, own name included)
-// and its own password_identity — which
+// and its own password_identity, which
 // must differ from the real one just chosen in this same wizard,
 // otherwise the same combination would always open the same identity
 // and duress could never be reached.
@@ -2031,12 +2031,12 @@ func runWizard(ksPath, cfgPath string) (*keystore.UnlockedSlot, config.Config) {
 		fatal(err.Error())
 	}
 
-	// Device name — asked ONLY here, at file creation (never from
+	// Device name, asked ONLY here, at file creation (never from
 	// add-identity, which adds an identity to the SAME device, never a
 	// new one). Without a name chosen by the user, a device's only
 	// identifier is its DeviceID (16 random bytes): impossible to tell
 	// "Galaxy S22" from "work laptop" apart at a glance among known
-	// devices — see Keystore.DeviceLabel.
+	// devices, see Keystore.DeviceLabel.
 	hostname, _ := os.Hostname()
 	defaultLabel := hostname
 	if defaultLabel == "" {
@@ -2050,14 +2050,14 @@ func runWizard(ksPath, cfgPath string) (*keystore.UnlockedSlot, config.Config) {
 }
 
 // createKeystoreFile writes a brand-new keystore file holding ks plus
-// the mandatory duress identity, and the initial config — the last
+// the mandatory duress identity, and the initial config, the last
 // step of the first-run wizard, shared with agent mode (which supplies
 // the same inputs without a terminal).
 func createKeystoreFile(ksPath, cfgPath string, lang i18n.Lang, ks *keystore.Keystore, deviceLabel, duressUsername, passwordFile, passwordIdentity, duressPasswordIdentity string) (*keystore.UnlockedSlot, config.Config) {
 	ks.SetDeviceLabel(deviceLabel)
 
 	// keystore.New directly, not createIdentity: the decoy identity is
-	// never meant to publish its own QR/public key during the wizard —
+	// never meant to publish its own QR/public key during the wizard,
 	// it only matters once reached.
 	duress, err := keystore.New(duressUsername)
 	if err != nil {
@@ -2080,8 +2080,8 @@ func createKeystoreFile(ksPath, cfgPath string, lang i18n.Lang, ks *keystore.Key
 	return session, cfg
 }
 
-// createIdentity performs the steps to create a single identity — Ed25519
-// transport key, QR code — shared between the first-run wizard and
+// createIdentity performs the steps to create a single identity, Ed25519
+// transport key, QR code, shared between the first-run wizard and
 // "neutrino add-identity". The caller has already chosen/validated the
 // username and the path where to save the QR.
 func createIdentity(username, qrPath string) (*keystore.Keystore, error) {
@@ -2104,19 +2104,19 @@ func createIdentity(username, qrPath string) (*keystore.Keystore, error) {
 // unlockKeystoreSession asks for the two-password combination (file +
 // identity) and tries
 // it against every slot in ksPath's container (keystore.LoadAndUnlock)
-// — whichever slot answers IS the identity for this session, real or
+// whichever slot answers IS the identity for this session, real or
 // the shared duress one: no separate "wrong password vs. duress
 // detected" branch, by design (see slots.go, unwrapKi).
 // The moment the matched slot recognizes itself as duress
-// (session.Identity.IsDuress), EVERY other slot in the container —
-// every real identity, any pre-existing noise, all of it — is
+// (session.Identity.IsDuress), EVERY other slot in the container,
+// every real identity, any pre-existing noise, all of it, is
 // overwritten in place with fresh random bytes (ObliterateOtherSlots)
 // and the container is written back to disk before this function even
 // returns: synchronous and immediate, so a kill right after login still
 // leaves the destruction already committed. This never needs any other
-// slot's password — see slot_obliterate.go. A non-matching combination
+// slot's password, see slot_obliterate.go. A non-matching combination
 // exits via fatal() with the exact same message as any other open
-// failure — never distinguishable from "this is the duress password".
+// failure, never distinguishable from "this is the duress password".
 func unlockKeystoreSession(ksPath string) *keystore.UnlockedSlot {
 	fmt.Print(i18n.T("cli.password_file_prompt"))
 	pwdFileBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
@@ -2141,7 +2141,7 @@ func unlockKeystoreSession(ksPath string) *keystore.UnlockedSlot {
 
 // openKeystoreSession tries the password combination against ksPath
 // and, if the matched slot is the duress identity, obliterates every
-// other slot before returning — see unlockKeystoreSession. Shared with
+// other slot before returning, see unlockKeystoreSession. Shared with
 // agent mode, which supplies the passwords without a terminal.
 func openKeystoreSession(ksPath, pwdFile, pwdIdentity string) *keystore.UnlockedSlot {
 	session, ok, err := keystore.LoadAndUnlock(ksPath, pwdFile, pwdIdentity)
@@ -2165,7 +2165,7 @@ func openKeystoreSession(ksPath, pwdFile, pwdIdentity string) *keystore.Unlocked
 
 // runAddIdentity creates a new real identity in the SAME file, under
 // its own new password_identity (same password_file as the session
-// used to unlock) — consumes one pending noise slot and lets 2 new
+// used to unlock), consumes one pending noise slot and lets 2 new
 // ones replace it. It never requires knowing any OTHER identity's
 // password: each identity is independently encrypted, this call only
 // ever touches the session's own
@@ -2270,7 +2270,7 @@ func runResetConfig() {
 }
 
 // runLang shows or sets the language saved in config. Run from the shell,
-// before or after using neutrino — it's not a TUI command: the language
+// before or after using neutrino, it's not a TUI command: the language
 // never changes live in an already-running session.
 func runLang(args []string) {
 	ksPath, err := keystore.DefaultPath()
@@ -2339,7 +2339,7 @@ func runNet(args []string) {
 // runDebug starts Neutrino normally (the same path as `neutrino` with no
 // arguments: wizard on first run, TUI otherwise) with internal debug
 // (dbg(), see internal/client/debug.go) active from the very first
-// instant and written directly to a file — not to the Console tab, which
+// instant and written directly to a file, not to the Console tab, which
 // lives only in RAM and disappears if the process dies in a crash.
 // Intended to capture what happens right before a crash that would
 // otherwise leave no other output, without having to manually open
@@ -2401,7 +2401,7 @@ func bridgesPath(ksPath string) string {
 
 // convertContacts converts a list of keystore.Contact into internal/client's
 // mirror type (tui.ContactInfo), recomputing NetAddr from addressFromPub
-// (never persisted on Contact) — used both for the active identity's
+// (never persisted on Contact), used both for the active identity's
 // contact list and, for each sibling identity, by the danger_end
 // broadcast (AllIdentitiesContacts).
 func convertContacts(contacts []keystore.Contact, addressFromPub func(ed25519.PublicKey) string) []tui.ContactInfo {
@@ -2424,7 +2424,7 @@ func convertContacts(contacts []keystore.Contact, addressFromPub func(ed25519.Pu
 			MLDSAPub:        c.MLDSAPub,
 			KnownDevicePub:  c.KnownDevicePub,
 			// CloneDevices: tui.ContactInfo is an independent mirror of the
-			// keystore — Devices is a map, copying the Contact struct
+			// keystore, Devices is a map, copying the Contact struct
 			// doesn't isolate it (see keystore.Contact.CloneDevices).
 			// Without this, any mutation of a *DeviceRelation inside
 			// tui.go (applyRelInit and similar, which assume a mirror
@@ -2438,7 +2438,7 @@ func convertContacts(contacts []keystore.Contact, addressFromPub func(ed25519.Pu
 }
 
 // convertDangerPending converts a list of keystore.DangerBroadcastPending
-// into internal/client's mirror type — used both for
+// into internal/client's mirror type, used both for
 // PendingDangerBroadcasts (preliminary) and PendingDangerEnds (final).
 func convertDangerPending(pending []keystore.DangerBroadcastPending) []tui.DangerBroadcastPendingInfo {
 	out := make([]tui.DangerBroadcastPendingInfo, 0, len(pending))
@@ -2452,7 +2452,7 @@ func convertDangerPending(pending []keystore.DangerBroadcastPending) []tui.Dange
 }
 
 // convertDeviceRecords converts a list of keystore.DeviceRecord into
-// internal/client's mirror type (tui.DeviceRecordInfo) — the same
+// internal/client's mirror type (tui.DeviceRecordInfo), the same
 // conversion for both KnownDevices (list of known devices) and
 // PendingRemoteNukeTargets (remote_nuke queue to retry at startup),
 // avoiding duplicating the loop twice.
@@ -2565,12 +2565,12 @@ func runGetBridges() {
 	}
 }
 
-// runAddBridges acquires bridge lines from a QR code — useful when this
+// runAddBridges acquires bridge lines from a QR code, useful when this
 // device has no direct internet access (censored network) but the user
 // has a connected phone: the bridges.torproject.org page shown on the
 // phone already includes a QR with the bridge lines. Two sources, the
 // same `internal/qrscan` already used by `/cnt-read-qrcode` on the TUI
-// — no new external dependency:
+// no new external dependency:
 // `args[0] == "--camera"` reads from the first available V4L2 webcam
 // (Linux desktop only, see qrscan.ScanCamera/camera_other.go), otherwise
 // args[0] is the path to an image file (a screenshot of the QR, any
@@ -2641,14 +2641,14 @@ func runAddBridges(args []string) {
 // ── animated QR optical transfer (fountain coding) ──────────────────────────
 //
 // Out-of-band file exchange, with no network at all (neither Tor/I2P nor
-// BLE) — the only requirement is that sender and receiver can see each
+// BLE), the only requirement is that sender and receiver can see each
 // other (the sender's screen, the receiver's camera). Encrypted with a
-// password (Argon2id, same parameters as the keystore — see
+// password (Argon2id, same parameters as the keystore, see
 // internal/keystore.deriveKey) because the channel is by definition
 // visible to anyone watching the screen during transmission, not just
 // the intended recipient.
 
-// qrOpticalArgonTime/Memory/Threads/KeyLen — same values as
+// qrOpticalArgonTime/Memory/Threads/KeyLen, same values as
 // internal/keystore (not exported from that package, duplicated here:
 // they're Argon2id constants, not shared state, no risk of silent
 // divergence).
@@ -2667,7 +2667,7 @@ func qrOpticalDeriveKey(password string, salt []byte) []byte {
 }
 
 // runQRSend reads a file and displays it as an endless sequence of
-// animated QR codes (fountain coding, internal/qroptical) — keeps running
+// animated QR codes (fountain coding, internal/qroptical), keeps running
 // until the user interrupts with Ctrl-C: the sender has no way of knowing
 // when the receiver has finished (no return channel), it must wait for
 // their confirmation out of band (by voice, or in any case not on this
@@ -2752,7 +2752,7 @@ func runQRSend(args []string) {
 
 // sendAnimatedQRLoop displays a continuous stream of animated QR codes
 // (fountain code, internal/qroptical) for payload, already prepared
-// (already encrypted by the caller) — core shared by runQRSend (which
+// (already encrypted by the caller), core shared by runQRSend (which
 // encrypts with the user's password before calling it) and the animated
 // backup/sync variants (already encrypted by the keystore/mnemonic, no
 // additional password). Infinite loop: the protocol doesn't know when
@@ -2783,7 +2783,7 @@ func sendAnimatedQRLoop(payload []byte, introMsgKey string) {
 
 // receiveAnimatedQR reads a stream of animated QR codes (fountain code,
 // internal/qroptical) from the webcam until it reconstructs the whole
-// payload or the timeout expires — core shared by runQRReceive (which
+// payload or the timeout expires, core shared by runQRReceive (which
 // then decrypts the payload with the user's password) and the animated
 // restore/sync-import variants (which instead decrypt with the 24-word
 // mnemonic, no additional password).
@@ -2868,7 +2868,7 @@ func prompt(label string) string {
 	return strings.TrimSpace(readLine())
 }
 
-// printRetryError prints a wizard validation error without exiting —
+// printRetryError prints a wizard validation error without exiting,
 // unlike fatal, the caller loops back and asks again instead of losing
 // everything already entered earlier in the same wizard run.
 func printRetryError(msg string) {
@@ -2895,7 +2895,7 @@ func fatal(msg string) {
 // ML-DSA-65 signing key, a fixed-length segment (2604 base64 characters,
 // see nuURIMLDSAB64Len). With all three segments the content exceeds a
 // single QR frame's capacity (~1700 characters with ML-KEM only, +2604
-// with ML-DSA) — printAndSaveQR below falls back to multi-QR when
+// with ML-DSA), printAndSaveQR below falls back to multi-QR when
 // needed, reusing the same chunking already used in production for
 // backup/sync (keystore.ChunkBlob/AssembleQRMulti).
 func identityQRContent(username string, pub ed25519.PublicKey, mlkemPub, mldsaPub []byte) string {
@@ -2912,7 +2912,7 @@ func identityQRContent(username string, pub ed25519.PublicKey, mlkemPub, mldsaPu
 // qrQuadrantString renders the QR with one Unicode character per 2x2
 // block of modules (quadrant glyphs ▘▝▖▗▌▐▀▄ etc.), a factor of two more
 // compact than ToSmallString (which uses half a character per module)
-// and four compared to ToString — useful for fitting large QR codes,
+// and four compared to ToString, useful for fitting large QR codes,
 // such as an identity's with ML-DSA-65, into a terminal.
 func qrQuadrantString(q *qrcode.QRCode, inverseColor bool) string {
 	bits := q.Bitmap()
@@ -2955,12 +2955,12 @@ func qrQuadrantString(q *qrcode.QRCode, inverseColor bool) string {
 // is true, also prints them to the terminal as ASCII art. display=false
 // is used by the first-run wizard and "neutrino add-identity" (via
 // createIdentity): the ASCII art of a QR that includes ML-DSA-65 almost
-// always exceeds the terminal's size, unreadable even fullscreen — there
+// always exceeds the terminal's size, unreadable even fullscreen, there
 // only the PNG files (zoomable) and the plain URI text remain.
 // "neutrino show-qr", invoked explicitly to view the QR, passes
 // display=true. Every identity's own URI includes the ML-DSA-65 segment
 // (every keystore has one, see migrateVersion), so the content always
-// exceeds a single QR frame's capacity — this always chunks into
+// exceeds a single QR frame's capacity, this always chunks into
 // multi-QR, the same scheme used for backupSaveQR, one numbered PNG file
 // per part plus the raw chunk (for reassembly without a QR decoder if
 // needed).
@@ -2971,7 +2971,7 @@ func printAndSaveQR(username string, pub ed25519.PublicKey, mlkemPub, mldsaPub [
 		return fmt.Errorf(i18n.T("qr.err_save_png")+": %w", err)
 	}
 	base := strings.TrimSuffix(pngPath, filepath.Ext(pngPath))
-	// Plain text (nu://...) alongside the PNG(s), always — the same URI,
+	// Plain text (nu://...) alongside the PNG(s), always, the same URI,
 	// convenient to attach as-is via Telegram/email instead of having to
 	// copy it by hand or read it pixel-by-pixel from a multi-page QR.
 	// Rereadable with "/cnt-add <path>" (cmdAddContact, tui.go).
@@ -3011,7 +3011,7 @@ func printAndSaveQR(username string, pub ed25519.PublicKey, mlkemPub, mldsaPub [
 		if qrPersonalOverlay != nil {
 			// A larger canvas than the plain file above (8 vs 4
 			// px/module): same box/QR-area fraction, more absolute
-			// pixels for the label to stay legible — the overlay
+			// pixels for the label to stay legible, the overlay
 			// replaces the plain file entirely when it applies, so the
 			// output size difference is harmless.
 			if img, ok := qrPersonalOverlay(username, chunk, -qrscan.PixelsPerModule*2); ok {
@@ -3032,7 +3032,7 @@ func printAndSaveQR(username string, pub ed25519.PublicKey, mlkemPub, mldsaPub [
 
 // saveQRPagesAsPDF collects the identity into a single PDF: a first page
 // with the plain nu:// URI as selectable/printable text (same content as
-// the .txt sidecar), then one page per multi-part QR image — for
+// the .txt sidecar), then one page per multi-part QR image, for
 // printing or for a single file to keep offline instead of loose PNGs
 // plus a separate .txt. A no-op (returns nil without writing anything)
 // if pngPaths is empty.
@@ -3042,7 +3042,7 @@ func saveQRPagesAsPDF(username, textContent string, pngPaths []string, pdfPath s
 	}
 	pdf := fpdf.New("P", "mm", "A4", "")
 	// Page breaks are placed by hand below (one AddPage per QR part, plus
-	// the first for the text) — fpdf's automatic break, left at its
+	// the first for the text), fpdf's automatic break, left at its
 	// default threshold, would otherwise insert a spurious blank page
 	// whenever a header/body cell lands close enough to the bottom margin.
 	pdf.SetAutoPageBreak(false, 0)
@@ -3052,10 +3052,10 @@ func saveQRPagesAsPDF(username, textContent string, pngPaths []string, pdfPath s
 	const githubURL = "https://github.com/neutrinobuilder/neutrino"
 
 	// fpdf's core fonts (Helvetica/Courier here) are single-byte
-	// (WinAnsi/cp1252), not UTF-8 — a raw UTF-8 string with any non-ASCII
+	// (WinAnsi/cp1252), not UTF-8, a raw UTF-8 string with any non-ASCII
 	// rune (even a plain em dash) renders as mojibake. tr maps what
 	// cp1252 can represent and falls back to "?" for the rest (e.g. a
-	// non-Latin username) — acceptable here: title text only, never the
+	// non-Latin username), acceptable here: title text only, never the
 	// URI itself (pure base64 ASCII, unaffected).
 	tr := pdf.UnicodeTranslatorFromDescriptor("")
 
@@ -3079,7 +3079,7 @@ func saveQRPagesAsPDF(username, textContent string, pngPaths []string, pdfPath s
 	pdf.SetXY(0, y)
 	pdf.CellFormat(pageW, 12, tr(username), "", 1, "C", false, 0, "")
 	// Small monospace + tight leading: the full URI (pub + MLKEM-768 +
-	// ML-DSA-65 as base64) runs well over 4000 characters — a larger
+	// ML-DSA-65 as base64) runs well over 4000 characters, a larger
 	// size overflows onto a near-empty second page instead of fitting
 	// on this one.
 	pdf.SetFont("Courier", "", 7)
@@ -3104,7 +3104,7 @@ func saveQRPagesAsPDF(username, textContent string, pngPaths []string, pdfPath s
 // saveIdentityQRForTUI writes the same files as printAndSaveQR
 // (display=false: plain .txt + multi-part PNG, personal overlay applied
 // when it matches), returning every path written instead of printing
-// them — printAndSaveQR's fmt.Print calls would corrupt bubbletea's
+// them, printAndSaveQR's fmt.Print calls would corrupt bubbletea's
 // alt-screen buffer if run while the TUI is active, so the TUI's own
 // /show-qr "save as image" choice (TUIParams.SaveIdentityQR) uses this
 // instead, same file-writing logic duplicated rather than threading an
@@ -3190,7 +3190,7 @@ func runBackup() {
 	fmt.Println("════════════════════════════════════════════════════════")
 	fmt.Println()
 
-	// Full backup — asks for the format
+	// Full backup, asks for the format
 	fmt.Println(i18n.T("backup.full_backup_prompt"))
 	fmt.Println(i18n.T("backup.option_bin"))
 	fmt.Println(i18n.T("backup.option_qr"))
@@ -3213,7 +3213,7 @@ func runBackup() {
 }
 
 // backupSaveQRAnimated shows the full backup as a stream of animated QR
-// codes (fountain code) — an additional mode alongside backupSaveQR
+// codes (fountain code), an additional mode alongside backupSaveQR
 // (static QR), not a replacement for it: same encrypted payload
 // (ExportQRAnimated instead of ExportQR/ExportQRMulti), no additional
 // password, the receiver scans it with "neutrino restore" (animated QR
@@ -3341,7 +3341,7 @@ func runSyncExport() {
 }
 
 // syncSaveQRAnimated shows the encrypted contact list as a stream of
-// animated QR codes (fountain code) — an additional mode alongside
+// animated QR codes (fountain code), an additional mode alongside
 // syncSaveQR (static QR), not a replacement for it: same payload as
 // ExportSync (already without size limits), no additional password.
 func syncSaveQRAnimated(ks *keystore.Keystore) {
@@ -3376,7 +3376,7 @@ func syncSaveQR(ks *keystore.Keystore, now string) {
 	}
 
 	if errors.Is(err, keystore.ErrSyncQRTooLarge) {
-		// Contact list too large for a single QR — multi-QR
+		// Contact list too large for a single QR, multi-QR
 		chunks, err := ks.ExportSyncQRMulti()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, i18n.T("sync.err_multi_qr", err))
@@ -3469,7 +3469,7 @@ func runSyncImport(files []string) {
 
 // runSyncImportQR imports the contact list by reading a stream of
 // animated QR codes (fountain code) from the webcam instead of from a
-// file — an additional mode alongside runSyncImport (file/.chunk), not a
+// file, an additional mode alongside runSyncImport (file/.chunk), not a
 // replacement for it.
 func runSyncImportQR() {
 	ksPath, err := keystore.DefaultPath()
@@ -3492,7 +3492,7 @@ func runSyncImportQR() {
 
 // finishSyncImport asks for the 24-word mnemonic, decrypts data (already
 // reassembled, regardless of source: file/.chunk or animated QR) and
-// merges the resulting contacts into the keystore — core shared by
+// merges the resulting contacts into the keystore, core shared by
 // runSyncImport and runSyncImportQR.
 func finishSyncImport(session *keystore.UnlockedSlot, cfg config.Config, ksPath string, data []byte) {
 	fmt.Println(i18n.T("sync.enter_mnemonic"))
@@ -3509,7 +3509,7 @@ func finishSyncImport(session *keystore.UnlockedSlot, cfg config.Config, ksPath 
 	}
 
 	// nil: the manual file/QR sync format (NTRINO03) carries no source
-	// device identifier — no sibling revocation is attributed through
+	// device identifier, no sibling revocation is attributed through
 	// this path.
 	var added, updated int
 	if session.Identity.IsDuress {
@@ -3544,12 +3544,12 @@ func finishSyncImport(session *keystore.UnlockedSlot, cfg config.Config, ksPath 
 // ── nuke ─────────────────────────────────────────────────────────────────────
 
 // secureWipeDirFiles lists every regular file present directly in dir
-// (non-recursive — Neutrino never creates subdirectories inside the
+// (non-recursive, Neutrino never creates subdirectories inside the
 // config dir). Used by wipeConfigDir so it doesn't limit itself to
 // keystore+config.json by name: the same directory can also hold
 // tor_bridges, identity-qr-*.png (one per identity in the keystore), and
 // any keystore backups the user saved there
-// (neutrino-backup-*.bin/.png/.chunk, neutrino-sync-*.bin/.png/.chunk) —
+// (neutrino-backup-*.bin/.png/.chunk, neutrino-sync-*.bin/.png/.chunk),
 // all of them must be overwritten like the keystore itself, never left
 // on disk in the clear.
 func secureWipeDirFiles(dir string) ([]string, error) {
@@ -3619,28 +3619,28 @@ func secureDelete(path string, passes int) error {
 }
 
 // runNukeOverwriteInPlace is the nuke mechanism for nukeOnExit (`/nukex`,
-// the timed nuke, and remote_nuke on the TARGET side — all three set the
+// the timed nuke, and remote_nuke on the TARGET side, all three set the
 // same flag via cmdNukeX/executeRemoteNuke in
 // internal/client/tui/tui.go): overwrites EVERY contact of session's
-// identity, in place (OverwriteAllContacts — same treatment as a normal
+// identity, in place (OverwriteAllContacts, same treatment as a normal
 // contact-deletion, applied to all of them at once), NEVER deletes or
 // even touches the keystore file's own existence: no trigger ever
 // deletes a file. Never
 // prints anything: an anti-forensic wipe visible on the screen/terminal
 // (or a persistent scrollback/log) would itself be evidence that it just
-// happened. wipeConfigDir below is NOT part of this trigger grid — it
+// happened. wipeConfigDir below is NOT part of this trigger grid, it
 // backs the unrelated, explicitly confirmed /sec-clear-all, which DOES
 // delete the file on purpose.
 //
-// Does NOT exit the process and does NOT promote duress itself — purely
+// Does NOT exit the process and does NOT promote duress itself, purely
 // the data mutation. The caller (runOnce's own loop, see nukeRequested)
 // calls session.PromoteDuress() right after and loops, keeping Tor/I2P
-// and the process alive — see that loop's own doc comment.
+// and the process alive, see that loop's own doc comment.
 //
 // Also guarantees the triggering real identity's own slot never survives
 // this trigger: after the contact overwrite above is committed, its
 // slot is overwritten with fresh random bytes (keystore.ObliterateSlot)
-// and the container written back to disk — unconditionally, regardless
+// and the container written back to disk, unconditionally, regardless
 // of whether any contact existed to overwrite: otherwise a cold restart
 // after /nukex would still open the real identity with the real
 // password (same principle as ObliterateOtherSlots for duress typed at
@@ -3648,7 +3648,7 @@ func secureDelete(path string, passes int) error {
 // this one slot, never every other slot in the file (unlike the
 // login-time case): another real identity sharing the same keystore
 // file is a legitimate identity of its own, not implicated by this
-// trigger — same scoping already applied to the sibling device-sync
+// trigger, same scoping already applied to the sibling device-sync
 // fan-out a few lines above this call's own caller.
 func runNukeOverwriteInPlace(session *keystore.UnlockedSlot, ksPath string) {
 	duressIdx, duressKi, duressPlain, emptied, err := session.OverwriteAllContacts()
@@ -3661,11 +3661,11 @@ func runNukeOverwriteInPlace(session *keystore.UnlockedSlot, ksPath string) {
 }
 
 // wipeConfigDir overwrites and deletes every file in ksPath's directory
-// — keystore, config.json, tor_bridges, any backup/QR file saved there,
-// and any future file with the same need — then removes the now-empty
+// keystore, config.json, tor_bridges, any backup/QR file saved there,
+// and any future file with the same need, then removes the now-empty
 // directory itself. Falls back to just the keystore and its config file
 // if enumerating the directory fails. Called only after an
-// explicit, confirmed action (/sec-clear-all) — never by a nuke trigger,
+// explicit, confirmed action (/sec-clear-all), never by a nuke trigger,
 // which must never delete the file (see runNukeOverwriteInPlace above).
 func wipeConfigDir(ksPath string) {
 	configDir := filepath.Dir(ksPath)
@@ -3811,7 +3811,7 @@ func runRestore() {
 
 	duressUsername, duressPasswordIdentity := promptDuressSetup(pwdIdentity)
 	// keystore.New directly, not createIdentity: see runWizard's own
-	// identical comment — the decoy never publishes a QR here either.
+	// identical comment, the decoy never publishes a QR here either.
 	duress, err := keystore.New(duressUsername)
 	if err != nil {
 		fatal(i18n.T("wizard.err_identity_key", err))
@@ -3823,7 +3823,7 @@ func runRestore() {
 	fmt.Print(i18n.T("restore.keystore_saved", ksPath))
 }
 
-// runShowQR displays the current identity's QR code — as a static
+// runShowQR displays the current identity's QR code, as a static
 // multi-part image (printAndSaveQR, also saved to disk) or as a
 // continuous fountain-code stream (sendAnimatedQRLoop, same mechanism
 // as "qr send", nothing saved to disk), the user's choice.

@@ -78,7 +78,7 @@ func waitRoomUsers(t *testing.T, in *Instance, room string, n int) []string {
 }
 
 // TestRoomHomonymMembers: two members with the same username but
-// different identity keys are two distinct members of the same room —
+// different identity keys are two distinct members of the same room,
 // each listed, shown and acknowledging on its own, told apart by its key
 // fingerprint, also by the member who shares their name.
 func TestRoomHomonymMembers(t *testing.T) {

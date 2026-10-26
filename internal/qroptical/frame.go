@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Package qroptical generates and reconstructs a fountain-coded transfer
-// (internal/fountain) over a sequence of animated QR codes — sender and
+// (internal/fountain) over a sequence of animated QR codes, sender and
 // receiver need no network: one screen cycles through QR frames, the other
 // reads them with a camera until it has collected enough.
 package qroptical
@@ -39,7 +39,7 @@ var frameEncoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
 // framePrefix distinguishes a frame of this protocol from any QR code that
 // ends up in the camera's field of view by mistake (e.g. an identity QR or
-// another contact's) — silently discarded by DecodeFrame, never a fatal
+// another contact's), silently discarded by DecodeFrame, never a fatal
 // error for the caller.
 const framePrefix = "NQF1:"
 
@@ -47,17 +47,17 @@ const framePrefix = "NQF1:"
 const headerLen = 4 + 4 + 2 + 2 + 4
 
 // DefaultBlockSize is the default block size: header(16) + data(120) = 136
-// raw bytes, ~218 characters after base32 plus the prefix — comfortably
+// raw bytes, ~218 characters after base32 plus the prefix, comfortably
 // within a moderate-version QR code (readable at typical webcam distance)
 // while leaving margin for Medium error correction.
 const DefaultBlockSize = 120
 
-// EncodeFrame produces the text of a QR frame — pure ASCII (prefix +
+// EncodeFrame produces the text of a QR frame, pure ASCII (prefix +
 // base32, see frameEncoding above), never raw bytes: the QR decoding
 // library (gozxing) returns a Go string whose byte representation is not
 // guaranteed identical to the original content for values beyond 7-bit
 // ASCII (the same reason the contact list/backup already use base64 text
-// in QR codes, not raw bytes — base32 here instead of base64 for the
+// in QR codes, not raw bytes, base32 here instead of base64 for the
 // additional, frame-specific reason in frameEncoding's own comment).
 func EncodeFrame(transferID, totalLen uint32, k, blockSize uint16, sym fountain.Symbol) string {
 	buf := make([]byte, headerLen+len(sym.Data))
@@ -70,7 +70,7 @@ func EncodeFrame(transferID, totalLen uint32, k, blockSize uint16, sym fountain.
 	return framePrefix + frameEncoding.EncodeToString(buf)
 }
 
-// decodedFrame is a frame's content after parsing — fields kept separate
+// decodedFrame is a frame's content after parsing, fields kept separate
 // from Symbol because TransferID/TotalLen/K/BlockSize are transfer
 // metadata, not part of the fountain symbol itself.
 type decodedFrame struct {
@@ -82,7 +82,7 @@ type decodedFrame struct {
 
 // DecodeFrame inverts EncodeFrame. Returns an error for any text that isn't
 // a frame of this protocol (missing prefix, invalid base32, truncated
-// header, or data size inconsistent with blockSize) — the caller
+// header, or data size inconsistent with blockSize), the caller
 // (Receiver.AddFrameText) treats it as "ignore and continue", never as a
 // fatal transfer error.
 func decodeFrame(text string) (decodedFrame, error) {

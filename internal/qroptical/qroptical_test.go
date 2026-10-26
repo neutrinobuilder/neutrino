@@ -52,16 +52,16 @@ func TestSenderReceiverRoundTrip(t *testing.T) {
 // TestRoundTripThroughRealQRImages checks that a frame's text survives a
 // real QR round trip (text -> PNG -> image -> decode) using the same
 // libraries already used elsewhere in the project for identity/backup/sync
-// — direct proof that choosing pure ASCII (base32) over raw bytes in the
+// direct proof that choosing pure ASCII (base32) over raw bytes in the
 // frame loses nothing on the real camera path.
 //
 // A frame that gozxing fails to decode (observed empirically on a minority
-// of frames, even at 512px — a limitation of the library pair in use, not
+// of frames, even at 512px, a limitation of the library pair in use, not
 // introduced by this package) is simply discarded, exactly as
 // ScanCameraContinuous would do with a blurry frame read from a real
 // camera: this is precisely the case fountain coding exists to tolerate.
 // The test therefore checks that the TEXT, whenever decoding succeeds, is
-// always byte-for-byte identical to the original (no silent corruption) —
+// always byte-for-byte identical to the original (no silent corruption),
 // not that every single frame always decodes.
 func TestRoundTripThroughRealQRImages(t *testing.T) {
 	payload := bytes.Repeat([]byte{0, 1, 2, 3, 254, 255, 128, 127}, 40) // non-ASCII bytes in the original PAYLOAD

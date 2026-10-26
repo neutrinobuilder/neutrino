@@ -27,11 +27,11 @@ import (
 
 // watchCtxDeadline arms a watcher goroutine that, if ctx expires/is
 // canceled before stop() is called, forces conn.SetDeadline into the
-// past — immediately unblocking an in-flight Read/Write (or a
+// past, immediately unblocking an in-flight Read/Write (or a
 // subsequent one). Needed because the SAM v3 protocol below is plain
 // text over a bufio.ReadWriter (rw.ReadString), which otherwise has no
 // way to honor ctx after the initial TCP connect (that part is already
-// honored by net.Dialer.DialContext, in samDialRaw) — a slow or stuck
+// honored by net.Dialer.DialContext, in samDialRaw), a slow or stuck
 // SAM bridge (i2pd) would otherwise leave the caller hanging
 // indefinitely, ignoring any timeout set on ctx (e.g. the 90s per
 // attempt of Client.ConnectWithRetry). The caller MUST `defer stop()`
@@ -40,7 +40,7 @@ import (
 // intends to reuse beyond this single call, e.g. the SAM session's
 // control connection); if instead it expires BEFORE stop() is called,
 // the caller itself interprets the resulting read error and closes
-// conn — never a "successful" return with a residual deadline still
+// conn, never a "successful" return with a residual deadline still
 // active.
 func watchCtxDeadline(ctx context.Context, conn net.Conn) (stop func()) {
 	done := make(chan struct{})
@@ -115,7 +115,7 @@ func samDialRaw(ctx context.Context, samAddr string) (net.Conn, *bufio.ReadWrite
 // connection must be kept open for the session's whole lifetime: closing
 // it terminates the session on the i2pd side. destination is
 // "TRANSIENT" for an ephemeral destination, or the base64 blob (I2P
-// alphabet) of a private destination — see shared.I2PDestinationPriv.
+// alphabet) of a private destination, see shared.I2PDestinationPriv.
 func samSessionCreate(ctx context.Context, samSockAddr, sessionID, destination string) (net.Conn, error) {
 	conn, rw, err := samDialRaw(ctx, samSockAddr)
 	if err != nil {
@@ -170,7 +170,7 @@ func (l *samListener) Accept() (net.Conn, error) {
 			return nil, err
 		}
 		// l.ctx, not a per-call ctx: Accept() implements net.Listener, no
-		// ctx parameter is available — l.ctx is still the correct lifetime
+		// ctx parameter is available, l.ctx is still the correct lifetime
 		// context to honor here, canceled by Close() (below): without this
 		// watcher, a Close() during an in-flight STREAM ACCEPT would leave
 		// Accept() blocked forever, ctx canceled or not.

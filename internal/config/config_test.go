@@ -141,7 +141,7 @@ func TestDurationMethodsFallBackOnInvalidValue(t *testing.T) {
 
 // TestFallbackDurationsMatchDefault checks that each *Duration() method's
 // internal fallback matches the value config.Default() actually writes to
-// disk for a fresh install — never observable with a well-formed
+// disk for a fresh install, never observable with a well-formed
 // config.json (the fallback only triggers on an empty/corrupt value), but
 // otherwise a value diverging from what the config file and public manuals
 // document.

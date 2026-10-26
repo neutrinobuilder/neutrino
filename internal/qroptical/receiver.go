@@ -36,7 +36,7 @@ func NewReceiver() *Receiver {
 // AddFrameText processes the text of a frame just decoded from the camera.
 // Silently ignores: text that isn't a frame of this protocol (e.g. an
 // ordinary QR code that ended up in the field of view by mistake) and
-// frames with a transferID different from the one first observed — a
+// frames with a transferID different from the one first observed, a
 // second sender/animated QR must not be able to corrupt a transfer already
 // in progress.
 func (r *Receiver) AddFrameText(text string) {
@@ -55,14 +55,14 @@ func (r *Receiver) AddFrameText(text string) {
 }
 
 // Started reports whether at least one valid frame has already been
-// recognized — useful for a UI to distinguish "waiting for the first frame"
+// recognized, useful for a UI to distinguish "waiting for the first frame"
 // from "transfer in progress, k blocks known so far".
 func (r *Receiver) Started() bool { return r.haveTransfer }
 
 // Done reports whether the payload has been fully reconstructed.
 func (r *Receiver) Done() bool { return r.haveTransfer && r.dec.Done() }
 
-// Progress returns (blocks known, total blocks) — (0,0) while Started() is
+// Progress returns (blocks known, total blocks), (0,0) while Started() is
 // still false. For a progress UI only.
 func (r *Receiver) Progress() (known, total int) {
 	if !r.haveTransfer {
@@ -71,7 +71,7 @@ func (r *Receiver) Progress() (known, total int) {
 	return r.dec.Progress()
 }
 
-// Bytes returns the reconstructed payload — nil while Done() is still false.
+// Bytes returns the reconstructed payload, nil while Done() is still false.
 func (r *Receiver) Bytes() []byte {
 	if !r.Done() {
 		return nil

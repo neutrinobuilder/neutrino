@@ -62,7 +62,7 @@ func newCapturingTestWSConnTUI(t *testing.T) (*websocket.Conn, <-chan map[string
 
 // selfEchoFrameFromSent builds the "message" frame the server would send
 // back to the sender (self-echo, roomDelivery.Dispatch) starting from the
-// EXACT frame captured on the outgoing wire — the same fields
+// EXACT frame captured on the outgoing wire, the same fields
 // wsRawMsgData actually carries (kid/text/idx/mseq/msg_id unchanged,
 // gseq/from_user_id/timestamp added by the server).
 func selfEchoFrameFromSent(sent map[string]any, gseq uint64, selfUserID string) map[string]any {
@@ -109,7 +109,7 @@ func TestSelfEchoSecondMessageStopsShowingOwnText(t *testing.T) {
 		t.Fatalf("self-echo #1: want 1 line (\"first\", me), got %#v", lines1)
 	}
 
-	// Second message of our own — same pattern.
+	// Second message of our own, same pattern.
 	if _, err := cli.Send(context.Background(), "second", nil); err != nil {
 		t.Fatalf("Send #2: %v", err)
 	}

@@ -25,7 +25,7 @@ import (
 // saved contact) and the shared duress one, log in once with the
 // duress combination (same branch unlockKeystoreSession takes), then
 // confirm a second, independent load with the real combination no
-// longer opens anything — on disk, not just in memory.
+// longer opens anything, on disk, not just in memory.
 func TestDuressLoginObliteratesRealIdentityOnDisk(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "keystore.json")
 
@@ -112,7 +112,7 @@ func TestObliterateOtherSlotsDestroysEveryOtherSlot(t *testing.T) {
 		t.Fatal("real slot still opens after obliteration")
 	}
 	// Nothing in the file should open under the real combination at
-	// all — not just the index it used to live at.
+	// all, not just the index it used to live at.
 	for i, s := range c.Slots {
 		if i == duressIdx {
 			continue
@@ -127,7 +127,7 @@ func TestObliterateOtherSlotsDestroysEveryOtherSlot(t *testing.T) {
 		t.Fatal("duress slot was altered by ObliterateOtherSlots")
 	}
 
-	// Every slot's total byte size must be unchanged — no size tell.
+	// Every slot's total byte size must be unchanged, no size tell.
 	for i, s := range c.Slots {
 		gotLen := len(s.Salt) + len(s.WrapNonce) + len(s.WrappedKi) + len(s.ContentNonce) + len(s.Content)
 		if gotLen != origLens[i] {
@@ -140,7 +140,7 @@ func TestObliterateOtherSlotsDestroysEveryOtherSlot(t *testing.T) {
 // sequence runNukeOverwriteInPlace (cmd/main.go) follows after a
 // /nukex-class trigger: a real identity ("alice") shares the file with
 // an INDEPENDENT other real identity ("bob", never touched by alice's
-// own trigger — e.g. a sibling identity in the same file) plus the
+// own trigger, e.g. a sibling identity in the same file) plus the
 // shared duress identity. After obliterating ONLY alice's own slot, her
 // combination must no longer open anything, bob's must still work
 // completely unchanged, and duress must still work too.
@@ -194,7 +194,7 @@ func TestNukexObliteratesOnlyTheTriggeringRealIdentity(t *testing.T) {
 		t.Fatalf("alice login still works after her own nukex obliteration: ok=%v err=%v", ok, err)
 	}
 
-	// bob — an unrelated real identity sharing the same file — must be
+	// bob, an unrelated real identity sharing the same file, must be
 	// completely unaffected: alice's trigger must never implicate him.
 	bobSession, ok, err := LoadAndUnlock(path, "file-pw", "bob-pw")
 	if err != nil || !ok {

@@ -26,7 +26,7 @@ import (
 )
 
 // startEchoServer starts a local TCP server that echoes back every byte it
-// receives — the simulated "upstream" of the CONNECT tunnel, keeping the
+// receives, the simulated "upstream" of the CONNECT tunnel, keeping the
 // whole test local and deterministic (no real DoH query: the CONNECT host is
 // always a literal IP, so Lookup resolves it without network access).
 func startEchoServer(t *testing.T) net.Listener {
@@ -220,7 +220,7 @@ func TestProxyCloseStopsAccepting(t *testing.T) {
 // TestProxyClosesConnectionOnSilentClient checks that a client which
 // connects and never sends a complete CONNECT line still gets its connection
 // closed within a bounded time (the 10s read deadline in handleConn) instead
-// of blocking that goroutine indefinitely — the 2048-byte cap alone limits
+// of blocking that goroutine indefinitely, the 2048-byte cap alone limits
 // only how much is read, not how long it may take. Slow by construction
 // (waits for the real deadline).
 func TestProxyClosesConnectionOnSilentClient(t *testing.T) {

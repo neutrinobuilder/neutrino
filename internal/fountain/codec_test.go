@@ -22,7 +22,7 @@ import (
 )
 
 // decodeWithSymbols simulates the symbols->decoder flow without going
-// through a real QR channel — used by every round-trip test below.
+// through a real QR channel, used by every round-trip test below.
 func decodeWithSymbols(t *testing.T, enc *Encoder, totalLen int, symbolIDs []uint32) []byte {
 	t.Helper()
 	dec := NewDecoder(enc.K(), enc.BlockSize(), totalLen)
@@ -39,7 +39,7 @@ func decodeWithSymbols(t *testing.T, enc *Encoder, totalLen int, symbolIDs []uin
 }
 
 // TestRoundTripSequentialIDs covers the simplest case: sequential symbols,
-// no loss — must always complete with a number of symbols not much larger
+// no loss, must always complete with a number of symbols not much larger
 // than k (typical overhead ~10-20%).
 func TestRoundTripSequentialIDs(t *testing.T) {
 	sizes := []int{1, 17, 100, 1000, 65536}
@@ -66,7 +66,7 @@ func TestRoundTripSequentialIDs(t *testing.T) {
 }
 
 // TestRoundTripRandomIDsWithLossAndDuplicates is the realistic case for an
-// optical channel: random IDs (non-sequential — a sender might generate
+// optical channel: random IDs (non-sequential, a sender might generate
 // them this way to avoid coordinating shared state), with duplicates (the
 // same frame read multiple times) and simulated "loss" (a subset of
 // symbols never generated/delivered).
@@ -97,7 +97,7 @@ func TestRoundTripRandomIDsWithLossAndDuplicates(t *testing.T) {
 }
 
 // TestDecodeStallsWithTooFewSymbols checks that the decoder does NOT
-// falsely report Done() with too few symbols — no false positives.
+// falsely report Done() with too few symbols, no false positives.
 func TestDecodeStallsWithTooFewSymbols(t *testing.T) {
 	payload := bytes.Repeat([]byte("x"), 5000)
 	enc, err := NewEncoder(payload, 50) // k=100
@@ -144,7 +144,7 @@ func TestSingleBlockAndEmptyPayload(t *testing.T) {
 }
 
 // TestOverheadStaysReasonable empirically measures how many symbols are
-// needed to complete relative to k, on sequential IDs with no loss —
+// needed to complete relative to k, on sequential IDs with no loss,
 // guards against a future change to the distribution silently degrading
 // overhead. A tolerance of up to 1.5×k avoids making the test fragile on a
 // single seed, while a much worse systematic overhead would indicate a
@@ -168,7 +168,7 @@ func TestOverheadStaysReasonable(t *testing.T) {
 }
 
 // TestSymbolIndicesDeterministic checks the property the whole protocol
-// relies on: same ID + same k => same set of indices, always — this is
+// relies on: same ID + same k => same set of indices, always, this is
 // what lets encoder and decoder never exchange the degree or the indices,
 // only the ID.
 func TestSymbolIndicesDeterministic(t *testing.T) {

@@ -21,10 +21,10 @@ import (
 	"sync"
 )
 
-// dbgMu/dbgFn — optional debug hook, same role as client.Dbg
+// dbgMu/dbgFn, optional debug hook, same role as client.Dbg
 // (internal/client/debug.go) but DEFINED HERE and not imported from there:
 // internal/client (client_test.go/handshake_test.go) already imports
-// internal/server for handshake end-to-end tests — a direct import of
+// internal/server for handshake end-to-end tests, a direct import of
 // internal/client from this package would create a cycle ("import cycle not
 // allowed in test"). The caller (cmd/main.go) wires
 // SetDebug(client.Dbg) from outside both packages, where no cycle exists.
@@ -33,7 +33,7 @@ var (
 	dbgFn func(msg string)
 )
 
-// SetDebug installs (or removes, with nil) this package's debug sink —
+// SetDebug installs (or removes, with nil) this package's debug sink,
 // receives an already-formatted line (never a format string, to avoid
 // risking an unintended reinterpretation of '%' in the message).
 // Thread-safe, no default: without an explicit call, dbg() is a silent
@@ -44,7 +44,7 @@ func SetDebug(fn func(msg string)) {
 	dbgMu.Unlock()
 }
 
-// dbg emits a debug line if a sink is installed — see handleKnock, which
+// dbg emits a debug line if a sink is installed, see handleKnock, which
 // uses it to make the KnockDHTag mutuality filter and any DecryptKnock
 // failure visible (internal/client's `neutrino debug` mechanism only logs
 // client-side, after a knock has already passed this filter).
@@ -58,7 +58,7 @@ func dbg(format string, args ...any) {
 	fn(fmt.Sprintf(format, args...))
 }
 
-// dbgActive reports whether a sink is installed — used by the WS channel
+// dbgActive reports whether a sink is installed, used by the WS channel
 // trace (hub.go) to avoid paying for fmt.Sprintf/json.Unmarshal on every
 // frame when debug isn't active.
 func dbgActive() bool {
@@ -68,7 +68,7 @@ func dbgActive() bool {
 	return active
 }
 
-// shortUID returns the first 8 characters of a userID for logs — same
+// shortUID returns the first 8 characters of a userID for logs, same
 // convention as client.ShortUID, duplicated here because this package can't
 // import internal/client (see the comment on dbgFn above).
 func shortUID(uid string) string {
@@ -79,7 +79,7 @@ func shortUID(uid string) string {
 }
 
 // peekFrameType reads only the "type" field from an already-serialized
-// frame, for the WS channel trace — never called when dbgActive() is false.
+// frame, for the WS channel trace, never called when dbgActive() is false.
 func peekFrameType(data []byte) string {
 	var t struct {
 		Type string `json:"type"`

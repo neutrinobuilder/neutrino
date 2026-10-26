@@ -35,7 +35,7 @@ type testMsg struct {
 
 // newTestHub starts a test WS server that registers each connection in hub
 // under the id passed as a query param, then keeps reading until the client
-// closes — mimics the real read loop in ws.go, necessary because
+// closes, mimics the real read loop in ws.go, necessary because
 // Broadcast/Multicast only detect dead connections on the first failed
 // Write.
 func newTestHub(t *testing.T, ids []string) (hub *serverhs.Hub, conns map[string]*websocket.Conn) {
@@ -165,11 +165,11 @@ func TestHubSendUnknownUserIsNoop(t *testing.T) {
 
 // TestHubSendConcurrentWithUnregisterNoRace guards against a TOCTOU race:
 // Send/SendBytes must never release h.mu.RUnlock() BEFORE enqueue(oc, data)
-// — if another goroutine called Unregister(userID) in that window (e.g.
+// if another goroutine called Unregister(userID) in that window (e.g.
 // writeLoop itself on its first write error), oc.outCh would get closed
 // right there, and enqueue would write to a closed channel: an immediate Go
 // panic ("send on closed channel"), not interceptable from its own
-// select/default — kills the whole process, not just the connection
+// select/default, kills the whole process, not just the connection
 // involved. enqueue must stay under the same RLock as the lookup, same
 // pattern already used by broadcastRaw/multicastRaw. This test fires
 // concurrent Send/SendBytes and Unregister/Register on the same userID for

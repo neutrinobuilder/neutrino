@@ -215,7 +215,7 @@ func TestGroupAddMember(t *testing.T) {
 	alice.Wait("Console", `cannot add members to a two-person chat`, from, shortWait)
 }
 
-// TestGroupBan: the host removes a member for good — they drop out of
+// TestGroupBan: the host removes a member for good, they drop out of
 // the room and their own reconnection is refused, while the others keep
 // talking; banning oneself or banning as a member is refused.
 func TestGroupBan(t *testing.T) {
@@ -265,7 +265,7 @@ func roomUsers(in *Instance, room string) []string {
 }
 
 // TestGroupPromote: two members introduced by the host's group promote
-// each other to real contacts — both sides have to ask — and can then
+// each other to real contacts, both sides have to ask, and can then
 // open a room of their own. Promoting an existing contact, or outside a
 // room, is refused.
 func TestGroupPromote(t *testing.T) {

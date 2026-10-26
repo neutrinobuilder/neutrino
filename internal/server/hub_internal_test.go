@@ -28,7 +28,7 @@ import (
 
 // TestWriteLoopDrainsAndZeroesQueueOnError verifies that on the first
 // write error, writeLoop drains and zeroes every frame still queued in
-// oc.outCh, not just the one that just failed — otherwise the remaining
+// oc.outCh, not just the one that just failed, otherwise the remaining
 // frames would stay unzeroed on the heap until garbage collection,
 // contradicting zeroBytes's stated goal ("sensitive payload bytes do not
 // linger"). Internal package (not server_test) to inspect
@@ -40,7 +40,7 @@ func TestWriteLoopDrainsAndZeroesQueueOnError(t *testing.T) {
 	// srvConnCh delivers the SERVER-SIDE connection: writeLoop is started
 	// by hand below (not through hub.Register, which would spawn its own
 	// goroutine with no way for the test to know when it's done) to get a
-	// clean completion signal (done, below) instead of polling ConnCount —
+	// clean completion signal (done, below) instead of polling ConnCount,
 	// the latter updates as soon as Unregister removes the entry from the
 	// map, BEFORE writeLoop has finished draining the rest of the queue:
 	// reading the payloads right after seeing ConnCount==0 would be a
@@ -89,11 +89,11 @@ func TestWriteLoopDrainsAndZeroesQueueOnError(t *testing.T) {
 	// error path.
 	clientConn.CloseNow()
 
-	// Queues several frames right after — with good probability they land
+	// Queues several frames right after, with good probability they land
 	// in the channel buffer before writeLoop completes the first failed
 	// Write, leaving more than one "queued" at the moment of the error.
 	// Under hub.mu.RLock(), as all real callers of enqueue do
-	// (Send/SendBytes/broadcastRaw/multicastRaw) — enqueue has no internal
+	// (Send/SendBytes/broadcastRaw/multicastRaw), enqueue has no internal
 	// synchronization of its own, the caller's contract is to hold the
 	// RLock to exclude a concurrent Unregister (and thus a
 	// close(oc.outCh)); without it, this would be a genuine race in the
@@ -107,7 +107,7 @@ func TestWriteLoopDrainsAndZeroesQueueOnError(t *testing.T) {
 	}
 
 	// clean happens-before: the test reads the payloads only AFTER
-	// receiving from done, which writeLoop closes only when finished —
+	// receiving from done, which writeLoop closes only when finished,
 	// drain included.
 	select {
 	case <-done:

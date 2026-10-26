@@ -156,7 +156,7 @@ func TestApplyRootRotateAckUpdatesPending(t *testing.T) {
 
 // TestCmdStartRelRotationRejectsWhileRootRotationPending covers the inverse
 // guard: starting a Rel rotation while a root rotation is still pending
-// toward the same contact must be rejected — never two concurrent
+// toward the same contact must be rejected, never two concurrent
 // transitions on the same relationship.
 func TestCmdStartRelRotationRejectsWhileRootRotationPending(t *testing.T) {
 	bobPub, _, _ := ed25519.GenerateKey(rand.Reader)

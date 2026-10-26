@@ -79,7 +79,7 @@ func SeedFromMnemonic(words []string) ([]byte, error) {
 // ExportBackupFile encrypts the whole keystore with a key derived from
 // the BIP-39 seed.
 // Binary format: magic[8] | nonce[12] | AES-256-GCM(json(keystore))
-// The file is useless without the 24 words — it doesn't contain the encryption key.
+// The file is useless without the 24 words, it doesn't contain the encryption key.
 func (ks *Keystore) ExportBackupFile() ([]byte, error) {
 	if len(ks.IdentityKey) < 32 {
 		return nil, errors.New(i18n.T("keystore.err_invalid_identity_key"))
@@ -120,11 +120,11 @@ func (ks *Keystore) ExportBackupFile() ([]byte, error) {
 
 // ImportFromMnemonic creates a minimal keystore (identity only) from
 // the 24 BIP-39 words. Restores the .onion address but not the
-// contacts — use ImportFromBackupFile for a full restore.
+// contacts, use ImportFromBackupFile for a full restore.
 //
 // The durable ML-KEM-768 key CANNOT be reconstructed from the BIP-39
 // seed (which encodes only the Ed25519 seed, never extended to cover
-// ML-KEM too) — it's generated fresh, always new on every restore from
+// ML-KEM too), it's generated fresh, always new on every restore from
 // just the 24 words. A "bare" restore from just the 24 words starts over
 // from scratch anyway, with no existing contacts it could fall out of
 // sync with.
@@ -217,7 +217,7 @@ func (ks *Keystore) ExportQR() ([]byte, error) {
 }
 
 // ExportQRAnimated returns the same encrypted payload as ExportQR,
-// without the 2953-byte limit of a single QR frame — meant for transfer
+// without the 2953-byte limit of a single QR frame, meant for transfer
 // via animated QR (fountain code, internal/qroptical), which has no
 // per-frame size constraint. An additional mode alongside
 // ExportQR/ExportQRMulti, not a replacement for them: the caller decides
@@ -238,7 +238,7 @@ func (ks *Keystore) ExportQRMulti() ([][]byte, error) {
 	return ChunkBlob(data)
 }
 
-// ChunkBlob splits data into NTR3 chunks for multiple QR codes —
+// ChunkBlob splits data into NTR3 chunks for multiple QR codes,
 // format-agnostic, doesn't require data to be an encrypted
 // keystore/contact list: also reused for the identity URI when it
 // exceeds a single QR's capacity, exactly as it already does for
@@ -246,11 +246,11 @@ func (ks *Keystore) ExportQRMulti() ([][]byte, error) {
 //
 // Bytes are spread EVENLY across the chunks, not greedily filled
 // chunk-by-chunk: with an uneven split, the leading chunks sit pinned at
-// qrChunkSize — the exact ceiling of level M's per-frame capacity — every
+// qrChunkSize, the exact ceiling of level M's per-frame capacity, every
 // time, landing on the highest QR version that capacity allows. Measured
 // directly (encode a chunk at that size, decode it back immediately, no
 // corruption/recompression involved): roughly 1 in 10 otherwise-valid
-// renders at that version fails to decode at all — a gozxing detection
+// renders at that version fails to decode at all, a gozxing detection
 // limitation at near-maximum versions, not a rendering or error-
 // correction margin problem (Medium's own ~15% redundancy is unused
 // here, there's no damage to recover from). An even split keeps `total`
@@ -268,7 +268,7 @@ func ChunkBlob(data []byte) ([][]byte, error) {
 	if total > 255 {
 		return nil, errors.New(i18n.T("keystore.err_data_too_large"))
 	}
-	// Ceiling of an even split — never exceeds qrChunkSize, since total
+	// Ceiling of an even split, never exceeds qrChunkSize, since total
 	// was already computed as the ceiling of len(data)/qrChunkSize.
 	chunkSize := qrChunkSize
 	if total > 0 {
@@ -324,7 +324,7 @@ func (ks *Keystore) ExportSyncQRMulti() ([][]byte, error) {
 
 // IsMultiQRChunk reports whether data is a single chunk of the NTR3
 // format (ChunkBlob/AssembleQRMulti) instead of a complete single-frame
-// QR content — used by the caller to decide whether to accumulate more
+// QR content, used by the caller to decide whether to accumulate more
 // scans before proceeding (e.g. reading an identity URI) instead of
 // treating the content as already complete.
 func IsMultiQRChunk(data []byte) bool {
@@ -332,7 +332,7 @@ func IsMultiQRChunk(data []byte) bool {
 }
 
 // QRMultiPartTotal reads part/total from an NTR3 chunk's header (already
-// verified with IsMultiQRChunk) — (0, 0, false) if the chunk is malformed.
+// verified with IsMultiQRChunk), (0, 0, false) if the chunk is malformed.
 func QRMultiPartTotal(data []byte) (part, total int, ok bool) {
 	if len(data) < 10 || string(data[:4]) != exportQRMulti {
 		return 0, 0, false
@@ -365,11 +365,11 @@ func AssembleQRMulti(chunks [][]byte) ([]byte, error) {
 		if part >= total {
 			return nil, errors.New(i18n.T("keystore.err_chunk_out_of_range", part, total))
 		}
-		// Every chunk carries its own total field (byte 5) — only
+		// Every chunk carries its own total field (byte 5), only
 		// chunks[0]'s is used above to size ordered/validate part;
 		// without this check a chunk with a different total (corrupted,
 		// or swapped in from another session with a matching
-		// session_id by coincidence) would go unnoticed here — the
+		// session_id by coincidence) would go unnoticed here, the
 		// error would only surface later, indirectly, from AES-GCM
 		// failing on the badly concatenated result, instead of a direct
 		// message here.
@@ -450,7 +450,7 @@ func ImportFromBackupFile(words []string, data []byte) (*Keystore, error) {
 	}
 
 	// This restore (24 words + file) is the BIRTH of an additional
-	// device — unlike ImportFromMnemonic (just the 24 words, the total
+	// device, unlike ImportFromMnemonic (just the 24 words, the total
 	// disaster path, never touched here), here the file carries a
 	// DeviceID/DevicePriv/DevicePub that belong to the backup's ORIGIN
 	// device, never to this one: without regenerating them, two devices
@@ -474,21 +474,21 @@ func ImportFromBackupFile(words []string, data []byte) (*Keystore, error) {
 	ks.AdditionalDevice = true
 
 	// Already-confirmed relationship keys must NOT be cloned from the
-	// backup — without this zeroing, an additional device would be born
+	// backup, without this zeroing, an additional device would be born
 	// cryptographically indistinguishable from the origin device toward
 	// every already-confirmed contact: whoever obtains the 24 words PLUS
 	// the backup file (legitimate or stolen, the two situations aren't
 	// distinguishable) would silently inherit already-established trust,
 	// never passing through the TrustDanger gate. The additional device
 	// must renegotiate its relationship with each contact from scratch,
-	// exactly like a new device meeting it for the first time — the
+	// exactly like a new device meeting it for the first time, the
 	// periodic probe cycle already generates the missing keys on the fly
 	// and resends a rel_init, no additional action required here. There
 	// is a priori no way to know whether the origin device is broken,
-	// lost, stolen, or the user simply wants a second device — none of
+	// lost, stolen, or the user simply wants a second device, none of
 	// these hypotheses is assumed: every contact starts from a blank
 	// slate, uniformly.
-	// Zeroing empties the whole Devices map of each contact — an
+	// Zeroing empties the whole Devices map of each contact, an
 	// additional device never
 	// inherits an entry already negotiated by another device.
 	for i := range ks.Contacts {
@@ -510,13 +510,13 @@ func ImportFromBackupFile(words []string, data []byte) (*Keystore, error) {
 // incoming wins on conflict (more recent source device).
 //
 // fromDevicePub identifies the SIBLING device that produced incoming
-// (32 bytes, Keystore.DevicePub — not DeviceID: it's the value that
+// (32 bytes, Keystore.DevicePub, not DeviceID: it's the value that
 // ends up in a future RelRevokePayload's DevicePub field if this
-// sibling has to resend the revocation) — used to correctly attribute
+// sibling has to resend the revocation), used to correctly attribute
 // every self-revocation certificate found in incoming[i].Devices to the
 // Contact.SiblingRevocations pool (see mergeSiblingRevocationsLocked
 // below). Empty for a source that carries no device identifier (e.g.
-// manual sync via file/QR, NTRINO03/ImportSync — no revocation is
+// manual sync via file/QR, NTRINO03/ImportSync, no revocation is
 // attributed in that case: that format carries no Device wrapper).
 func (ks *Keystore) MergeContacts(incoming []Contact, fromDevicePub []byte) (added, updated int) {
 	for _, inc := range incoming {
@@ -547,7 +547,7 @@ func (ks *Keystore) MergeContacts(incoming []Contact, fromDevicePub []byte) (add
 			// Same as ImportFromBackupFile: a contact synced from
 			// ANOTHER device of the same identity never inherits
 			// relationship keys or trust state already negotiated by
-			// that device — this device must negotiate them itself
+			// that device, this device must negotiate them itself
 			// (rel_init) and verify them itself.
 			inc.Devices = nil
 			inc.SiblingRevocations = nil
@@ -564,11 +564,11 @@ func (ks *Keystore) MergeContacts(incoming []Contact, fromDevicePub []byte) (add
 
 // mergeSiblingRevocationsLocked merges into the local contact's pool
 // (index idx in ks.Contacts) the sibling device revocations found in
-// incoming — both the DIRECT ones (incDevices, the sending sibling
+// incoming, both the DIRECT ones (incDevices, the sending sibling
 // device's OWN relationship, attributed to fromDevicePub) and the ones
 // already RELAYED transitively from other siblings
 // (incSiblingRevocations, propagated along with the rest of the contact
-// list) — never a private key, only ready-made signatures. Called by
+// list), never a private key, only ready-made signatures. Called by
 // MergeContacts both for a new contact and for an already-known one: a
 // later update (a sibling's new rotation, or an ack that arrived in the
 // meantime) must also propagate to an already-present contact, not just
@@ -581,7 +581,7 @@ func (ks *Keystore) mergeSiblingRevocationsLocked(idx int, fromDevicePub []byte,
 	upsert := func(sr SiblingRevocation) {
 		// Doesn't require a non-empty signature: a relay can propagate
 		// just an ack (Acked=true) for an entry already known elsewhere,
-		// without resending the signatures every time — the merge below
+		// without resending the signatures every time, the merge below
 		// still preserves the already-known ones. Only requires a valid
 		// device identity on both sides of the pair, otherwise the entry
 		// isn't indexable.

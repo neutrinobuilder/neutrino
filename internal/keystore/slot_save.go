@@ -23,9 +23,9 @@ import (
 )
 
 // UnlockedSlot bundles everything a session needs to later reseal
-// exactly the slots it has touched, leaving every other slot — other
+// exactly the slots it has touched, leaving every other slot, other
 // real identities never unlocked this session, every noise placeholder
-// — untouched byte for byte. Container is the whole file as read from
+// untouched byte for byte. Container is the whole file as read from
 // disk: SaveSlot/SaveWithDuress write it back in full, but only after
 // mutating this one identity's own slot (and, when applicable,
 // duress's).
@@ -44,7 +44,7 @@ type UnlockedSlot struct {
 
 // LoadAndUnlock reads path's whole container and unlocks one slot from
 // it in a single call. ok is false (err nil) when no slot answered to
-// this password combination — the same non-distinguishable outcome as
+// this password combination, the same non-distinguishable outcome as
 // UnlockSlot.
 func LoadAndUnlock(path, passwordFile, passwordIdentity string) (*UnlockedSlot, bool, error) {
 	c, err := ReadSlotContainer(path)
@@ -59,8 +59,8 @@ func LoadAndUnlock(path, passwordFile, passwordIdentity string) (*UnlockedSlot, 
 }
 
 // SaveSlot reseals u.Identity's current content into its own slot and
-// writes the whole container back to path. Every other slot — duress's
-// included — passes through unchanged: this call never needs, and
+// writes the whole container back to path. Every other slot, duress's
+// included, passes through unchanged: this call never needs, and
 // never has, their password or K_i. Runs entirely under the identity's
 // mu, so concurrent saves never interleave and the file always ends up
 // holding the latest one.
@@ -80,7 +80,7 @@ func (u *UnlockedSlot) SaveSlot(path string) error {
 
 // SaveWithDuress is SaveSlot plus resealing duress's own slot content
 // with duressPlain, under duressKi (obtained via DuressAccess, no
-// password needed) — used whenever this session's operation also wrote
+// password needed), used whenever this session's operation also wrote
 // into duress's mirrored content.
 func (u *UnlockedSlot) SaveWithDuress(path string, duressIdx int, duressKi, duressPlain []byte) error {
 	u.Identity.mu.Lock()

@@ -34,7 +34,7 @@ func typeAndEnter(t *testing.T, m model, text string) (model, tea.Cmd) {
 }
 
 // TestPasswordChangeUpdatesSessionPassword verifies that after a
-// successful /sec-passwd the new password — not the old one — is the one
+// successful /sec-passwd the new password, not the old one, is the one
 // /sec-backup checks for the rest of the session.
 func TestPasswordChangeUpdatesSessionPassword(t *testing.T) {
 	m := model{

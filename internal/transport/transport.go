@@ -57,7 +57,7 @@ func ParseKind(s string) (Kind, error) {
 }
 
 // extraKinds holds transports registered by build-tag-gated files that
-// are not part of the default build (empty here) — e.g. the loopback
+// are not part of the default build (empty here), e.g. the loopback
 // transport used by agent mode (build tag neutrino_agent).
 var extraKinds = map[Kind]func(ctx context.Context, cfg StartConfig) (Transport, error){}
 
@@ -87,10 +87,10 @@ type Transport interface {
 	HasCircuits() bool
 
 	// ProxyAddr returns the local "host:port" this network's traffic is
-	// routed through — Tor's SOCKS5 proxy, or i2pd's SAM bridge (NOT a
+	// routed through, Tor's SOCKS5 proxy, or i2pd's SAM bridge (NOT a
 	// SOCKS5 proxy: see DialerSAM in i2p.go). "" if unavailable. Used
 	// only to hand the pod (cmd/pod.go) a live network to inherit at
-	// trigger time (BuildPodSnapshot) — nothing else in this codebase
+	// trigger time (BuildPodSnapshot), nothing else in this codebase
 	// needs the raw address, every other caller goes through DialContext/
 	// DialerForToken instead.
 	ProxyAddr() string
@@ -107,13 +107,13 @@ type StartConfig struct {
 	// OnProgress is called on each bootstrap advancement (0-100); nil = silent.
 	OnProgress func(pct int)
 
-	// Bridges configures bridge use — Tor-specific, ignored by other
+	// Bridges configures bridge use, Tor-specific, ignored by other
 	// backends (I2P has no equivalent concept).
 	Bridges *tornode.BridgeConfig
 
 	// BridgesFallback, if not nil and Bridges is also not nil, is tried
 	// (tornode.StartTorBridges) if the Bridges bootstrap doesn't reach
-	// 100% within BridgeBootstrapTimeout — Tor-specific, ignored by
+	// 100% within BridgeBootstrapTimeout, Tor-specific, ignored by
 	// other backends, also ignored if Bridges is nil (no bridges means
 	// no fallback to try).
 	BridgesFallback *tornode.BridgeConfig
@@ -124,7 +124,7 @@ type StartConfig struct {
 
 	// OnBridgeFallback, if not nil, is called once if the Bridges
 	// bootstrap doesn't complete in time and the attempt with
-	// BridgesFallback starts — see tornode.StartTorBridges.
+	// BridgesFallback starts, see tornode.StartTorBridges.
 	OnBridgeFallback func()
 }
 

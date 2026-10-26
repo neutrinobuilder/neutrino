@@ -25,8 +25,8 @@ import (
 // dropIncomingTransfer for any transfer still active on the tab being
 // closed, so startIncomingChunkWriter does not stay blocked forever on
 // chunkCh (goroutine leak) and the already-written temporary file gets
-// cleaned up (file leak). Verifies both the removal from the map and —
-// indirectly, through the file disappearing from disk — that the writer
+// cleaned up (file leak). Verifies both the removal from the map and,
+// indirectly, through the file disappearing from disk, that the writer
 // goroutine actually received the abandon signal and exited.
 func TestCloseTabAtDropsActiveIncomingTransfer(t *testing.T) {
 	m := &model{
@@ -50,7 +50,7 @@ func TestCloseTabAtDropsActiveIncomingTransfer(t *testing.T) {
 	startIncomingChunkWriter(transferID, 10, chunkCh, abortCh, chunkResultCh)
 
 	// A real chunk, to make the writer goroutine create a real temporary
-	// file on disk — without this, closeTabAt would close a transfer that has
+	// file on disk, without this, closeTabAt would close a transfer that has
 	// nothing to clean up yet, not exercising the removal of the
 	// already-written file.
 	chunkCh <- incomingChunkJob{seq: 0, chunk: []byte("hello")}

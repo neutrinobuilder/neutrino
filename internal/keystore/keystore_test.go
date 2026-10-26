@@ -33,7 +33,7 @@ import (
 	"neutrino/internal/shared"
 )
 
-// contactNamed returns the only contact named username — test-only
+// contactNamed returns the only contact named username, test-only
 // helper: production code identifies contacts by identity key.
 func contactNamed(ks *keystore.Keystore, username string) (keystore.Contact, bool) {
 	for _, c := range ks.ContactsSnapshot() {
@@ -114,7 +114,7 @@ func TestWrongPassword(t *testing.T) {
 }
 
 // TestAddContactUpdate verifies that AddContact deduplicates by
-// IdentityPub (the real unique identity), not by Username — same
+// IdentityPub (the real unique identity), not by Username, same
 // username, same IdentityPub is an update (e.g. LocalName changed);
 // same IdentityPub with any other field different is still an update of
 // the same contact.
@@ -142,10 +142,10 @@ func TestAddContactUpdate(t *testing.T) {
 
 // TestAddContactSameUsernameDifferentPubCoexist verifies a real case: a
 // contact does a nuke and reappears with a new identity under the SAME
-// self-declared username — it must not be treated as an update of the
+// self-declared username, it must not be treated as an update of the
 // old contact (it would lose its real identity), the two must coexist,
 // distinguished by their real IdentityPub (the real unique identity,
-// never the name — see AddContact).
+// never the name, see AddContact).
 func TestAddContactSameUsernameDifferentPubCoexist(t *testing.T) {
 	ks, err := keystore.New("alice")
 	if err != nil {
@@ -254,7 +254,7 @@ func TestAddIdentitySharesDevice(t *testing.T) {
 // duress=nil, which would silently disable an already-configured
 // automatic NUKE password. Verified end-to-end (not just HasDuress() in
 // memory): SetDuress+Save on the first identity, then AddIdentity+Save
-// on the NEW one — CheckDuress must still recognize the previously
+// on the NEW one, CheckDuress must still recognize the previously
 // configured NUKE password.
 func TestAddIdentityPreservesDuress(t *testing.T) {
 	dir := t.TempDir()
@@ -284,7 +284,7 @@ func TestAddIdentityPreservesDuress(t *testing.T) {
 	if !all[1].HasDuress() {
 		t.Fatal("the new identity doesn't inherit the existing file's NUKE password")
 	}
-	// Save on the NEW identity — exactly the real path of
+	// Save on the NEW identity, exactly the real path of
 	// runAddIdentity (cmd/main.go).
 	if err := all[1].Save(path, password); err != nil {
 		t.Fatalf("Save (new identity): %v", err)
@@ -343,7 +343,7 @@ func TestLoadAllBackfillsDeviceID(t *testing.T) {
 	}
 
 	// The critical point: the backfill must be written to disk
-	// IMMEDIATELY, not left only in memory — a second LoadAll
+	// IMMEDIATELY, not left only in memory, a second LoadAll
 	// (simulating an app restart) must find the SAME DeviceID, not
 	// generate a new one. Without immediate persistence,
 	// /sec-remote-nuke and /sec-indoor-sync would never converge on a
@@ -734,7 +734,7 @@ func TestNewGeneratesMLDSAIdentity(t *testing.T) {
 // (invoked by an HTTP goroutine for every knock), reading through
 // ContactIdentityPubs()/ContactsSnapshot() rather than iterating
 // ks.Contacts directly, stays safe against concurrent AddContact/
-// DeleteContact on the TUI/UI goroutine — both accessors are mutex
+// DeleteContact on the TUI/UI goroutine, both accessors are mutex
 // protected. Under -race, this test fails on a data race even if no
 // panic manifests.
 func TestConcurrentContactAccessNoRace(t *testing.T) {
@@ -814,7 +814,7 @@ func TestTrustLevelDangerPrevailsOverAnything(t *testing.T) {
 
 // TestConfirmPendingRelKeys verifies keystore.ConfirmPendingRelKeys:
 // applies the pending keys to Peer*, clears Verified (it must be
-// regained with a new safety number) and cleans up the Pending fields —
+// regained with a new safety number) and cleans up the Pending fields,
 // IntroducedBy stays unchanged.
 func TestConfirmPendingRelKeys(t *testing.T) {
 	bobPub, _, err := ed25519.GenerateKey(rand.Reader)
@@ -865,7 +865,7 @@ func TestConfirmPendingRelKeys(t *testing.T) {
 		t.Error("the Pending fields should have been cleared after the confirmation")
 	}
 	if c.Verified {
-		t.Error("Verified must be reset after the confirmation — it has to be earned again with a new Safety Number")
+		t.Error("Verified must be reset after the confirmation, it has to be earned again with a new Safety Number")
 	}
 	if c.IntroducedBy != "carol" {
 		t.Errorf("IntroducedBy = %q, must stay unchanged (a historical fact independent of the keys)", c.IntroducedBy)
@@ -881,13 +881,13 @@ func TestConfirmPendingRelKeys(t *testing.T) {
 }
 
 // TestMultiDeviceTrustDangerIsolatedPerDevice verifies the per-device
-// data model: a contact with several known devices — one with a
-// pending conflict (TrustDanger), another clean — bubbles TrustDanger
+// data model: a contact with several known devices, one with a
+// pending conflict (TrustDanger), another clean, bubbles TrustDanger
 // up to the contact (the conflict always wins), but the conflict stays
 // written ONLY on the entry of the device that generated it, never
 // propagated/readable on the other. A genuinely new device (no
 // preexisting entry for its DevicePub) can never generate a conflict by
-// construction — verified here indirectly: devB never had
+// construction, verified here indirectly: devB never had
 // PendingPeerRel* written, exactly like an entry created from scratch
 // for a rel_init from an unknown DevicePub (applyRelInit, tui.go).
 func TestMultiDeviceTrustDangerIsolatedPerDevice(t *testing.T) {
@@ -925,7 +925,7 @@ func TestMultiDeviceTrustDangerIsolatedPerDevice(t *testing.T) {
 	}
 
 	// With more than one known device, ConfirmPendingRelKeys resolves
-	// the right device via DeviceWithPendingRelKeys() — devA (which
+	// the right device via DeviceWithPendingRelKeys(), devA (which
 	// really has a pending conflict), never devB (which has none): it
 	// must succeed, and touch ONLY devA.
 	ks, err := keystore.New("alice")
@@ -957,7 +957,7 @@ func TestMultiDeviceTrustDangerIsolatedPerDevice(t *testing.T) {
 // SoleDevice(), it returns EVERY ready device
 // (RelIdentityConfirmedByPeer+RelContentConfirmedByPeer, complete keys,
 // known Address), excluding not-yet-confirmed ones, ones with
-// incomplete keys, or ones with no address — never an error on "more
+// incomplete keys, or ones with no address, never an error on "more
 // than one", never a guessed choice on one that isn't ready.
 func TestContactReadyDevices(t *testing.T) {
 	readyPub, readyPriv, _ := ed25519.GenerateKey(rand.Reader)
@@ -974,7 +974,7 @@ func TestContactReadyDevices(t *testing.T) {
 				RelContentConfirmedByPeer:  true,
 				Address:                    "readyaddr.onion",
 			},
-			// Not confirmed — just a spontaneous rel_init request from the
+			// Not confirmed, just a spontaneous rel_init request from the
 			// peer, never a rel_init_ack: not ready to be invited yet.
 			"notconfirmed": {
 				RelIdentityPriv:    []byte(readyPriv),
@@ -990,7 +990,7 @@ func TestContactReadyDevices(t *testing.T) {
 				RelContentConfirmedByPeer:  true,
 			},
 			// Pre-bootstrap placeholder: our keys generated, but no peer
-			// key has arrived yet — never ready.
+			// key has arrived yet, never ready.
 			"": {
 				RelIdentityPriv: []byte(readyPriv),
 			},
@@ -1026,12 +1026,12 @@ func TestContactReadyDevices(t *testing.T) {
 		t.Fatalf("ReadyDevices() with two ready devices = %d, want 2", len(devs2))
 	}
 	if _, ok := c.SoleDevice(); ok {
-		t.Error("SoleDevice() with two known devices must return false — ReadyDevices() is the right path here, not SoleDevice()")
+		t.Error("SoleDevice() with two known devices must return false, ReadyDevices() is the right path here, not SoleDevice()")
 	}
 }
 
 // contactWithTwoReadyDevicesForRotationTests builds a contact with two
-// devices, both ready (Contact.ReadyDevices) — used by the rotation
+// devices, both ready (Contact.ReadyDevices), used by the rotation
 // fan-out tests below.
 func contactWithTwoReadyDevicesForRotationTests() (keystore.Contact, ed25519.PublicKey) {
 	bobPub, _, _ := ed25519.GenerateKey(rand.Reader)
@@ -1066,7 +1066,7 @@ func contactWithTwoReadyDevicesForRotationTests() (keystore.Contact, ed25519.Pub
 
 // TestStartRelIdentityRotationByPubFanOutMultiDevice verifies that
 // rotating the IdentityKey-per-relationship fans out over EVERY ready
-// device of a contact, not just the first — an independent key
+// device of a contact, not just the first, an independent key
 // generated for each, both marked IdentityKeyPending, never a guessed
 // choice on just one.
 func TestStartRelIdentityRotationByPubFanOutMultiDevice(t *testing.T) {
@@ -1121,7 +1121,7 @@ func TestStartRelIdentityRotationByPubFanOutMultiDevice(t *testing.T) {
 // TestSaveGeneratesRelRevocationCerts verifies that Save computes the
 // missing self-revocation certificates for every device with an
 // already-set RelIdentityPriv/RelContentPriv, and that the resulting
-// signatures verify against their respective public keys — with no
+// signatures verify against their respective public keys, with no
 // need for any explicit action at key generation time (self-healing).
 func TestSaveGeneratesRelRevocationCerts(t *testing.T) {
 	dir := t.TempDir()
@@ -1131,11 +1131,11 @@ func TestSaveGeneratesRelRevocationCerts(t *testing.T) {
 	c, bobPub := contactWithTwoReadyDevicesForRotationTests()
 	// contactWithTwoReadyDevicesForRotationTests fills RelIdentityPriv
 	// with random bytes (enough to compare "it changed", the only use
-	// made elsewhere) — not a real valid Ed25519 pair: .Public() on
+	// made elsewhere), not a real valid Ed25519 pair: .Public() on
 	// those bytes wouldn't match the key actually used by ed25519.Sign.
 	// Replaced here with a real pair, needed to verify the produced
 	// revocation signature. RelContentPriv is never set by that helper
-	// — added here to cover that branch too in the same test.
+	// added here to cover that branch too in the same test.
 	_, devAIdentPriv, _ := ed25519.GenerateKey(rand.Reader)
 	c.Devices["devA"].RelIdentityPriv = devAIdentPriv
 	_, devAContentPriv, _ := ed25519.GenerateKey(rand.Reader)
@@ -1177,7 +1177,7 @@ func TestSaveGeneratesRelRevocationCerts(t *testing.T) {
 
 	devB := reloaded.Devices["devB"]
 	if len(devB.RevokeContentSig) != 0 {
-		t.Error("devB never had a RelContentPriv — it must not have a RevokeContentSig")
+		t.Error("devB never had a RelContentPriv, it must not have a RevokeContentSig")
 	}
 }
 
@@ -1238,7 +1238,7 @@ func TestRotationRegeneratesRelRevocationCert(t *testing.T) {
 // TestStartRelIdentityRotationByPubSkipsPendingDeviceKeepsOthers verifies
 // that a device whose ContentKey is already rotating (never two keys in
 // flight together on the same relationship) is silently skipped,
-// without blocking rotation of the OTHER ready devices — behavior
+// without blocking rotation of the OTHER ready devices, behavior
 // explicitly documented in StartRelIdentityRotationByPub.
 func TestStartRelIdentityRotationByPubSkipsPendingDeviceKeepsOthers(t *testing.T) {
 	c, bobPub := contactWithTwoReadyDevicesForRotationTests()
@@ -1271,7 +1271,7 @@ func TestStartRelIdentityRotationByPubSkipsPendingDeviceKeepsOthers(t *testing.T
 
 // TestStartRelContentRotationByPubFanOutMultiDevice is the equivalent
 // for the ContentKey-per-relationship of the twin test above on the
-// IdentityKey — same fan-out, same independence between the two
+// IdentityKey, same fan-out, same independence between the two
 // devices.
 func TestStartRelContentRotationByPubFanOutMultiDevice(t *testing.T) {
 	c, bobPub := contactWithTwoReadyDevicesForRotationTests()
@@ -1306,7 +1306,7 @@ func TestStartRelContentRotationByPubFanOutMultiDevice(t *testing.T) {
 }
 
 // TestNetworkIdentityPrivKeyD1Unchanged verifies that D1
-// (AdditionalDevice false, the common case — an identity created with
+// (AdditionalDevice false, the common case, an identity created with
 // New() or restored from bare 24 words) keeps using the direct,
 // unchanged root IdentityKey for the network address.
 func TestNetworkIdentityPrivKeyD1Unchanged(t *testing.T) {
@@ -1322,7 +1322,7 @@ func TestNetworkIdentityPrivKeyD1Unchanged(t *testing.T) {
 // TestNetworkIdentityPrivKeyAdditionalDeviceDeterministic verifies that
 // an additional device (AdditionalDevice true) derives an address
 // different from the root, but deterministic (same IdentityKey+DeviceID
-// → same derived key on every call) — needed for the hidden service to
+// → same derived key on every call), needed for the hidden service to
 // remain reachable at the same address across restarts of the same
 // device.
 func TestNetworkIdentityPrivKeyAdditionalDeviceDeterministic(t *testing.T) {
@@ -1342,7 +1342,7 @@ func TestNetworkIdentityPrivKeyAdditionalDeviceDeterministic(t *testing.T) {
 		t.Error("NetworkIdentityPrivKey for an additional device must not equal the root IdentityPrivKey")
 	}
 
-	// A different DeviceID must produce a different derived key —
+	// A different DeviceID must produce a different derived key,
 	// distinct additional devices must never collide on the same address.
 	ks2 := *ks
 	ks2.DeviceID = bytes.Repeat([]byte{0x43}, 16)
@@ -1511,7 +1511,7 @@ func TestMaybeFinalizeRootRotationNoopWithoutRotation(t *testing.T) {
 
 // TestSoleDeviceOrPlaceholderEmptyDevices verifies that a contact with
 // no Devices entry still returns a usable DeviceRelation (never (nil,
-// false) like SoleDevice) — the probe cycle relies on this to generate
+// false) like SoleDevice), the probe cycle relies on this to generate
 // relationship keys even toward such a contact.
 func TestSoleDeviceOrPlaceholderEmptyDevices(t *testing.T) {
 	c := keystore.Contact{Username: "bob"}
@@ -1687,8 +1687,8 @@ func TestKnownDevicesSnapshotIsACopy(t *testing.T) {
 }
 
 // TestRemoteNukeQueuesConcurrentAccess runs the remote_nuke and danger
-// queue updates concurrently with snapshot reads — under -race any
-// unlocked access shows up — and checks a snapshot taken earlier keeps
+// queue updates concurrently with snapshot reads, under -race any
+// unlocked access shows up, and checks a snapshot taken earlier keeps
 // its content after a confirmation.
 func TestRemoteNukeQueuesConcurrentAccess(t *testing.T) {
 	ks, err := keystore.New("alice")
@@ -1743,7 +1743,7 @@ func TestRemoteNukeQueuesConcurrentAccess(t *testing.T) {
 	}
 }
 
-// namePub is a deterministic 32-byte identity key per name — test-only.
+// namePub is a deterministic 32-byte identity key per name, test-only.
 func namePub(name string) []byte {
 	h := sha256.Sum256([]byte("test-identity:" + name))
 	return h[:]

@@ -23,12 +23,12 @@ import (
 )
 
 // AddRealIdentity adds a brand-new real identity to the same file,
-// sharing u's password_file, under newPasswordIdentity — the same
+// sharing u's password_file, under newPasswordIdentity, the same
 // doubling growth already used for every other real identity (see
 // slot_container.go). newIdentity is the already-constructed Keystore
 // content (username, keys, etc.); this call fills in its slot-model
 // bookkeeping (SlotPendingNoise, ContactPendingIdx, DuressAccess) and
-// seals it into u's container, in memory — the caller still must call
+// seals it into u's container, in memory, the caller still must call
 // u.SaveSlot(path) afterward to persist both this change and the new
 // identity's own slot together.
 //
@@ -54,7 +54,7 @@ func (u *UnlockedSlot) AddRealIdentity(newPasswordIdentity string, newIdentity *
 	newIdentity.Contacts = append([]Contact{{}}, newIdentity.Contacts...)
 	// The new identity shares the SAME file-level pending-noise
 	// bookkeeping as the one that created it from this point on (one
-	// shared pool, see slot_container.go) — copied, not aliased, so
+	// shared pool, see slot_container.go), copied, not aliased, so
 	// each identity's own future consumes never touch the other's
 	// slice.
 	newIdentity.SlotPendingNoise = growthPool{

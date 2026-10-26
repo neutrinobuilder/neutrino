@@ -46,7 +46,7 @@ func TestCommandDefsUnique(t *testing.T) {
 
 // TestResolveCommandRoundtrip verifies that every command registered in
 // commandDefs is resolvable via i18n.ResolveCommand and that
-// i18n.CommandName returns the same name — the roundtrip actually used
+// i18n.CommandName returns the same name, the roundtrip actually used
 // by the TUI's parser (splitCmd → ResolveCommand).
 func TestResolveCommandRoundtrip(t *testing.T) {
 	for _, d := range commandDefs {

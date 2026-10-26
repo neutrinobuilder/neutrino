@@ -34,7 +34,7 @@ import (
 // derived via Keystore.NetworkIdentityPrivKeyFor(targetDeviceID), not
 // OnionAddressFromPub applied directly to the root IdentityPub. For a
 // target whose IdentityPub matches our own, BOTH candidate addresses (root
-// and derived) must be tried — never one in place of the other.
+// and derived) must be tried, never one in place of the other.
 func TestRemoteNukeFanOutTriesDerivedAddressForOwnIdentity(t *testing.T) {
 	myPub, myPriv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -112,10 +112,10 @@ func TestRemoteNukeFanOutTriesDerivedAddressForOwnIdentity(t *testing.T) {
 		}
 	}
 	if !sawRoot {
-		t.Errorf("the fan-out didn't try the root address — addresses tried: %v", dialed)
+		t.Errorf("the fan-out didn't try the root address, addresses tried: %v", dialed)
 	}
 	if !sawDerived {
-		t.Errorf("the fan-out didn't try the derived address (additional device) — addresses tried: %v", dialed)
+		t.Errorf("the fan-out didn't try the derived address (additional device), addresses tried: %v", dialed)
 	}
 }
 

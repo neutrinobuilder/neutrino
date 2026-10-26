@@ -58,7 +58,7 @@ func uriPattern(in *Instance) string {
 }
 
 // TestContactInfo: /cnt-info shows a contact's URI, network address and
-// local data — by name, through the picker, and for oneself ("self").
+// local data, by name, through the picker, and for oneself ("self").
 func TestContactInfo(t *testing.T) {
 	r := NewRun(t)
 	alice := r.Start("alice")
@@ -163,7 +163,7 @@ func TestContactDelete(t *testing.T) {
 }
 
 // TestContactCardIgnore: a received contact card discarded with
-// /cnt-ignore is gone — /cnt-save no longer finds it and the contact is
+// /cnt-ignore is gone, /cnt-save no longer finds it and the contact is
 // never added.
 func TestContactCardIgnore(t *testing.T) {
 	r := NewRun(t)
@@ -189,7 +189,7 @@ func TestContactCardIgnore(t *testing.T) {
 }
 
 // runActive runs /active until its summary matching want appears in the
-// Console — a periodic probe already in flight makes /active answer
+// Console, a periodic probe already in flight makes /active answer
 // "probe already in progress" instead, so it is retried.
 func runActive(t *testing.T, in *Instance, want string) {
 	t.Helper()

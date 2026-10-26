@@ -43,7 +43,7 @@ import (
 )
 
 // TestDecryptMsgDoesNotAdvanceChainOnFailure covers the invariant that a
-// failed decrypt must not commit peerChainKeys/peerMsgIdx — committing
+// failed decrypt must not commit peerChainKeys/peerMsgIdx, committing
 // on failure would turn a single isolated hiccup (a lost or corrupted
 // packet) into a permanent, cascading misalignment where no subsequent
 // message, however well-formed, could ever decrypt again. On the same
@@ -100,7 +100,7 @@ func TestDecryptMsgDoesNotAdvanceChainOnFailure(t *testing.T) {
 
 // TestDecryptMsgReturnsReplyTo covers the explicit reply reference: RT
 // travels inside the ciphertext (sealedMsg) and DecryptMsg returns it
-// intact to the caller — 0 when absent, the exact value chosen by the
+// intact to the caller, 0 when absent, the exact value chosen by the
 // sender otherwise.
 func TestDecryptMsgReturnsReplyTo(t *testing.T) {
 	senderKey := make([]byte, 32)
@@ -136,7 +136,7 @@ func TestDecryptMsgReturnsReplyTo(t *testing.T) {
 
 // TestSendReplyIncludesReplyToInSentTextCache covers the sending side's
 // propagation: SendReply saves replyTo alongside the text in the
-// self-echo cache (sentTexts) — necessary because the self-echo
+// self-echo cache (sentTexts), necessary because the self-echo
 // (tui.go) skips the receiving ratchet and so would never decrypt
 // sealedMsg.RT on its own.
 func TestSendReplyIncludesReplyToInSentTextCache(t *testing.T) {
@@ -161,7 +161,7 @@ func TestSendReplyIncludesReplyToInSentTextCache(t *testing.T) {
 }
 
 // TestDecryptMsgRejectsFutureIdxWithoutAdvancing: an idx that arrives
-// before its turn must never advance the chain to try to "recover" it —
+// before its turn must never advance the chain to try to "recover" it,
 // the caller buffers it on its own (see Client.ExpectedIdx) and
 // resubmits it here only when its turn really comes. If DecryptMsg is
 // called with a future idx anyway (defensive, never the normal path),
@@ -183,7 +183,7 @@ func TestDecryptMsgRejectsFutureIdxWithoutAdvancing(t *testing.T) {
 		t.Fatalf("want an empty from for a future idx, got %q (plaintext=%q)", from, plaintext)
 	}
 	if !bytes.Equal(receiver.peerChainKeys[keyID], chain0) {
-		t.Error("the chain key must not advance for a future idx — no fast-forward")
+		t.Error("the chain key must not advance for a future idx, no fast-forward")
 	}
 	if receiver.peerMsgIdx[keyID] != 0 {
 		t.Errorf("peerMsgIdx must not advance for a future idx, got %d", receiver.peerMsgIdx[keyID])
@@ -235,7 +235,7 @@ func TestExpectedIdx(t *testing.T) {
 // processed by the read goroutine before the write completes, and must
 // still find the plaintext. Observed by forcing the write to fail and
 // verifying the entry exists anyway (cleaned up by the FIFO like any
-// other — see maxSentTextCache).
+// other, see maxSentTextCache).
 func TestSendPopulatesSentTextsBeforeWrite(t *testing.T) {
 	cli := New("127.0.0.1", 0, "me", nil, true, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
 	conn := newTestWSConn(t)
@@ -259,8 +259,8 @@ func TestSendPopulatesSentTextsBeforeWrite(t *testing.T) {
 // TestRegisterUserPrunesStaleSessionPub covers the invariant that every
 // reconnection of the same peer (frequent over I2P, rare over Tor)
 // assigns them a new session user_id. Without pruning, peerSessionPubs
-// would accumulate one dead entry per past reconnection — never removed
-// for the life of the process — visible in RotateSenderKey as a growing
+// would accumulate one dead entry per past reconnection, never removed
+// for the life of the process, visible in RotateSenderKey as a growing
 // "distributing to N peers" count in a room with a single other member.
 // RegisterUser must remove the previous user_id's entry for the same
 // identity key, both in peerSessionPubs and in members.
@@ -306,7 +306,7 @@ func testIdentity(name string) []byte {
 }
 
 // TestRegisterUserKeepsHomonymsApart: two members sharing a username
-// but with different identity keys are two distinct members — neither
+// but with different identity keys are two distinct members, neither
 // is mistaken for a reconnect of the other.
 func TestRegisterUserKeepsHomonymsApart(t *testing.T) {
 	cli := New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
@@ -420,7 +420,7 @@ func randPub(t *testing.T) string {
 
 // newCapturingTestWSConn is the equivalent of newTestWSConn but forwards
 // every frame read (decoded into map[string]any) onto a channel,
-// instead of discarding it — used to inspect what Send() actually puts
+// instead of discarding it, used to inspect what Send() actually puts
 // on the wire.
 func newCapturingTestWSConn(t *testing.T) (*websocket.Conn, <-chan map[string]any) {
 	t.Helper()
@@ -558,7 +558,7 @@ func TestSendConcurrentNoIdxRace(t *testing.T) {
 			}
 			idx := uint64(idxF)
 			if seen[idx] {
-				t.Fatalf("idx %d received twice — ratchet not serialized correctly", idx)
+				t.Fatalf("idx %d received twice, ratchet not serialized correctly", idx)
 			}
 			seen[idx] = true
 		case <-time.After(2 * time.Second):
@@ -567,7 +567,7 @@ func TestSendConcurrentNoIdxRace(t *testing.T) {
 	}
 	for i := uint64(0); i < n; i++ {
 		if !seen[i] {
-			t.Errorf("idx %d never seen — the sequence must cover 0..%d with no gaps", i, n-1)
+			t.Errorf("idx %d never seen, the sequence must cover 0..%d with no gaps", i, n-1)
 		}
 	}
 	if cli.senderMsgIdx != n {
@@ -577,14 +577,14 @@ func TestSendConcurrentNoIdxRace(t *testing.T) {
 
 // TestClientConnRaceUnderReconnect covers the race on Client.Conn/
 // mlkemDecap being read/written without a lock. reconnectTab (tui.go)
-// calls Connect() again on the SAME Client instance — not a new one —
+// calls Connect() again on the SAME Client instance, not a new one,
 // and a read loop (waitForRoom→ReadMsg), a pending Send(), or the ping
 // watchdog may still be in flight on that instance when the
 // reconnection writes a new Conn/mlkemDecap. Without synchronization
 // this is a real data race on the pointer, detectable by `go test -race`
 // with a real client that (re)connects multiple times while other
 // goroutines concurrently call Send/Ping/ReadMsg/Close on the same
-// instance — exercises the real handshake (mandatory
+// instance, exercises the real handshake (mandatory
 // IdentityKey-per-relationship) end-to-end, not just the low-level methods.
 func TestClientConnRaceUnderReconnect(t *testing.T) {
 	secret := []byte("secret-race-conn-mlkemdecap-test-256bit!")
@@ -671,7 +671,7 @@ func TestClientConnRaceUnderReconnect(t *testing.T) {
 // every outgoing message carries device_sig/device_ts outside the
 // ciphertext (same pattern already in use for sig/sig_ts) verifiable
 // against the declared devicePub, and the latter travels INSIDE the
-// ciphertext (sealedMsg.DP), not in the clear on the wire — see the
+// ciphertext (sealedMsg.DP), not in the clear on the wire, see the
 // comment on sealedMsg.DP.
 func TestSendIncludesDeviceSig(t *testing.T) {
 	devicePub, devicePriv, err := ed25519.GenerateKey(rand.Reader)
@@ -722,7 +722,7 @@ func TestSendIncludesDeviceSig(t *testing.T) {
 // TestSendOmitsPQCSigByDefault covers the default of the optional
 // per-room PQC signature (hybrid PQC network identity): even with
 // signMLDSA set, without an explicit SetPQCSign(true) no pqc_sig/pqc_ts
-// field must appear on the wire — never active by default, ~3.3KB cost
+// field must appear on the wire, never active by default, ~3.3KB cost
 // per signature.
 func TestSendOmitsPQCSigByDefault(t *testing.T) {
 	_, mldsaPriv, err := mldsa65.GenerateKey(rand.Reader)
@@ -754,7 +754,7 @@ func TestSendOmitsPQCSigByDefault(t *testing.T) {
 
 // TestSendIncludesPQCSigWhenEnabled covers the Send()→wire round-trip
 // for the optional per-room ML-DSA-65 signature when explicitly enabled
-// via SetPQCSign(true) — same scheme as TestSendIncludesDeviceSig.
+// via SetPQCSign(true), same scheme as TestSendIncludesDeviceSig.
 func TestSendIncludesPQCSigWhenEnabled(t *testing.T) {
 	mldsaPub, mldsaPriv, err := mldsa65.GenerateKey(rand.Reader)
 	if err != nil {
@@ -855,7 +855,7 @@ func genEph(t *testing.T) *ecdh.PrivateKey {
 
 // TestDecryptMsgRefusesUnretainedDHR covers a message whose dhr names an
 // ephemeral of ours no longer retained: the next chain key can't be
-// computed, so the message is refused without committing anything —
+// computed, so the message is refused without committing anything,
 // never a plain step, which would diverge the chain for every later
 // message. Once the ephemeral is available, the same message decrypts
 // and the chain advances exactly as the sender's.
@@ -888,7 +888,7 @@ func TestDecryptMsgRefusesUnretainedDHR(t *testing.T) {
 
 // TestDecryptMsgPrunesOlderEphemerals covers retention by proof of
 // receipt: once the peer references one of our ephemerals, every older
-// one is dropped — its later messages can only reference that one or a
+// one is dropped, its later messages can only reference that one or a
 // newer one.
 func TestDecryptMsgPrunesOlderEphemerals(t *testing.T) {
 	senderKey := make([]byte, 32)
@@ -915,7 +915,7 @@ func TestDecryptMsgPrunesOlderEphemerals(t *testing.T) {
 
 // TestDecryptMsgExpiresEphemeralsPastTwiceTTL covers retention by time:
 // an ephemeral retired more than twice the message TTL ago is dropped
-// even if the peer still references it — the peer can never keep our
+// even if the peer still references it, the peer can never keep our
 // private ephemerals alive beyond that bound.
 func TestDecryptMsgExpiresEphemeralsPastTwiceTTL(t *testing.T) {
 	senderKey := make([]byte, 32)

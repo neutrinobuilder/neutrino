@@ -29,7 +29,7 @@ import (
 // removes a slot, only appends.
 //
 // Bookkeeping of which indices are still unassigned noise is not part
-// of this type — it is tracked by the caller and mirrored inside every
+// of this type, it is tracked by the caller and mirrored inside every
 // REAL identity's own encrypted content. The shared duress identity
 // carries the same field shape but filled with random noise instead of
 // the real list.
@@ -40,9 +40,9 @@ type slotContainer struct {
 // newSlotContainer creates the file at birth: one real identity slot,
 // the shared duress slot, and a single noise placeholder. realKi/duressKi
 // are the two live slots' raw content keys, returned so the caller can
-// seal their actual JSON payload — newSlotContainer only prepares empty
+// seal their actual JSON payload, newSlotContainer only prepares empty
 // slots, it never writes identity content. pool is the growth pool the
-// caller must store on the real identity's own content — index 2 (the
+// caller must store on the real identity's own content, index 2 (the
 // noise placeholder) is its one starting pending entry.
 func newSlotContainer(passwordFile, realPasswordIdentity, duressPasswordIdentity string) (c *slotContainer, realIdx, duressIdx int, realKi, duressKi []byte, pool growthPool, err error) {
 	realKi, err = newSlotKi()

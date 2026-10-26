@@ -88,7 +88,7 @@ build_ux() {
 }
 
 build_ux_arm() {
-    echo "==> ux/arm64 (static, Tor + i2pd embedded — e.g. Termux/Android)..."
+    echo "==> ux/arm64 (static, Tor + i2pd embedded, e.g. Termux/Android)..."
     CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
         go build -a ${GO_BUILD_FLAGS} \
         -ldflags="${LDFLAGS} -extldflags \"-static\"" \
@@ -118,7 +118,7 @@ ensure_arm64_emulation() {
 build_tor() {
     local arch="${1:-amd64}"
     if ! command -v docker &>/dev/null; then
-        echo "Error: Docker not found — required to build static Tor." >&2
+        echo "Error: Docker not found, required to build static Tor." >&2
         exit 1
     fi
     [ "${arch}" = "arm64" ] && ensure_arm64_emulation
@@ -129,7 +129,7 @@ build_tor() {
 build_i2pd() {
     local arch="${1:-amd64}"
     if ! command -v docker &>/dev/null; then
-        echo "Error: Docker not found — required to build static i2pd." >&2
+        echo "Error: Docker not found, required to build static i2pd." >&2
         exit 1
     fi
     [ "${arch}" = "arm64" ] && ensure_arm64_emulation
@@ -138,7 +138,7 @@ build_i2pd() {
 }
 
 build_native_probe() {
-    echo "==> Building the native probe (GOOS=linux CGO_ENABLED=0 — static)..."
+    echo "==> Building the native probe (GOOS=linux CGO_ENABLED=0, static)..."
     mkdir -p "${NATIVEPROBE_DIR}/bin"
     ( cd "${NATIVEPROBE_DIR}" && \
       CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-s -w' -o "${NATIVEPROBE_BIN_ARM64}" . && \
@@ -147,7 +147,7 @@ build_native_probe() {
 
 build_apk() {
     if ! command -v docker &>/dev/null; then
-        echo "Error: Docker not found — required for fyne-cross." >&2
+        echo "Error: Docker not found, required for fyne-cross." >&2
         exit 1
     fi
     local fynecross
@@ -156,7 +156,7 @@ build_apk() {
         fynecross="$(go env GOPATH)/bin/fyne-cross"
     fi
     if [ -z "${fynecross}" ]; then
-        echo "Error: fyne-cross not found — install it with:" >&2
+        echo "Error: fyne-cross not found, install it with:" >&2
         echo "  go install github.com/fyne-io/fyne-cross@latest" >&2
         exit 1
     fi
@@ -175,7 +175,7 @@ build_apk() {
     fi
 
     local arches="${1:-arm64,amd64}"
-    echo "==> Android APK (${arches}, skeleton — see cmd/androidapp)..."
+    echo "==> Android APK (${arches}, skeleton, see cmd/androidapp)..."
     "${fynecross}" android -arch="${arches}" \
         -dir "${ROOT}" \
         -cache "$(go env GOPATH)" \
@@ -236,11 +236,11 @@ case "${TARGET}" in
         ;;
     ux)
         if [ ! -s "${TOR_BIN}" ]; then
-            echo "WARNING: ${TOR_BIN} missing or empty — run first: bash build_neutrino.sh tor" >&2
+            echo "WARNING: ${TOR_BIN} missing or empty, run first: bash build_neutrino.sh tor" >&2
             exit 1
         fi
         if [ ! -s "${I2PD_BIN}" ]; then
-            echo "WARNING: ${I2PD_BIN} missing or empty — run first: bash build_neutrino.sh i2p" >&2
+            echo "WARNING: ${I2PD_BIN} missing or empty, run first: bash build_neutrino.sh i2p" >&2
             exit 1
         fi
         require_go "${ROOT}"
@@ -251,11 +251,11 @@ case "${TARGET}" in
         ;;
     ux-arm)
         if [ ! -s "${TOR_BIN_ARM}" ]; then
-            echo "WARNING: ${TOR_BIN_ARM} missing or empty — run first: bash build_neutrino.sh tor arm64" >&2
+            echo "WARNING: ${TOR_BIN_ARM} missing or empty, run first: bash build_neutrino.sh tor arm64" >&2
             exit 1
         fi
         if [ ! -s "${I2PD_BIN_ARM}" ]; then
-            echo "WARNING: ${I2PD_BIN_ARM} missing or empty — run first: bash build_neutrino.sh i2p arm64" >&2
+            echo "WARNING: ${I2PD_BIN_ARM} missing or empty, run first: bash build_neutrino.sh i2p arm64" >&2
             exit 1
         fi
         require_go "${ROOT}"
@@ -303,12 +303,12 @@ case "${TARGET}" in
         echo ""
         echo "Targets:"
         echo "  ux       builds linux/amd64 (static, Tor + i2pd embedded)"
-        echo "  ux-arm   builds linux/arm64 (static, Tor + i2pd embedded — e.g. Termux/Android)"
+        echo "  ux-arm   builds linux/arm64 (static, Tor + i2pd embedded, e.g. Termux/Android)"
 
         echo "  all      builds linux/amd64 + linux/arm64"
         echo "  tor [arm64]  rebuilds the embedded Tor binary, amd64 by default (requires Docker; arm64 requires QEMU binfmt, see download_build_tor-core.sh)"
         echo "  i2p [arm64]  rebuilds the embedded i2pd binary, amd64 by default (requires Docker; arm64 requires QEMU binfmt)"
-        echo "  apk [arch]   Android APK skeleton (Fyne, see cmd/androidapp), arm64+amd64 by default — requires Docker + fyne-cross, no real network connection"
+        echo "  apk [arch]   Android APK skeleton (Fyne, see cmd/androidapp), arm64+amd64 by default, requires Docker + fyne-cross, no real network connection"
         echo ""
         echo "Options for ux and all:"
         echo "  pack     compresses the linux binary with upx"

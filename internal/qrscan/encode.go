@@ -36,7 +36,7 @@ const PixelsPerModule = -4
 // every render of that QR. A larger version for the same content places
 // the data, and the mask, differently: EncodeVerified tries the
 // automatically chosen version first, then each larger one up to 40,
-// and returns the first that verifies — or the last attempt if none
+// and returns the first that verifies, or the last attempt if none
 // does, so the caller always has something to show.
 func EncodeVerified(content string, level qrcode.RecoveryLevel) (*qrcode.QRCode, error) {
 	q, err := qrcode.New(content, level)
@@ -61,7 +61,7 @@ func EncodeVerified(content string, level qrcode.RecoveryLevel) (*qrcode.QRCode,
 }
 
 // verify renders q at PixelsPerModule, decodes it in memory and compares
-// the result with the original content — not just the absence of an
+// the result with the original content, not just the absence of an
 // error: Reed-Solomon can correct an error pattern into a different,
 // self-consistent codeword, so a decode can succeed with the wrong text.
 func verify(q *qrcode.QRCode, content string) bool {

@@ -24,15 +24,15 @@ import (
 )
 
 // spawnPod starts the pod as a SEPARATE OS process (self-exec of this
-// same binary via the hidden "__pod" subcommand, never a goroutine — a
+// same binary via the hidden "__pod" subcommand, never a goroutine, a
 // goroutine would die together with this process if something kills it
 // with force, exactly the scenario the pod must survive) and feeds it
-// snapshot as JSON over stdin ONLY — never argv/env: the snapshot
+// snapshot as JSON over stdin ONLY, never argv/env: the snapshot
 // carries contact addresses and other metadata that must not land in
 // `ps`/`/proc/<pid>/cmdline`/`environ`, readable by any other process
 // on the same machine.
 //
-// Never waits for the pod to finish — the caller must never block on
+// Never waits for the pod to finish, the caller must never block on
 // this call: no delay may be perceptible to the user or to whoever is
 // watching the device. A background goroutine reaps the child
 // once it exits so it never lingers as a zombie; this does NOT make
@@ -40,7 +40,7 @@ import (
 // goroutine runs.
 //
 // args/env exist for testability (the production call site always
-// passes args=["__pod"], env=nil — see runPod/main.go's switch): a test
+// passes args=["__pod"], env=nil, see runPod/main.go's switch): a test
 // can point exePath at the test binary itself and use args/env to
 // select a helper-process test function instead (the standard
 // os/exec "TestHelperProcess" pattern), without spawnPod needing to
@@ -66,7 +66,7 @@ func spawnPod(exePath string, args []string, env []string, snapshot keystore.Pod
 		_ = stdin.Close()
 	}()
 	go func() {
-		_ = cmd.Wait() // reap only — never blocks the caller, runs in its own goroutine
+		_ = cmd.Wait() // reap only, never blocks the caller, runs in its own goroutine
 	}()
 	return nil
 }

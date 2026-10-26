@@ -127,7 +127,7 @@ func TestRoomReplyReference(t *testing.T) {
 }
 
 // TestRoomMsgAcks: /grp-msg-acks shows, for one of our messages, which
-// members confirmed it and which haven't yet — a frozen member stays
+// members confirmed it and which haven't yet, a frozen member stays
 // pending until it resumes.
 func TestRoomMsgAcks(t *testing.T) {
 	r := NewRun(t)

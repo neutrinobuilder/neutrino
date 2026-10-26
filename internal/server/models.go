@@ -38,17 +38,17 @@ type UserSession struct {
 	LastSeen   time.Time
 	SessionPub string // base64 X25519 public key for this session (for ECIES)
 	// IdentityPub is the known IdentityKey-per-relationship for the secret
-	// used — see HandshakeResult.MatchedIdentityPub. For the host's
+	// used, see HandshakeResult.MatchedIdentityPub. For the host's
 	// exclusive use (never relayed to other members via
 	// wsInitMsg/wsUserJoined).
 	IdentityPub []byte
-	// RootIdentityPub is this session's STABLE (root) identity — see
+	// RootIdentityPub is this session's STABLE (root) identity, see
 	// HandshakeResult.MatchedRootIdentityPub, the same one used by
 	// ClaimIdentitySlot/roomDelivery (never the one that rotates, unlike
 	// IdentityPub above). Used by RoomRegistry.KickMember to resolve which
 	// delivery queue to forget starting from a session userID.
 	RootIdentityPub []byte
-	MLKEMPub        []byte // this connection's ML-KEM-768 encapsulation key — see HandshakeResult.PeerMLKEMPub
+	MLKEMPub        []byte // this connection's ML-KEM-768 encapsulation key, see HandshakeResult.PeerMLKEMPub
 }
 
 func (s *UserSession) Touch() {

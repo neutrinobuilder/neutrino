@@ -59,7 +59,7 @@ func TestNewSlotContainerRejectsDuressSameAsReal(t *testing.T) {
 // TestAddRealIdentityBatchSaturationGrowth verifies the batch-
 // saturation doubling rule end to end at the slotContainer level (see
 // growth_pool.go): a new
-// batch of noise slots — DOUBLE the size of the one just exhausted —
+// batch of noise slots, DOUBLE the size of the one just exhausted,
 // is created only once the CURRENT batch is completely consumed, not
 // on every single AddRealIdentity call.
 func TestAddRealIdentityBatchSaturationGrowth(t *testing.T) {
@@ -91,7 +91,7 @@ func TestAddRealIdentityBatchSaturationGrowth(t *testing.T) {
 	}
 
 	// Consuming the FIRST of batch 2's two slots must NOT grow
-	// anything — the batch isn't saturated yet.
+	// anything, the batch isn't saturated yet.
 	idx3, _, pool, err := c.AddRealIdentity("pf", "real3", pool)
 	if err != nil {
 		t.Fatalf("AddRealIdentity (3rd identity): %v", err)

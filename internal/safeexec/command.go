@@ -23,7 +23,7 @@ import (
 // Command is a drop-in replacement for exec.Command that resolves name via
 // the safe LookPath above instead of exec.Command's own internal call to the
 // real (crash-prone) os/exec.LookPath: exec.Command performs that lookup
-// itself, internally, whenever name has no path separator — even if the
+// itself, internally, whenever name has no path separator, even if the
 // caller never calls exec.LookPath directly. Mirrors exec.Command's own
 // construction logic (see os/exec/exec.go, func Command) for the Linux case;
 // callers on this project never run on Windows, so the PATHEXT branch there

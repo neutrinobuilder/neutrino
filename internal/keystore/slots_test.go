@@ -81,7 +81,7 @@ func TestSlotContentOnlyGrows(t *testing.T) {
 func TestNoiseSlotHasNonTrivialContent(t *testing.T) {
 	// An empty Content/ContentNonce would be a size tell visible to
 	// anyone with the raw file, no password needed (AES-GCM ciphertext
-	// length reveals plaintext length) — a noise slot's content must be
+	// length reveals plaintext length), a noise slot's content must be
 	// roughly the same size
 	// as a freshly-created real identity's own bare content, not empty.
 	noise, err := newNoiseSlot()
@@ -89,7 +89,7 @@ func TestNoiseSlotHasNonTrivialContent(t *testing.T) {
 		t.Fatalf("newNoiseSlot: %v", err)
 	}
 	if len(noise.Content) == 0 {
-		t.Fatal("noise slot has empty content — distinguishable from a real/duress slot with zero knowledge of any password")
+		t.Fatal("noise slot has empty content, distinguishable from a real/duress slot with zero knowledge of any password")
 	}
 
 	real, err := newSlotKi()
@@ -100,7 +100,7 @@ func TestNoiseSlotHasNonTrivialContent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("newSlot: %v", err)
 	}
-	// Same bare baseline newNoiseSlot itself uses (New("")) — the noise
+	// Same bare baseline newNoiseSlot itself uses (New("")), the noise
 	// slot is not trying to look like a full CreateFile identity
 	// (Contacts/ContactPendingIdx/DuressAccess are the additional
 	// "believable decoy" layer that only duress needs).
@@ -118,7 +118,7 @@ func TestNoiseSlotHasNonTrivialContent(t *testing.T) {
 
 	diff := len(noise.Content) - len(realSlot.Content)
 	if diff < -32 || diff > 32 {
-		t.Fatalf("noise slot content size (%d) differs too much from a bare identity's (%d) — a potential size tell", len(noise.Content), len(realSlot.Content))
+		t.Fatalf("noise slot content size (%d) differs too much from a bare identity's (%d), a potential size tell", len(noise.Content), len(realSlot.Content))
 	}
 }
 

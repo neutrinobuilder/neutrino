@@ -31,7 +31,7 @@ import (
 )
 
 // i2pTransport implements Transport on top of a local i2pd process
-// (managed by internal/i2pnode — embedded on linux/amd64, a system
+// (managed by internal/i2pnode, embedded on linux/amd64, a system
 // daemon elsewhere), spoken via the SAM API (a text bridge, a
 // line-based protocol over TCP). This file deals only with the SAM
 // protocol (sessions, destinations, dial/accept) and the Transport
@@ -40,7 +40,7 @@ import (
 type i2pTransport struct {
 	node *i2pnode.Node
 	// samBridgeAddr: node.SAMAddr(), read once at construction (never
-	// changes for the i2pd process's lifetime) — avoids requiring a real
+	// changes for the i2pd process's lifetime), avoids requiring a real
 	// *i2pnode.Node just to exercise the SAM protocol in this package's
 	// tests (i2p_test.go), which can build an *i2pTransport by hand with
 	// only this field set.
@@ -53,10 +53,10 @@ type i2pTransport struct {
 	listeners []*fanInListener // one per AddHiddenService, closed by Close()
 	// lastDialFailed: outcome of the LAST STREAM CONNECT observed on
 	// DialContext (never touched by DialerForToken, a separate isolated
-	// session — see HasCircuits). SAM v3 exposes no tunnel status query
+	// session, see HasCircuits). SAM v3 exposes no tunnel status query
 	// equivalent to Tor's control port "GETINFO circuit-status" (i2pd
 	// only has it on I2PControl, a separate JSON-RPC service not
-	// integrated here) — an actual successful/failed dial remains the
+	// integrated here), an actual successful/failed dial remains the
 	// most direct signal available without building that integration
 	// from scratch.
 	lastDialFailed bool
@@ -94,7 +94,7 @@ func (t *i2pTransport) trackConn(c net.Conn) {
 // both inbound remote peers (STREAM ACCEPT via SAM, see sam.go) and the
 // TUI's local self-connect: samListener is purely virtual (no OS port
 // behind it), so the third returned string (localAddr, used by
-// cmd/main.go to dial itself directly over TCP) can't be t.samAddr() —
+// cmd/main.go to dial itself directly over TCP) can't be t.samAddr(),
 // that's i2pd's SAM control port, it doesn't speak HTTP/WS, and dialing
 // it causes an EOF in the handshake. Instead a real local TCP
 // net.Listener is created (the same role as bine's svc.LocalListener for
@@ -160,7 +160,7 @@ func (t *i2pTransport) DialContext(ctx context.Context, _, addr string) (net.Con
 	}
 	conn, err := samDial(ctx, t.samAddr(), sessionID, dest)
 	// Only the outcome of the actual STREAM CONNECT updates the health
-	// signal (see HasCircuits) — a failure in dialSessionID/
+	// signal (see HasCircuits), a failure in dialSessionID/
 	// resolveDestination above (NAMING LOOKUP, typically specific to the
 	// single peer/destination) doesn't imply I2P as a whole is down, so
 	// it doesn't touch it.
@@ -206,7 +206,7 @@ func (t *i2pTransport) dialSessionID(ctx context.Context) (string, error) {
 // for token, giving real isolation (separate I2P tunnels) between chat
 // traffic and a file transfer, analogous to Tor's DialerForToken. ctx
 // covers only this creation (samSessionCreate, a real blocking SAM
-// round-trip — unlike Tor, where building the dialer does no network
+// round-trip, unlike Tor, where building the dialer does no network
 // I/O), so the caller's timeout/cancellation is honored here too.
 func (t *i2pTransport) DialerForToken(ctx context.Context, token string) (func(context.Context, string, string) (net.Conn, error), error) {
 	sessionID := "neutrino-tok-" + sanitizeSAMID(token)
@@ -238,7 +238,7 @@ func (t *i2pTransport) resolveDestination(ctx context.Context, host string) (str
 
 // resolveSAMDestination is the free-standing form of
 // i2pTransport.resolveDestination, taking samAddr directly instead of
-// through a live *i2pTransport — needed by DialerSAM, whose caller (the
+// through a live *i2pTransport, needed by DialerSAM, whose caller (the
 // pod, see cmd/pod.go) never builds a full i2pTransport.
 func resolveSAMDestination(ctx context.Context, samAddr, host string) (string, error) {
 	if looksLikeI2PDestinationBlob(host) {
@@ -272,7 +272,7 @@ func resolveSAMDestination(ctx context.Context, samAddr, host string) (string, e
 
 // DialerSAM opens a single transient SAM session against samAddr and
 // returns a DialContext-shaped function that dials I2P destinations over
-// it, reusing the same session for every call — the SAM equivalent of
+// it, reusing the same session for every call, the SAM equivalent of
 // tornode.Node.DialContext's single reused Tor dialer. Meant for a
 // short-lived one-shot process (the pod, see cmd/pod.go) that never
 // becomes a full Transport: the session's control connection is
@@ -305,16 +305,16 @@ func looksLikeI2PDestinationBlob(s string) bool {
 }
 
 // HasCircuits reports whether I2P currently appears to have working
-// connectivity — unlike the Tor equivalent (tornode.go, which actually
+// connectivity, unlike the Tor equivalent (tornode.go, which actually
 // queries "GETINFO circuit-status" on the control port), SAM v3 exposes
 // no tunnel status query (only I2PControl, a separate JSON-RPC service
 // not integrated here). A session having ever been created
 // (hostSess/cliSess non-empty) isn't enough by itself: it also factors
 // in the outcome of the last observed dial (lastDialFailed, updated by
-// DialContext) — a session exists but the most recent dial failed means
+// DialContext), a session exists but the most recent dial failed means
 // no longer "healthy". This remains a REACTIVE signal, not a proactive
 // check like Tor's: if no dial has happened recently, it only reflects
-// the last known outcome, not the CURRENT state of the tunnels — an
+// the last known outcome, not the CURRENT state of the tunnels, an
 // intrinsic limit of SAM v3 lacking a direct query, not resolvable
 // without I2PControl.
 func (t *i2pTransport) HasCircuits() bool {
@@ -323,7 +323,7 @@ func (t *i2pTransport) HasCircuits() bool {
 	return (t.hostSess != "" || t.cliSess != "") && !t.lastDialFailed
 }
 
-// ProxyAddr returns i2pd's local SAM bridge "host:port" — NOT a SOCKS5
+// ProxyAddr returns i2pd's local SAM bridge "host:port", NOT a SOCKS5
 // proxy (see DialerSAM above). Same role as torTransport.ProxyAddr for
 // the Transport interface.
 func (t *i2pTransport) ProxyAddr() string { return t.samAddr() }

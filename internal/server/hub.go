@@ -25,7 +25,7 @@ import (
 )
 
 // hubWriteTimeout limits how long ONE peer's dedicated write goroutine can
-// stay blocked on a single Write — a dead but not-yet-detected connection
+// stay blocked on a single Write, a dead but not-yet-detected connection
 // (Tor dropped without a clean RST, for example) must not keep that
 // goroutine busy forever: after the timeout the write fails, treated like
 // any other write error (see writeLoop: the peer is removed from the hub).
@@ -33,22 +33,22 @@ const hubWriteTimeout = 15 * time.Second
 
 // outboundQueueSize: how many frames can stay queued toward ONE single
 // peer before subsequent ones are dropped instead of making the producer
-// wait — ample for a room's real traffic (control frames + file chunks in
+// wait, ample for a room's real traffic (control frames + file chunks in
 // a sliding window, never thousands in flight at once toward the same
 // peer).
 const outboundQueueSize = 256
 
 // statusQueueOverloaded is the WS close code dedicated to the kick for a
-// saturated delivery queue (roomDelivery, see delivery.go) — RFC 6455
+// saturated delivery queue (roomDelivery, see delivery.go), RFC 6455
 // private range (4000-4999), never websocket.StatusPolicyViolation: that
 // one is reserved for /grp-ban (Hub.Kick below) and is interpreted by
 // ws.go as "banned" for every other member. An overload kick revokes no
-// secret — the peer can reconnect right away, resuming delivery of the
+// secret, the peer can reconnect right away, resuming delivery of the
 // backlog like any other reconnection.
 const statusQueueOverloaded = websocket.StatusCode(4001)
 
 // outConn pairs a connection with its dedicated write goroutine and the
-// queue that feeds it — see the comment on Hub for why this indirection
+// queue that feeds it, see the comment on Hub for why this indirection
 // exists instead of writing directly.
 type outConn struct {
 	conn   *websocket.Conn
@@ -64,9 +64,9 @@ type outConn struct {
 // frame (the per-connection "message loop" in ws.go, which reads an
 // incoming frame from the SENDER and forwards it before reading the next
 // one). Writing in-line and synchronously would mean a peer slow to read (a
-// congested Tor circuit — the cost is round-trip latency, not payload size)
+// congested Tor circuit, the cost is round-trip latency, not payload size)
 // blocks that goroutine until the write completes, and with it reading the
-// NEXT frame from the same sender — any frame, not just the one addressed
+// NEXT frame from the same sender, any frame, not just the one addressed
 // to the slow peer: a second transfer started while the first is still
 // delivering to a slow peer would stall, indistinguishable to the user from
 // a general app freeze, even for a tiny transfer (a contact card, a few
@@ -96,7 +96,7 @@ func (h *Hub) Register(userID string, conn *websocket.Conn) {
 
 // Unregister removes userID and closes its write queue, ending writeLoop
 // once the already-queued frames have been drained. Idempotent: if userID
-// isn't (no longer) registered it does nothing — both that connection's
+// isn't (no longer) registered it does nothing, both that connection's
 // read loop (ws.go, on disconnection) and writeLoop itself (on the first
 // write error, below) may call it for the same peer, only the first of the
 // two has any effect.
@@ -111,13 +111,13 @@ func (h *Hub) Unregister(userID string) {
 }
 
 // writeLoop writes toward this single peer in arrival order, on a goroutine
-// independent from whoever generates the frames — see the comment on Hub
+// independent from whoever generates the frames, see the comment on Hub
 // for why. Independent context for every write (never the original
-// caller's, which may no longer exist by this point) — same principle
+// caller's, which may no longer exist by this point), same principle
 // already used elsewhere in this file for disconnection-related
 // broadcasts. A write error (dead connection or timeout) removes the peer
 // from the hub right away, instead of waiting for its read loop to notice
-// on its own — faster, and also covers the case where that read loop stays
+// on its own, faster, and also covers the case where that read loop stays
 // blocked waiting for a frame that will never arrive from a connection
 // already effectively dead on the write side.
 func (oc *outConn) writeLoop() {
@@ -138,7 +138,7 @@ func (oc *outConn) writeLoop() {
 			oc.hub.Unregister(oc.userID)
 			// Unregister has already closed oc.outCh (under the same lock
 			// that removed oc from the map, so no new enqueue can reach it
-			// anymore) — but frames already queued BEFORE this error stay
+			// anymore), but frames already queued BEFORE this error stay
 			// in the channel buffer, never written or zeroed: only the
 			// frame that just failed got zeroed above, the others (e.g.
 			// during a burst of file chunks) would stay unzeroed on the
@@ -154,8 +154,8 @@ func (oc *outConn) writeLoop() {
 	}
 }
 
-// enqueue queues data — exclusively owned by this call from here on, the
-// caller must not touch it anymore — toward oc, never blocking: a full
+// enqueue queues data, exclusively owned by this call from here on, the
+// caller must not touch it anymore, toward oc, never blocking: a full
 // queue means the peer is too slow to keep up, the frame is dropped
 // (zeroed either way) instead of making the producer wait, same treatment
 // as a frame lost on the network for protocols that already tolerate
@@ -182,7 +182,7 @@ func enqueue(oc *outConn, data []byte) {
 
 // Broadcast sends v as JSON to all connections except excludeUserID.
 // Use this for control frames (init, user_joined, user_left, server_shutdown)
-// that do not carry ciphertext — message payloads go through roomDelivery's
+// that do not carry ciphertext, message payloads go through roomDelivery's
 // per-member queues instead, never a Hub-level broadcast.
 // ctx is not used for the actual write (see writeLoop).
 func (h *Hub) Broadcast(ctx context.Context, v any, excludeUserID string) {
@@ -236,7 +236,7 @@ func (h *Hub) Send(ctx context.Context, userID string, v any) error {
 	// enqueue INSIDE the critical section, never after a separate
 	// RUnlock: releasing the lock before enqueue opens a window where
 	// another goroutine can call Unregister(userID) and close oc.outCh
-	// right between the two operations — enqueue would then write to a
+	// right between the two operations, enqueue would then write to a
 	// closed channel, an immediate panic ("send on closed channel"), not
 	// interceptable from its own select/default. Same pattern already used
 	// by broadcastRaw/multicastRaw above, applied here for consistency.
@@ -254,7 +254,7 @@ func (h *Hub) Send(ctx context.Context, userID string, v any) error {
 // SendBytes sends pre-serialized JSON to a single connection; data passes
 // into this function's exclusive ownership (it will be zeroed).
 func (h *Hub) SendBytes(ctx context.Context, userID string, data []byte) error {
-	// enqueue under the same RLock, never after — same reason as Send above.
+	// enqueue under the same RLock, never after, same reason as Send above.
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	oc, ok := h.conns[userID]
@@ -266,15 +266,15 @@ func (h *Hub) SendBytes(ctx context.Context, userID string, data []byte) error {
 	return nil
 }
 
-// Kick forcibly closes userID's connection, if currently registered —
+// Kick forcibly closes userID's connection, if currently registered,
 // used by /grp-ban (host only). A dedicated close code
 // (StatusPolicyViolation, never used elsewhere in this project) lets that
 // connection's own read loop (ws.go, its own goroutine, not this call)
 // distinguish "removed" from "connection lost"/"left voluntarily" in the
 // user_left frame that its normal cleanup path transmits to everyone else
-// regardless — no new frame on the wire, the same exact mechanism as any
+// regardless, no new frame on the wire, the same exact mechanism as any
 // other disconnection. Returns false if the user isn't currently connected
-// (already gone, or never online — the caller removes the secret
+// (already gone, or never online, the caller removes the secret
 // separately regardless, see RoomRegistry.RemoveSecret, independent of
 // this outcome).
 func (h *Hub) Kick(userID string) bool {
@@ -296,7 +296,7 @@ func (h *Hub) ConnCount() int {
 }
 
 // KickOverloaded forcibly closes userID's connection with the dedicated
-// overload code (statusQueueOverloaded), never StatusPolicyViolation — see
+// overload code (statusQueueOverloaded), never StatusPolicyViolation, see
 // the comment on that constant. Used by roomDelivery when the pending
 // delivery queue toward a contact reaches outboundQueueSize: free
 // reconnection, no secret revocation (unlike Kick above, reserved for

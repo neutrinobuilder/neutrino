@@ -27,7 +27,7 @@ import (
 
 // TestApplyRelRevokeValidMarksDeviceRevoked verifies that a valid
 // rel_revoke announcement (certified by the already-known per-contact
-// RelIdentityKey — the self-signed revocation certificate, see
+// RelIdentityKey, the self-signed revocation certificate, see
 // shared.SignRelRevoke) applies the revocation on the correct device and
 // sends an ack.
 func TestApplyRelRevokeValidMarksDeviceRevoked(t *testing.T) {
@@ -129,7 +129,7 @@ func TestApplyRelRevokeForgedSigIsIgnored(t *testing.T) {
 
 // TestApplyRelRevokeAckMarksSiblingRevocationAcked verifies that an
 // incoming rel_revoke_ack updates the pool through AckSiblingRevocation
-// (best-effort, no signature to verify — fire-and-forget).
+// (best-effort, no signature to verify, fire-and-forget).
 func TestApplyRelRevokeAckMarksSiblingRevocationAcked(t *testing.T) {
 	bobPub, _, _ := ed25519.GenerateKey(rand.Reader)
 

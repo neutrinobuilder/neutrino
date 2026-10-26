@@ -23,7 +23,7 @@ import (
 
 // TestI2PDestinationDeterministic verifies that independent constructions
 // from the same key produce the same blob (and therefore the same address)
-// — a version with random padding would make the address change on every
+// a version with random padding would make the address change on every
 // call.
 func TestI2PDestinationDeterministic(t *testing.T) {
 	pub, priv, err := ed25519.GenerateKey(nil)
@@ -76,7 +76,7 @@ func TestI2PDestinationDeterministic(t *testing.T) {
 // TestI2PDestinationPublicDerivability verifies the central property of the
 // design: a contact who knows only the Ed25519 public key (never the
 // private one) must be able to compute the same .b32.i2p address that the
-// identity's owner computes from their own private key — same property as
+// identity's owner computes from their own private key, same property as
 // OnionAddressFromPub for Tor.
 func TestI2PDestinationPublicDerivability(t *testing.T) {
 	pub, priv, err := ed25519.GenerateKey(nil)

@@ -19,7 +19,7 @@ package androidnative
 
 import "errors"
 
-// nativeLibraryDirViaProcMaps makes no sense outside Linux (no /proc) —
+// nativeLibraryDirViaProcMaps makes no sense outside Linux (no /proc),
 // stub for macOS/Windows.
 func nativeLibraryDirViaProcMaps() (string, error) {
 	return "", errors.New("androidnative: /proc/self/maps not available on this platform")

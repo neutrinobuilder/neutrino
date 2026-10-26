@@ -78,7 +78,7 @@ import (
 
 // nativeLibraryDirViaJNI uses driver.RunNative (Fyne, android build tag) to
 // get the raw VM/Env/Ctx of the same android.content.Context a Java/Kotlin
-// app would receive, then calls getApplicationInfo() via cgo — no
+// app would receive, then calls getApplicationInfo() via cgo, no
 // hand-written .java/.kt file. RunNative internally delegates to
 // golang.org/x/mobile/internal/mobileinit.RunOnJVM, which already does
 // runtime.LockOSThread + JNI thread attach/detach: no need to repeat it

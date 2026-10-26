@@ -24,16 +24,16 @@ import (
 )
 
 // slotEntry is one independent "mini-keystore" inside the N-slot
-// keystore container — a real identity, the shared duress identity, or
+// keystore container, a real identity, the shared duress identity, or
 // an unassigned noise slot all have this exact same shape, so none is
 // structurally distinguishable from the others without the right
 // password combination.
 type slotEntry struct {
 	Salt         []byte // saltLen bytes, Argon2id salt for this slot's wrap key
 	WrapNonce    []byte // nonceLen bytes, AES-GCM nonce for the wrapped K_i
-	WrappedKi    []byte // AES-256-GCM(wrapKey, K_i) — fixed size regardless of slot type
+	WrappedKi    []byte // AES-256-GCM(wrapKey, K_i), fixed size regardless of slot type
 	ContentNonce []byte // nonceLen bytes, AES-GCM nonce for the slot's own content
-	Content      []byte // AES-256-GCM(K_i, slot payload) — grows only, never shrinks
+	Content      []byte // AES-256-GCM(K_i, slot payload), grows only, never shrinks
 }
 
 // deriveSlotWrapKey derives a slot's wrap key from the two concatenated
@@ -47,7 +47,7 @@ func deriveSlotWrapKey(passwordFile, passwordIdentity string, salt []byte) []byt
 
 // newSlotKi generates a new, independent random content key for a slot:
 // AES-256-GCM encrypts that slot's own content directly under it, no
-// Argon2id on the content itself — only the wrap step is slow.
+// Argon2id on the content itself, only the wrap step is slow.
 func newSlotKi() ([]byte, error) {
 	ki := make([]byte, keyLen)
 	if _, err := rand.Read(ki); err != nil {
@@ -57,7 +57,7 @@ func newSlotKi() ([]byte, error) {
 }
 
 // newSlot wraps ki under the given password combination into a freshly
-// salted slot. The returned slot has no content yet — the caller must
+// salted slot. The returned slot has no content yet, the caller must
 // seal it with sealSlotContent before it is fit to write to disk (a slot
 // is never left without content, see sealSlotContent).
 func newSlot(ki []byte, passwordFile, passwordIdentity string) (slotEntry, error) {
@@ -77,16 +77,16 @@ func newSlot(ki []byte, passwordFile, passwordIdentity string) (slotEntry, error
 }
 
 // newNoiseSlot creates a slot wrapped under random bytes instead of any
-// typed password — nobody will ever open it on purpose, but its shape
+// typed password, nobody will ever open it on purpose, but its shape
 // on disk (salt/wrapNonce/wrappedKi/contentNonce/content) is identical
 // to a real slot's: indistinguishable from genuine material without an
 // unwrap attempt. Its CONTENT must be non-trivial too, not just the
-// wrap — a noise slot with an empty/short Content while real/duress
+// wrap, a noise slot with an empty/short Content while real/duress
 // slots carry a full JSON payload would be a size tell visible to
 // anyone with the raw file, no password needed (AES-GCM ciphertext
 // length reveals plaintext length).
 //
-// This slot's only job is padding the file's slot count/size — it never
+// This slot's only job is padding the file's slot count/size, it never
 // carries contacts/mirror state like duress does. The filler is a
 // freshly-generated throwaway identity (New("")), same real keys and
 // rough size as a newborn real identity, nothing more.
@@ -123,7 +123,7 @@ func newNoiseSlot() (slotEntry, error) {
 
 // unwrapKi attempts to recover a slot's raw content key K_i from a
 // candidate password combination. ok is false if the combination
-// doesn't match this slot — the same outcome whether the slot belongs to
+// doesn't match this slot, the same outcome whether the slot belongs to
 // someone else, is a noise slot, or the password is simply wrong: no
 // distinguishable error between the three.
 func unwrapKi(s slotEntry, passwordFile, passwordIdentity string) (ki []byte, ok bool) {
@@ -135,7 +135,7 @@ func unwrapKi(s slotEntry, passwordFile, passwordIdentity string) (ki []byte, ok
 	return plain, true
 }
 
-// sealSlotContent encrypts plaintext directly under K_i (no Argon2id —
+// sealSlotContent encrypts plaintext directly under K_i (no Argon2id,
 // only the wrap step above is slow) and stores it into s, replacing any
 // previous content nonce. Callers never shrink plaintext across
 // successive calls on the same slot.
@@ -163,7 +163,7 @@ func openSlotContent(s slotEntry, ki []byte) ([]byte, error) {
 }
 
 // passwordIdentityCollides reports whether passwordIdentity (combined
-// with passwordFile) already opens ANY existing slot in slots — must be
+// with passwordFile) already opens ANY existing slot in slots, must be
 // checked before assigning a NEW password_identity to a real identity or
 // to duress: the file's login tries one candidate combination against
 // every slot, so two slots sharing the same combination would make

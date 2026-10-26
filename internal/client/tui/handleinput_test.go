@@ -26,8 +26,8 @@ import (
 )
 
 // TestMistypedCommandNeverSentAsMessage verifies that a command typed in
-// the wrong form inside a room — an argument to a command that takes
-// none, or a missing required argument — is reported in Console and
+// the wrong form inside a room, an argument to a command that takes
+// none, or a missing required argument, is reported in Console and
 // never sent to the room as a chat message.
 func TestMistypedCommandNeverSentAsMessage(t *testing.T) {
 	noArgs := func(name string) string { return fmt.Sprintf(i18n.T("tui.err_command_no_args"), name) }

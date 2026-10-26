@@ -52,7 +52,7 @@ func TestRoomRegistryCleanupStaleSessions(t *testing.T) {
 
 // TestRoomRegistryRemoveSecretEvictsEmptyRoom verifies that removing the
 // LAST valid secret of a room (no connection ever happened, state still
-// nil) makes the entry disappear from the registry entirely — otherwise it
+// nil) makes the entry disappear from the registry entirely, otherwise it
 // stays in RAM for the rest of the process's life, with no way left to
 // authenticate against it.
 func TestRoomRegistryRemoveSecretEvictsEmptyRoom(t *testing.T) {
@@ -80,8 +80,8 @@ func TestRoomRegistryRemoveSecretEvictsEmptyRoom(t *testing.T) {
 // TestRoomRegistryReleaseRoomIfEmptyKeepsSecretsClearsState verifies that
 // when the last CONNECTED MEMBER leaves but the room still has valid
 // secrets (no ban, just a disconnection), the entry stays in the registry
-// — a future member must still be able to authenticate with the same
-// secret — but the runtime state (hub+sessions) gets zeroed and lazily
+// a future member must still be able to authenticate with the same
+// secret, but the runtime state (hub+sessions) gets zeroed and lazily
 // recreated by GetOrCreateRoom, not left alive forever while empty.
 func TestRoomRegistryReleaseRoomIfEmptyKeepsSecretsClearsState(t *testing.T) {
 	reg := NewRoomRegistry()
@@ -142,7 +142,7 @@ func TestRoomRegistryReleaseRoomIfEmptyKeepsSecretsClearsState(t *testing.T) {
 
 // TestClaimIdentitySlotRejectsDifferentDevice reproduces the central case
 // of "one device per identity per room": a DIFFERENT device of the same
-// identityPub must never be able to claim the already-occupied slot —
+// identityPub must never be able to claim the already-occupied slot,
 // ok=false, no evictUserID (nobody gets disconnected, the existing session
 // stays intact).
 func TestClaimIdentitySlotRejectsDifferentDevice(t *testing.T) {
@@ -168,7 +168,7 @@ func TestClaimIdentitySlotRejectsDifferentDevice(t *testing.T) {
 
 // TestClaimIdentitySlotAllowsSameDeviceReconnectAndEvicts verifies that the
 // SAME device (same devicePub) can reclaim the slot again with a new
-// session user_id (a genuine reconnection) — evictUserID must report the
+// session user_id (a genuine reconnection), evictUserID must report the
 // previous session, to be explicitly closed by the caller (Hub.conns is
 // keyed by user_id, a new user_id doesn't replace the old one on its own).
 func TestClaimIdentitySlotAllowsSameDeviceReconnectAndEvicts(t *testing.T) {
@@ -192,7 +192,7 @@ func TestClaimIdentitySlotAllowsSameDeviceReconnectAndEvicts(t *testing.T) {
 }
 
 // TestClaimIdentitySlotIndependentIdentities verifies that two DIFFERENT
-// identities never contend for the same slot — each claims and keeps its
+// identities never contend for the same slot, each claims and keeps its
 // own independently of the other.
 func TestClaimIdentitySlotIndependentIdentities(t *testing.T) {
 	reg := NewRoomRegistry()
@@ -214,7 +214,7 @@ func TestClaimIdentitySlotIndependentIdentities(t *testing.T) {
 }
 
 // TestReleaseIdentitySlotOnlyIfCurrentOwner verifies that releasing a slot
-// NEVER erases a more recent entry — if the same device has already
+// NEVER erases a more recent entry, if the same device has already
 // reconnected (ClaimIdentitySlot with a new user_id, which replaces the
 // entry), the OLD session's disconnection defer must not free the slot
 // just occupied by the NEW one.
@@ -243,7 +243,7 @@ func TestReleaseIdentitySlotOnlyIfCurrentOwner(t *testing.T) {
 
 // TestClaimIdentitySlotEmptyIdentityNeverBlocks verifies that an empty
 // identityPub (should never happen for a real member, but missing
-// data must never block a connection) never applies enforcement — always
+// data must never block a connection) never applies enforcement, always
 // ok, regardless of how many times claimed.
 func TestClaimIdentitySlotEmptyIdentityNeverBlocks(t *testing.T) {
 	reg := NewRoomRegistry()

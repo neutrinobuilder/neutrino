@@ -25,7 +25,7 @@ import (
 
 // TestBufferMsgStoreAndTake covers the basic cycle: a frame buffered for
 // (keyID, idx) is found again by takeBufferedMsg, and removed after being
-// taken — a second take on the same idx finds nothing anymore.
+// taken, a second take on the same idx finds nothing anymore.
 func TestBufferMsgStoreAndTake(t *testing.T) {
 	tab := &roomTab{}
 	mm := map[string]any{"text": "ciphertext", "idx": float64(5)}
@@ -46,7 +46,7 @@ func TestBufferMsgStoreAndTake(t *testing.T) {
 }
 
 // TestBufferMsgIndependentPerKeyID covers isolation between different
-// senders in the same room — a gap on A's keyID must not interfere with
+// senders in the same room, a gap on A's keyID must not interfere with
 // B's.
 func TestBufferMsgIndependentPerKeyID(t *testing.T) {
 	tab := &roomTab{}
@@ -63,7 +63,7 @@ func TestBufferMsgIndependentPerKeyID(t *testing.T) {
 	}
 }
 
-// TestBufferMsgRespectsCap covers the maxBufferedPerKey safety limit — a
+// TestBufferMsgRespectsCap covers the maxBufferedPerKey safety limit, a
 // buggy or malicious sender declaring an idx far ahead must not be able to
 // grow the buffer without bound.
 func TestBufferMsgRespectsCap(t *testing.T) {
@@ -77,7 +77,7 @@ func TestBufferMsgRespectsCap(t *testing.T) {
 }
 
 // TestTakeBufferedMsgUnknownKeyID covers the case where nothing has ever
-// arrived for that keyID — must not panic on a nil map.
+// arrived for that keyID, must not panic on a nil map.
 func TestTakeBufferedMsgUnknownKeyID(t *testing.T) {
 	tab := &roomTab{}
 	if _, ok := takeBufferedMsg(tab, "never-seen", 0); ok {
@@ -89,7 +89,7 @@ func TestTakeBufferedMsgUnknownKeyID(t *testing.T) {
 // behavior (not just the bufferMsg/takeBufferedMsg storage above): idx 0
 // arrives and is processed right away; idx 2 arrives BEFORE its turn and is
 // held back without being shown; idx 1 arrives, unlocks itself AND, in a
-// cascade within the same round, the already-buffered idx 2 — a single
+// cascade within the same round, the already-buffered idx 2, a single
 // handleIncomingMessage call for idx 1 must return BOTH "two" and "three" in
 // order, never a fast-forward, never a loss.
 func TestHandleIncomingMessageUnlocksBufferedCascade(t *testing.T) {

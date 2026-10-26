@@ -23,7 +23,7 @@ import (
 )
 
 // Dbg has two independent, simultaneous destinations: displayCh (the
-// on-screen echo — the TUI's Console tab, toggleable at any time with
+// on-screen echo, the TUI's Console tab, toggleable at any time with
 // SetDebug) and fileCh (the file
 // opened by `neutrino debug <file>` via SetDebugFile). Each lives on
 // its own: SetDebug(nil) only turns off the on-screen echo, never the
@@ -46,7 +46,7 @@ func SetDebug(ch chan<- string) {
 }
 
 // SetDebugFile enables debug output by writing every line (timestamped)
-// directly to a file — used by `neutrino debug <file>`. Independent of
+// directly to a file, used by `neutrino debug <file>`. Independent of
 // SetDebug/displayCh: no /debug on|off in the TUI, at any point in the
 // session, stops this writing. Unlike the Console tab, which lives only
 // in RAM and disappears with the process, the file stays on disk even
@@ -81,7 +81,7 @@ func SetDebugFile(path string) (stop func(), err error) {
 }
 
 // Dbg emits a debug message to every active sink (on-screen echo, file,
-// both, or neither — independent of each other).
+// both, or neither, independent of each other).
 // Thread-safe: can be called from any goroutine.
 // Uses a non-blocking select for each sink: the message is dropped on
 // that sink if its buffer is full, never blocking.

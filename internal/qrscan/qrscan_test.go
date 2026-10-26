@@ -27,7 +27,7 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-// encodeQR generates a PNG containing a QR code with the given text — uses
+// encodeQR generates a PNG containing a QR code with the given text, uses
 // the same library the project already uses to generate the QR codes shown
 // to the user (identity, backup, sync), here in the opposite direction to
 // build test cases.
@@ -55,7 +55,7 @@ func TestDecodeQRImageRoundTrip(t *testing.T) {
 
 // TestDecodeQRFromImageRawBinaryContent: without an explicit charset,
 // gozxing decodes byte-mode QR content through a GUESSED character set
-// (Shift-JIS/UTF-8/...) when the QR carries no ECI marker — lossy for
+// (Shift-JIS/UTF-8/...) when the QR carries no ECI marker, lossy for
 // binary content. Every NTR3 chunk (backup/sync/identity) includes a
 // 4-byte random session_id that can be any value 0x00-0xFF; a guessed
 // charset can map one encoded byte to a DIFFERENT number of decoded
@@ -82,7 +82,7 @@ func TestDecodeQRFromImageRawBinaryContent(t *testing.T) {
 		t.Fatalf("DecodeQRFromImage: %v", err)
 	}
 	if got != string(want) {
-		t.Fatalf("DecodeQRFromImage returned %d bytes != %d bytes encoded — byte-for-byte mismatch at the charset-guessing layer", len(got), len(want))
+		t.Fatalf("DecodeQRFromImage returned %d bytes != %d bytes encoded, byte-for-byte mismatch at the charset-guessing layer", len(got), len(want))
 	}
 }
 

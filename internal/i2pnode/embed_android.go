@@ -20,13 +20,13 @@ package i2pnode
 // i2pdBinary stays empty on Android: unlike the other platforms, the
 // real i2pd binary (from PurpleI2P/i2pd-android, a standalone ELF
 // already executable, not disguised) isn't embedded via go:embed into
-// the Go binary — instead it arrives as part of APK packaging
+// the Go binary, instead it arrives as part of APK packaging
 // (jniLibs/<abi>/libi2pd.so) and is resolved at runtime through
-// internal/androidnative.Resolve() — see resolveBinary in i2pnode.go.
+// internal/androidnative.Resolve(), see resolveBinary in i2pnode.go.
 //
 // Build tag note: GOOS=android also satisfies "linux" constraints (see
 // "go help buildconstraint"), so embed_linux_amd64.go/embed_linux_arm64.go
 // explicitly exclude "&& !android" to avoid conflicting with this file
-// (otherwise "i2pdBinary redeclared") — the same scheme already applied
+// (otherwise "i2pdBinary redeclared"), the same scheme already applied
 // in internal/tornode for Tor.
 var i2pdBinary []byte

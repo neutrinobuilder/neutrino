@@ -80,7 +80,7 @@ func TestQRChooseModeFOpensFileBrowser(t *testing.T) {
 
 // buildTestIdentityURI returns a realistic nu:// URI (Ed25519 + ML-KEM-768
 // + ML-DSA-65, like a real identity) long enough that keystore.ChunkBlob
-// always splits it into more than one NTR3 chunk — same situation as a
+// always splits it into more than one NTR3 chunk, same situation as a
 // real identity QR saved as part1/part2 PNGs.
 func buildTestIdentityURI(t *testing.T, username string) string {
 	t.Helper()
@@ -122,7 +122,7 @@ func writeQRPNG(t *testing.T, path, content string) {
 // (same as two numbered PNGs picked at once in the filesystem browser
 // with Space, confirmed with a single Enter) reassembled correctly.
 // Exercises handleQRDecoded/qrFilesDecodedMsg directly with the chunk
-// texts rather than round-tripping through real QR PNGs — the real
+// texts rather than round-tripping through real QR PNGs, the real
 // encode/decode pipeline (rendering, resolution, retry) is covered
 // separately by cmd.TestQRPartsDecodeRoundTripManyIdentities; what this
 // test verifies is purely the browser's state machine: multi-select
@@ -165,7 +165,7 @@ func TestQRFileBrowserMultiSelectReadsPartsInOrder(t *testing.T) {
 
 // TestQRFileBrowserSingleSelectionStillWorks verifies Enter with nothing
 // toggled (Space never pressed) falls back to the single highlighted
-// file — the common case for a one-image identity or a backup/sync QR.
+// file, the common case for a one-image identity or a backup/sync QR.
 // Unlike the multi-part test above, this one DOES round-trip through a
 // real QR PNG (via cmdReadQRFiles → qrscan.DecodeQRFile): a short,
 // classical-only URI (no PQC segments) stays at a low QR version, well

@@ -52,7 +52,7 @@ var (
 // path once with lookPathSafe, saving it into pasteCmdArgs[0] /
 // copyCmdArgs[0]. Required: getPasteCommand/getCopyCommand pass that
 // element to exec.Command, which, if it contains a bare name (no path
-// separator), redoes a real exec.LookPath on its own — the very
+// separator), redoes a real exec.LookPath on its own, the very
 // Faccessat2 call lookPathSafe exists to avoid. The constant slices
 // (xclipPasteArgs etc.) are copied, not aliased, before writing to
 // element [0].

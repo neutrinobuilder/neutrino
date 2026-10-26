@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Package version exposes the application's version number — the single
+// Package version exposes the application's version number, the single
 // source of truth for the whole project.
 package version
 
@@ -23,7 +23,7 @@ package version
 // version`/`--version`, and the `neutrino --help` header.
 const AppVersion = "0.0.49"
 
-// Build is a finer-grained identifier than AppVersion — YYMMDDNNNN (two-digit
+// Build is a finer-grained identifier than AppVersion, YYMMDDNNNN (two-digit
 // year, month, day, a 4-digit sequence within that day), updated by hand
 // alongside AppVersion, never computed automatically.
 const Build = "2610230007"
@@ -34,7 +34,7 @@ const Build = "2610230007"
 var Dev string
 
 // Full returns AppVersion and Build combined, followed by " Dev.<n>" when Dev
-// is set — the single string shown everywhere the project displays its own
+// is set, the single string shown everywhere the project displays its own
 // version (TUI /info-app, `neutrino version`/`--version`/`--help`).
 func Full() string {
 	s := AppVersion + " (build " + Build + ")"

@@ -143,7 +143,7 @@ func TestDeliveryPausedRecipient(t *testing.T) {
 	checkRoomHistory(t, alice, room, want)
 }
 
-// TestDeliveryPausedSender: the sender freezes right after sending —
+// TestDeliveryPausedSender: the sender freezes right after sending,
 // before or while its own self-echo comes back. The message must reach
 // the recipient once, and the sender must still see it confirmed (room
 // sequence number and acknowledgement) after resuming.
@@ -167,9 +167,9 @@ func TestDeliveryPausedSender(t *testing.T) {
 	checkRoomHistory(t, alice, room, []string{"alice: sent then frozen"})
 }
 
-// TestDeliveryBurst: many messages typed back to back from both sides —
+// TestDeliveryBurst: many messages typed back to back from both sides,
 // beyond the 5-slot backpressure window and the sender_key rotation
-// threshold (25 messages) — all arrive, each once, in the same order on
+// threshold (25 messages), all arrive, each once, in the same order on
 // both sides.
 func TestDeliveryBurst(t *testing.T) {
 	r := NewRun(t)
@@ -191,7 +191,7 @@ func TestDeliveryBurst(t *testing.T) {
 	waitAllAcked(t, bob, room, "alice")
 
 	// Both sides must agree on one room order, given by the room
-	// sequence numbers — the display order may legitimately differ
+	// sequence numbers, the display order may legitimately differ
 	// between sides only if it still follows gseq.
 	order := func(in *Instance) []string {
 		msgs := roomMessages(in, room)
@@ -226,7 +226,7 @@ func TestDeliveryBurst(t *testing.T) {
 // TestDeliveryReencryptAfterTTL: the recipient stays frozen beyond the
 // message TTL, so the sender re-encrypts its unacknowledged messages
 // under a new sender_key generation. Once resumed, the recipient shows
-// each message exactly once — whichever copy it decrypts first — and the
+// each message exactly once, whichever copy it decrypts first, and the
 // sender sees all of them acknowledged.
 func TestDeliveryReencryptAfterTTL(t *testing.T) {
 	r := NewRun(t)

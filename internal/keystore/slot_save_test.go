@@ -110,8 +110,8 @@ func TestSaveWithDuressUpdatesBothSlots(t *testing.T) {
 	}
 }
 
-// TestSaveSlotGeneratesRelRevocationCerts checks that SaveSlot — the
-// save path cmd/main.go uses under the N-slot container format — runs
+// TestSaveSlotGeneratesRelRevocationCerts checks that SaveSlot, the
+// save path cmd/main.go uses under the N-slot container format, runs
 // ensureRelRevocations, which pre-computes
 // DeviceRelation.RevokeIdentitySig/RevokeContentSig (consulted by
 // BuildPodSnapshot/deliverPodRevokes to pick which contacts the nuke
@@ -125,7 +125,7 @@ func TestSaveSlotGeneratesRelRevocationCerts(t *testing.T) {
 
 	// CreateFile/New, not writeFreshContainer/sealIdentity: this test
 	// needs a real IdentityPrivKey (BuildPodSnapshot derives its own
-	// pubkey from it) — the bare {Version,Username,Contacts} the other
+	// pubkey from it), the bare {Version,Username,Contacts} the other
 	// helper seals has none, real identities created through the wizard
 	// always do.
 	real, err := New("alice")
@@ -151,7 +151,7 @@ func TestSaveSlotGeneratesRelRevocationCerts(t *testing.T) {
 	}
 	devicePub := "some-device-pub"
 	// CreateFile already seeded Contacts[0] with an empty placeholder
-	// (ContactPendingIdx bookkeeping) — append, don't assume index 0.
+	// (ContactPendingIdx bookkeeping), append, don't assume index 0.
 	u.Identity.Contacts = append(u.Identity.Contacts, Contact{
 		Username:    "bob",
 		IdentityPub: contactPub,
@@ -174,7 +174,7 @@ func TestSaveSlotGeneratesRelRevocationCerts(t *testing.T) {
 	}
 	dev := bob.Devices[devicePub]
 	if dev == nil || len(dev.RevokeIdentitySig) == 0 {
-		t.Fatal("RevokeIdentitySig empty after SaveSlot — ensureRelRevocations never ran on the production save path")
+		t.Fatal("RevokeIdentitySig empty after SaveSlot, ensureRelRevocations never ran on the production save path")
 	}
 
 	// The actual consumer: BuildPodSnapshot must find this contact

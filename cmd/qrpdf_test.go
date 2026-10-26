@@ -26,7 +26,7 @@ import (
 )
 
 // TestPrintAndSaveQRGeneratesPDF verifies that saving an identity QR
-// also produces a PDF alongside the .txt/.png files — one page with the
+// also produces a PDF alongside the .txt/.png files, one page with the
 // plain URI text, one page per QR part image.
 func TestPrintAndSaveQRGeneratesPDF(t *testing.T) {
 	pub, _, err := ed25519.GenerateKey(rand.Reader)
@@ -107,17 +107,17 @@ func TestSaveQRPagesAsPDFNoPartsIsNoop(t *testing.T) {
 }
 
 // TestQRPartsDecodeRoundTripManyIdentities regenerates and decodes
-// several full identities (both PQC keys, near-maximum QR version —
+// several full identities (both PQC keys, near-maximum QR version,
 // well over 150 modules per part) back to back. A single identity isn't
 // a reliable check here: measured directly, gozxing
 // (internal/qrscan) fails to decode roughly 1 in 10 otherwise-valid
 // renders at this density purely from a content/version-dependent
-// detection limitation (no damage or recompression involved — a
-// pristine render can still fail) — a single random sample has too
+// detection limitation (no damage or recompression involved, a
+// pristine render can still fail), a single random sample has too
 // high a chance of landing on a part that happens to decode fine either
 // way. qrscan.EncodeVerified handles this: it
 // decodes its own render back before returning, stepping to the next QR
-// version (same content, different mask — go-qrcode scores masks on
+// version (same content, different mask, go-qrcode scores masks on
 // visual penalty rules, not decodability) until one verifies. Enough
 // identities that, without EncodeVerified, at least one failure would be
 // expected with very high probability (1-0.9^30 ≈ 96%).
@@ -155,12 +155,12 @@ func TestQRPartsDecodeRoundTripManyIdentities(t *testing.T) {
 }
 
 // TestQRPartsDecodeRoundTripAtMaxVersion verifies the saved part PNGs of
-// a full identity (both PQC keys, near-maximum QR version — around
+// a full identity (both PQC keys, near-maximum QR version, around
 // version 37-40, well over 170 modules) actually decode back. A fixed
 // WriteFile(256, ...) divides unevenly across that many modules
 // (nearest-neighbor sampling then renders some module rows/columns 1px
 // wide and the next 2px), which breaks /cnt-read-qrcode on a
-// non-recompressed identity PNG — so parts are rendered at an exact
+// non-recompressed identity PNG, so parts are rendered at an exact
 // pixels-per-module size (qrscan.PixelsPerModule, a negative size per
 // go-qrcode's own variable-size convention) instead of a fixed total
 // image size.

@@ -23,14 +23,14 @@ import (
 
 // TestRemoteNukeFanOutCleanupDoesNotEvictNewerRetry verifies that the
 // deferred cleanup of an older fan-out must not remove from the map the
-// entry of a more recent retry for the same DeviceID — if it did, a
+// entry of a more recent retry for the same DeviceID, if it did, a
 // remote_nuke_ack received afterward (stopRemoteNukeFanOut) would no longer
 // find the still-ongoing retry and would fail to stop it.
 //
 // dialTor stays nil: every per-target goroutine of cmdRemoteNukeFanOut
 // returns right away (`if dial == nil ... { return }`), so the returned
 // tea.Cmd can be invoked SYNCHRONOUSLY in the test with no real network
-// I/O — allowing deterministic control over the order "register A, register
+// I/O, allowing deterministic control over the order "register A, register
 // B (replacing A), run A's cleanup" without depending on the scheduler.
 func TestRemoteNukeFanOutCleanupDoesNotEvictNewerRetry(t *testing.T) {
 	m := &model{
@@ -58,7 +58,7 @@ func TestRemoteNukeFanOutCleanupDoesNotEvictNewerRetry(t *testing.T) {
 		t.Fatal("cmdRemoteNukeFanOut: entry not registered after the first call")
 	}
 
-	// Retry for the SAME device before A has run its own cleanup — replaces
+	// Retry for the SAME device before A has run its own cleanup, replaces
 	// entryA with entryB in the map and cancels A's context (intended
 	// behavior, not what this test covers).
 	cmdB := m.cmdRemoteNukeFanOut(rec)
@@ -71,7 +71,7 @@ func TestRemoteNukeFanOutCleanupDoesNotEvictNewerRetry(t *testing.T) {
 	}
 
 	// Runs A's deferred cleanup NOW (its ctx is already canceled, so
-	// wg.Wait() returns right away) — must not touch B's entry.
+	// wg.Wait() returns right away), must not touch B's entry.
 	cmdA()
 
 	if got := m.remoteNukeCancels[key]; got != entryB {

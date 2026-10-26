@@ -69,7 +69,7 @@ func (r *RateLimiter) AllowRequest(remoteAddr string) bool {
 	ip, _, err := net.SplitHostPort(remoteAddr)
 	if err != nil {
 		// malformed remoteAddr (SplitHostPort failed): fail-closed, not
-		// fail-open — a rate limiter must deny by default on unexpected
+		// fail-open, a rate limiter must deny by default on unexpected
 		// input, never silently bypass the limit. Likely unreachable with
 		// standard net/http (r.RemoteAddr is always a valid "host:port"
 		// there), defense in depth.

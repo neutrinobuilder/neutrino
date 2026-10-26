@@ -31,7 +31,7 @@ import (
 // AcquireWakeLock runs termux-wake-lock (bundled with Termux itself, no
 // separate Termux:API app required) and returns a release function for
 // termux-wake-unlock. Best-effort and silent outside Termux or if the
-// command isn't installed: both calls are simply skipped — release is
+// command isn't installed: both calls are simply skipped, release is
 // always safe to invoke.
 //
 // Without a wake-lock, Doze/App Standby can suspend Termux for an
@@ -57,7 +57,7 @@ func AcquireWakeLock() (release func()) {
 // NAME, it doesn't discover one). Reads the real zone via "getprop
 // persist.sys.timezone" (an Android system property, no Termux:API
 // required) and assigns it explicitly. Best-effort and silent on any
-// failure (command missing, not on Android, unknown zone name) — leaves
+// failure (command missing, not on Android, unknown zone name), leaves
 // time.Local untouched in that case.
 func FixLocalTimezone() {
 	out, err := runGetprop()
@@ -77,7 +77,7 @@ func FixLocalTimezone() {
 
 // runGetprop runs getprop, looking for it first in $PATH, then (Termux
 // normally doesn't include /system/bin in its own PATH) at the standard
-// Android absolute path — best-effort, silent if neither exists.
+// Android absolute path, best-effort, silent if neither exists.
 func runGetprop() ([]byte, error) {
 	if _, err := safeexec.LookPath("getprop"); err == nil {
 		return safeexec.Command("getprop", "persist.sys.timezone").Output()

@@ -33,7 +33,7 @@ import (
 //
 // The three fields are EXPORTED (IdentityKey/OldIdentityKey/... in
 // the Keystore struct) because encoding/json ignores unexported fields
-// — their TYPE, vaultBytes, is unexported: an external package can
+// their TYPE, vaultBytes, is unexported: an external package can
 // still read/write the field, but can't construct a vaultBytes with
 // arbitrary content (no literal accessible outside this package), nor
 // read its raw bytes without going through bytes()/open().
@@ -42,7 +42,7 @@ type vaultBytes struct {
 }
 
 // newVaultBytes moves b into an encrypted Enclave. memguard.NewBufferFromBytes
-// zeroes b itself after copying it — an intended side effect: moving an
+// zeroes b itself after copying it, an intended side effect: moving an
 // existing field into a vaultBytes (e.g. startKeyRotationLocked, which
 // does `ks.OldIdentityKey = ks.IdentityKey` before replacing IdentityKey
 // with the new key) gets the old backing array zeroed without writing
@@ -58,7 +58,7 @@ func newVaultBytes(b []byte) vaultBytes {
 func (v vaultBytes) isSet() bool { return v.enc != nil }
 
 // open decrypts the secret into a LockedBuffer, passes the plaintext to
-// fn, then destroys (zeroes) the buffer as soon as fn returns — even on
+// fn, then destroys (zeroes) the buffer as soon as fn returns, even on
 // a panic in fn, thanks to the defer. Use to build a key object that no
 // longer holds a reference to the source buffer once returned
 // (mldsa65.NewKeyFromSeed/mlkem.NewDecapsulationKey768 expand the seed
@@ -78,11 +78,11 @@ func (v vaultBytes) open(fn func(plain []byte)) {
 	fn(lb.Bytes())
 }
 
-// bytes returns a plaintext COPY owned by the caller — use only where
+// bytes returns a plaintext COPY owned by the caller, use only where
 // the value must survive beyond the single call (e.g. AbortKeyRotation,
 // which must put the old key back into a normal
 // IdentityKey/MLKEMKey/MLDSAKey field, outside the vault). The caller
-// inherits the responsibility of not holding it longer than needed — no
+// inherits the responsibility of not holding it longer than needed, no
 // zeroing guarantee beyond this point (a known Go limitation, no
 // equivalent of Rust's zeroize).
 func (v vaultBytes) bytes() []byte {
@@ -103,7 +103,7 @@ func (v vaultBytes) bytes() []byte {
 //
 // Note: omitempty on a struct-typed field never makes standard
 // encoding/json omit the field (a library limitation, not of this code)
-// — an empty vaultBytes serializes as `null` instead of being entirely
+// an empty vaultBytes serializes as `null` instead of being entirely
 // absent. No functional impact: the round-trip remains identical.
 func (v vaultBytes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.bytes())

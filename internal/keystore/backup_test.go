@@ -28,7 +28,7 @@ import (
 )
 
 // addManyContacts adds n contacts with a random IdentityPub (32
-// high-entropy bytes, not compressible) — used to deliberately exceed a
+// high-entropy bytes, not compressible), used to deliberately exceed a
 // single QR's threshold (2953 bytes) and exercise the
 // ExportQRMulti/AssembleQRMulti paths.
 func addManyContacts(t *testing.T, ks *keystore.Keystore, n int) {
@@ -146,7 +146,7 @@ func TestExportImportBackupFileRoundtrip(t *testing.T) {
 }
 
 // TestImportFromBackupFileGeneratesFreshDeviceID verifies that a
-// restore from 24 words + file is the birth of an ADDITIONAL device —
+// restore from 24 words + file is the birth of an ADDITIONAL device,
 // it must receive its own DeviceID/DevicePriv, never clone the
 // backup's origin device's one (otherwise two devices would end up
 // sharing the same device identity and colliding on the same derived
@@ -189,7 +189,7 @@ func TestImportFromBackupFileGeneratesFreshDeviceID(t *testing.T) {
 		t.Error("ImportFromBackupFile: IdentityKey must not change, it stays the same identity")
 	}
 	// The derived network address for the additional device must differ
-	// from the origin device's (D1, direct root IdentityKey) — that's
+	// from the origin device's (D1, direct root IdentityKey), that's
 	// exactly the point: no collision.
 	if bytes.Equal(got.NetworkIdentityPrivKey(), ks.NetworkIdentityPrivKey()) {
 		t.Error("NetworkIdentityPrivKey: an additional device and D1 must not share the same network address")
@@ -198,7 +198,7 @@ func TestImportFromBackupFileGeneratesFreshDeviceID(t *testing.T) {
 
 // TestImportFromBackupFileClearsRelationKeys verifies that an
 // additional device must not inherit relationship keys already
-// confirmed by the origin device — otherwise it would be
+// confirmed by the origin device, otherwise it would be
 // cryptographically indistinguishable from D1 toward every
 // already-verified contact, and whoever holds just the backup file
 // (legitimate or stolen) would inherit already-established trust
@@ -253,10 +253,10 @@ func TestImportFromBackupFileClearsRelationKeys(t *testing.T) {
 	}
 	c := got.Contacts[0]
 	if len(c.Devices) != 0 {
-		t.Error("Devices not cleared — an additional device must not inherit relationships already negotiated by another")
+		t.Error("Devices not cleared, an additional device must not inherit relationships already negotiated by another")
 	}
 	if c.Verified {
-		t.Error("Verified must go back to false — it has to be earned again on this device")
+		t.Error("Verified must go back to false, it has to be earned again on this device")
 	}
 	if len(c.KnownDevicePub) != 0 {
 		t.Error("KnownDevicePub not cleared")
@@ -787,7 +787,7 @@ func TestMergeContactsNoChangeWhenIdentical(t *testing.T) {
 // TestMergeContactsExtractsSiblingRevocationFromDevicesNewContact verifies
 // that a revocation carried in the OWN relationship of the sibling
 // device that sent the sync (incDevices) ends up in the contact's
-// SiblingRevocations pool, correctly attributed to fromDevicePub —
+// SiblingRevocations pool, correctly attributed to fromDevicePub,
 // while Devices itself stays nil (private keys are never inherited).
 func TestMergeContactsExtractsSiblingRevocationFromDevicesNewContact(t *testing.T) {
 	ks, err := keystore.New("alice")
@@ -838,7 +838,7 @@ func TestMergeContactsExtractsSiblingRevocationFromDevicesNewContact(t *testing.
 
 // TestMergeContactsExtractsSiblingRevocationForExistingContact verifies
 // that the same mechanism also applies to a contact ALREADY known
-// locally — a later update (a sibling's rotation) must propagate there
+// locally, a later update (a sibling's rotation) must propagate there
 // too, not just on first encounter.
 func TestMergeContactsExtractsSiblingRevocationForExistingContact(t *testing.T) {
 	ks, err := keystore.New("alice")

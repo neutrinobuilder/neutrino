@@ -35,7 +35,7 @@ import (
 // TestPQCSignWithRatchetDHTwoMemberRoom verifies that enabling /sec-pqc-sign
 // in a two-member room (ratchetDH active) doesn't break the ratchet. Covers
 // a real bidirectional exchange (A→B, B→A, then two more rounds) with both
-// sides ML-DSA-65-signed — both the DH mix (which depends on idx/dh/dhr
+// sides ML-DSA-65-signed, both the DH mix (which depends on idx/dh/dhr
 // inside the same signed ciphertext) and the pqc_sig verification (which
 // depends on the exact ciphertext sent on the wire) must stay correct
 // message by message.
@@ -102,7 +102,7 @@ func TestPQCSignWithRatchetDHTwoMemberRoom(t *testing.T) {
 		return shared.SignPQCSig(mldsaPrivB, string(ciphertext), ts)
 	}
 
-	// ratchetDH=true on both — exactly like a two-member room
+	// ratchetDH=true on both, exactly like a two-member room
 	// (cmdInvite/cmdJoin: len(members)==2).
 	cliA := client.New(host, port, "alice", secretA, true, nil, nil, signA,
 		shared.RelSigningKey{Priv: devAPriv}, shared.RelPeerKey{Pub: hostPub})
@@ -116,7 +116,7 @@ func TestPQCSignWithRatchetDHTwoMemberRoom(t *testing.T) {
 	}
 
 	// B reads its own "init" frame (A was already connected) to learn A's
-	// session_pub/mlkem_pub — never consumed by Connect() itself, it's up
+	// session_pub/mlkem_pub, never consumed by Connect() itself, it's up
 	// to the caller (tui.go, case "init"), replicated by hand
 	// here.
 	initB := readUntil(t, ctx, cliB, "init")
@@ -219,7 +219,7 @@ func TestPQCSignWithRatchetDHTwoMemberRoom(t *testing.T) {
 			t.Fatalf("step %d: pqc_sig is not valid base64: %v", i, err)
 		}
 		if !shared.VerifyPQCSig(s.fromPub, rawText, pqcTS, sigBytes) {
-			t.Errorf("step %d (%s): VerifyPQCSig failed on the received message — ciphertext=%q ts=%q", i, s.fromName, rawText, pqcTS)
+			t.Errorf("step %d (%s): VerifyPQCSig failed on the received message, ciphertext=%q ts=%q", i, s.fromName, rawText, pqcTS)
 		}
 	}
 }

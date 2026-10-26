@@ -47,7 +47,7 @@ import (
 	"neutrino/internal/shared"
 )
 
-// cmdMsgText runs a non-nil tea.Cmd and extracts the text of a localDisplayMsg —
+// cmdMsgText runs a non-nil tea.Cmd and extracts the text of a localDisplayMsg,
 // shared helper for every test on commands that return a synchronous message.
 func cmdMsgText(t *testing.T, cmd tea.Cmd) string {
 	t.Helper()
@@ -64,7 +64,7 @@ func cmdMsgText(t *testing.T, cmd tea.Cmd) string {
 // newTestWSConn starts a minimal test WS server (accepts and reads until the
 // client closes, same pattern as internal/server/hub_test.go) and returns
 // the client-side connection, ready to be assigned to client.Client.Conn.
-// A copy of the same-named helper in internal/client/client_test.go —
+// A copy of the same-named helper in internal/client/client_test.go,
 // duplicated here because the two test packages cannot share unexported
 // functions with each other.
 func newTestWSConn(t *testing.T) *websocket.Conn {
@@ -92,7 +92,7 @@ func newTestWSConn(t *testing.T) *websocket.Conn {
 
 // newTestClient builds a minimal Client (no network connection: client.New()
 // only generates in-memory keys) with its members registered via
-// RegisterUser — each under testPub(username) as identity key — so
+// RegisterUser, each under testPub(username) as identity key, so
 // LookupMemberKey/LookupUsername behave as on an already-authenticated
 // real WS session.
 func newTestClient(registered map[string]string) *client.Client {
@@ -225,7 +225,7 @@ func TestApplyGroupMemberAdded(t *testing.T) {
 
 // TestCmdAddMemberGuards covers the synchronous checks of cmdAddMember (host-only,
 // rejection on a two-member chat (ratchet DH), missing room secret, empty argument, contact not
-// found, contact already a member) — all resolved before generating a secret or sending a
+// found, contact already a member), all resolved before generating a secret or sending a
 // knock, so verifiable without network. The positive path (knock + broadcast) is not
 // covered here: it requires real Tor/HTTP.
 func TestCmdAddMemberGuards(t *testing.T) {
@@ -320,7 +320,7 @@ func TestCmdAddMemberGuards(t *testing.T) {
 
 // TestCmdReinviteGuards covers the same synchronous checks as cmdReinvite (host-only,
 // missing room secret, empty argument, member not found) plus looking up the
-// member by username (case-insensitive) and by local contact-book name — all resolved
+// member by username (case-insensitive) and by local contact-book name, all resolved
 // before sending the knock, so verifiable without network.
 func TestCmdReinviteGuards(t *testing.T) {
 	baseContacts := []ContactInfo{
@@ -458,7 +458,7 @@ func cmdMsgTexts(t *testing.T, cmd tea.Cmd) []string {
 		case probeResultMsg:
 			// cmdActiveSilent()/probeContacts() with a nil dialTor (never the case
 			// in production, always the case in these minimal test models) returns
-			// an empty probeResultMsg — only to close out m.probing's loop,
+			// an empty probeResultMsg, only to close out m.probing's loop,
 			// never text to extract. See probeContacts.
 		default:
 			t.Fatalf("expected localDisplayMsg or tea.BatchMsg, got %T", msg)
@@ -470,7 +470,7 @@ func cmdMsgTexts(t *testing.T, cmd tea.Cmd) []string {
 
 // TestCmdDelContactRevokesRoomAccess verifies that deleting a contact silently
 // revokes its access to every already-open room where we were host and it was
-// a member, BEFORE removing it from the contact book — not just deleting it
+// a member, BEFORE removing it from the contact book, not just deleting it
 // from the contact book while leaving its room secrets still valid.
 func TestCmdDelContactRevokesRoomAccess(t *testing.T) {
 	newBaseContact := func() ContactInfo {
@@ -703,7 +703,7 @@ func TestResolveNameOrPickerKey(t *testing.T) {
 
 // TestHasPersistentContentRel verifies that a SAVED contact (resolveContactByPub != nil)
 // that never completed the rel_init handshake must not count as an "already usable
-// relationship" — only the presence of BOTH keys (our RelContentPriv, its
+// relationship", only the presence of BOTH keys (our RelContentPriv, its
 // non-revoked PeerRelContentPub) does.
 func TestHasPersistentContentRel(t *testing.T) {
 	t.Run("unknown contact", func(t *testing.T) {
@@ -757,7 +757,7 @@ func TestHasPersistentContentRel(t *testing.T) {
 
 // TestCmdInvite covers the core cryptographic invariant the /grp-add-member guard
 // relies on: a room created with exactly 2 total members (me + one invitee) starts
-// in ratchet DH mode, one with 3+ starts in SenderKey mode — decided once here,
+// in ratchet DH mode, one with 3+ starts in SenderKey mode, decided once here,
 // never recomputed. The error path (usage, contacts not found) and per-member
 // secret registration are verified together, without running the network knock
 // (the returned tea.Cmd is never invoked).
@@ -859,7 +859,7 @@ func TestCmdInvite(t *testing.T) {
 }
 
 // TestCmdInviteQueuesPendingContactAndRetriesOnceReady verifies that inviting a
-// mix of ready and not-ready contacts does not fail outright — the invite is
+// mix of ready and not-ready contacts does not fail outright, the invite is
 // queued (queuePendingInvite) and retried on its own (retryPendingInvites) as
 // soon as the not-ready contact confirms BOTH relationship keys (simulated here
 // without going through a real rel_init_ack, which is tested separately in
@@ -886,7 +886,7 @@ func TestCmdInviteQueuesPendingContactAndRetriesOnceReady(t *testing.T) {
 			IdentityPub: carolPub,
 			Devices: map[string]*keystore.DeviceRelation{
 				// RelIdentityConfirmedByPeer/RelContentConfirmedByPeer remain
-				// false — carol is not ready yet.
+				// false, carol is not ready yet.
 				"d": {
 					RelIdentityPriv:    make([]byte, ed25519.PrivateKeySize),
 					PeerRelIdentityPub: make([]byte, ed25519.PublicKeySize),
@@ -925,7 +925,7 @@ func TestCmdInviteQueuesPendingContactAndRetriesOnceReady(t *testing.T) {
 		t.Error("expected carol to be in the pending set of the queued invite")
 	}
 
-	// Carol becomes ready (equivalent to a rel_init_ack just applied) —
+	// Carol becomes ready (equivalent to a rel_init_ack just applied),
 	// retryPendingInvites must restart the invite on its own, synchronously.
 	dev := contacts[1].Devices["d"]
 	dev.RelIdentityConfirmedByPeer = true
@@ -947,8 +947,8 @@ func TestCmdInviteQueuesPendingContactAndRetriesOnceReady(t *testing.T) {
 
 // TestPendingInvitesExpireOnProbeSweep verifies that a queued invite expiring:
 // the periodic probe cycle (case probeResultMsg, Update()) drops any invite
-// whose deadline has already passed — never a retry, only a notice in the
-// Console — reusing the same inviteTimeout instead of a dedicated ticker.
+// whose deadline has already passed, never a retry, only a notice in the
+// Console, reusing the same inviteTimeout instead of a dedicated ticker.
 func TestPendingInvitesExpireOnProbeSweep(t *testing.T) {
 	m := model{
 		consoleIdx: 0,
@@ -984,7 +984,7 @@ func TestPendingInvitesExpireOnProbeSweep(t *testing.T) {
 // TestProbeResultAppliesGeneratedRelKeysToEmptyDevices verifies that a contact
 // with an empty Devices map that receives generatedRelKeys from the probe cycle
 // gets the placeholder "" entry created in the local mirror (m.contacts), not
-// only in the persisted keystore — otherwise the next cycle, still finding an
+// only in the persisted keystore, otherwise the next cycle, still finding an
 // empty Devices in memory, would generate a NEW, different key pair every
 // round, an infinite non-converging regeneration.
 func TestProbeResultAppliesGeneratedRelKeysToEmptyDevices(t *testing.T) {
@@ -1030,7 +1030,7 @@ func TestProbeResultAppliesGeneratedRelKeysToEmptyDevices(t *testing.T) {
 // members excluded from /grp-add-member, and the generic text filter.
 // pickerKeyToUsername decodes a picker key generated by the "default" branch
 // of pickerItems() (contactPickerKey, IdentityPub-based), resolving it back
-// to the corresponding contact's username — used by the tests below to
+// to the corresponding contact's username, used by the tests below to
 // keep readable assertions even though the key is not the username,
 // which would be ambiguous between contacts sharing the same name.
 func pickerKeyToUsername(m model, key string) string {
@@ -1191,7 +1191,7 @@ func TestCmdJoin(t *testing.T) {
 				{KnockPayload: shared.KnockPayload{
 					GroupID:         "g1",
 					FromUsername:    "bob",
-					FromIdentityPub: testPub("bob"), // must match contact.IdentityPub above — resolveContactByPub, never by name
+					FromIdentityPub: testPub("bob"), // must match contact.IdentityPub above, resolveContactByPub, never by name
 					FromAddr:        "bobonion.onion",
 					RoomSecret:      []byte("secret"),
 					Members:         members,
@@ -1251,7 +1251,7 @@ func TestCmdJoin(t *testing.T) {
 
 // TestCmdReconnectTriggersRekeyOnNextInit covers the rekey folded into
 // /grp-reconnect: cmdReconnect sets rekeyOnNextInit, and the next "init" frame
-// consumes it, triggering RotateSenderKey — once only, not on every init.
+// consumes it, triggering RotateSenderKey, once only, not on every init.
 // TestCmdMsgSetsPendingReplyToOnlyForShownMessage covers the explicit-reply
 // constraint: /msg N is accepted only if N corresponds to a line already shown
 // in the active tab (chatLine.gseq), otherwise rejected without touching
@@ -1341,7 +1341,7 @@ func TestCmdReconnectTriggersRekeyOnNextInit(t *testing.T) {
 
 // TestRoomKeepsHomonymMembersApart: two members invited under the same
 // username but with different identity keys are two distinct members of
-// the room — both online, both named distinctly, and the departure of
+// the room, both online, both named distinctly, and the departure of
 // one never marks the other offline.
 func TestRoomKeepsHomonymMembersApart(t *testing.T) {
 	cli := client.New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
@@ -1385,8 +1385,8 @@ func TestRoomKeepsHomonymMembersApart(t *testing.T) {
 
 // TestParseMsgIDPreservesFullPrecision verifies that msg_id survives a full
 // JSON.Marshal→Unmarshal round trip at full uint64 precision: msg_id is a
-// random uint64 (Client.Send, crypto/rand) read back via map[string]any — as
-// Client.ReadMsg does for every frame — where a JSON number always decodes
+// random uint64 (Client.Send, crypto/rand) read back via map[string]any, as
+// Client.ReadMsg does for every frame, where a JSON number always decodes
 // as float64, exact only up to 2^53. msg_id is encoded as a decimal string
 // on the wire specifically to avoid this precision loss.
 func TestParseMsgIDPreservesFullPrecision(t *testing.T) {
@@ -1412,14 +1412,14 @@ func TestParseMsgIDPreservesFullPrecision(t *testing.T) {
 
 // TestParseMessageUsesSelfEchoCache verifies that with ratchetDH active,
 // decrypting the self-echo of our own message bypasses the generic ratchet
-// path entirely (the published dhr identifies a PEER key, never our own —
+// path entirely (the published dhr identifies a PEER key, never our own,
 // looking it up in our own outEphRing never finds it) and instead reuses the
 // text already known from having written it ourselves. The keyID below is
 // deliberately nonexistent: if the bypass did not trigger, DecryptMsg would
 // fail for certain ("sender key unavailable"). msgID is deliberately > 2^53
 // (full width, as Send() actually generates): a small value like 12345 would
 // survive even the float64 precision issue (map[string]any decodes JSON
-// numbers as float64, exact only up to 2^53) without ever exposing it — see
+// numbers as float64, exact only up to 2^53) without ever exposing it, see
 // the comment on wsIncoming.MsgID in internal/server/ws.go.
 func TestParseMessageUsesSelfEchoCache(t *testing.T) {
 	cli := client.New("127.0.0.1", 0, "me", nil, true, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
@@ -1454,7 +1454,7 @@ func TestParseMessageUsesSelfEchoCache(t *testing.T) {
 
 // buildDeviceSignedFrame builds an incoming message frame (kid/text/
 // idx/device_sig/device_ts) encrypted for keyID with chain0, whose sealedMsg
-// carries DP=devicePub — helper shared by the device-tag tests below.
+// carries DP=devicePub, helper shared by the device-tag tests below.
 func buildDeviceSignedFrame(t *testing.T, chain0 []byte, devicePub ed25519.PublicKey, signWith ed25519.PrivateKey, from, text string) map[string]any {
 	t.Helper()
 	enc, err := client.EncryptTestSealedFrame(chain0, 0, from, text, devicePub)
@@ -1571,7 +1571,7 @@ func TestParseMessageDeviceTagChanged(t *testing.T) {
 
 // TestParseMessageDeviceTagInvalidSigShowsNoTag covers the remaining design
 // case: a device_sig that fails to verify at all against the just-decrypted
-// DP must never produce a tag (nor block the message) — unlike the content
+// DP must never produce a tag (nor block the message), unlike the content
 // signature, which instead shows an explicit "[invalid signature]" tag.
 func TestParseMessageDeviceTagInvalidSigShowsNoTag(t *testing.T) {
 	senderKey := make([]byte, 32)
@@ -1674,7 +1674,7 @@ func TestInvitePickerFilter(t *testing.T) {
 		t.Error("want 'bob123' selected after Space")
 	}
 
-	// Backspace removes the last filter character, widening the results again —
+	// Backspace removes the last filter character, widening the results again,
 	// the existing selection on bob123 must survive (indexed by username).
 	press(tea.KeyMsg{Type: tea.KeyBackspace})
 	press(tea.KeyMsg{Type: tea.KeyBackspace})
@@ -1721,12 +1721,12 @@ func TestFileChunkAckRoutedViaSendingRegistry(t *testing.T) {
 			t.Errorf("want {seq:3 fromUserID:peer1}, got %+v", ev)
 		}
 	default:
-		t.Fatal("the ack didn't arrive on ft.ackCh — the lookup didn't find the transfer")
+		t.Fatal("the ack didn't arrive on ft.ackCh, the lookup didn't find the transfer")
 	}
 }
 
 // newRecordingWSConn starts a test WS server that decodes every incoming
-// frame into map[string]any and queues a copy on recorded — used to verify
+// frame into map[string]any and queues a copy on recorded, used to verify
 // EXACTLY which frames a Client writes (to_user_ids, seq, payload) without
 // simulating multiple real connections: a single Client/single WS connection
 // still writes one frame per logical recipient, distinguishable by the
@@ -1758,11 +1758,11 @@ func newRecordingWSConn(t *testing.T) (*websocket.Conn, <-chan map[string]any) {
 }
 
 // TestStartSendingChunksResumeCatchUp covers a real resume: a recipient
-// (userB) joins mid-transfer via resumeCh with fromByte=0 (has nothing yet) —
+// (userB) joins mid-transfer via resumeCh with fromByte=0 (has nothing yet),
 // it must receive both the chunks already sent to userA (catch-up, same
 // bytes, new seqs) and every subsequent chunk through completion, exactly
 // like userA. An auto-acker consumes every recorded frame and immediately
-// acks for each recipient listed in to_user_ids — avoiding manual
+// acks for each recipient listed in to_user_ids, avoiding manual
 // synchronization with the exact interleaving of the sending goroutine.
 func TestStartSendingChunksResumeCatchUp(t *testing.T) {
 	cli := client.New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
@@ -1844,7 +1844,7 @@ func TestStartSendingChunksResumeCatchUp(t *testing.T) {
 	go func() { done <- cmd() }()
 
 	// Wait for the transfer to have actually started for userA before letting
-	// userB join — a weak condition (just 1 chunk), robust against the
+	// userB join, a weak condition (just 1 chunk), robust against the
 	// goroutine scheduling order.
 	deadline := time.After(5 * time.Second)
 	for {
@@ -1861,10 +1861,10 @@ func TestStartSendingChunksResumeCatchUp(t *testing.T) {
 		}
 	}
 
-	// isNewAccept: true — simulates the "re-admitted" fallback (case "file_accept"
+	// isNewAccept: true, simulates the "re-admitted" fallback (case "file_accept"
 	// in Update()) for a genuine first acceptance arriving after sending had
 	// already started toward userA, not a bare file_resume: a file_resume from a
-	// recipient that was never accepted is ignored — see
+	// recipient that was never accepted is ignored, see
 	// fileResumeEvent.isNewAccept.
 	ft.resumeCh <- fileResumeEvent{memberKey: "userB", toUserID: "userB", fromByte: 0, isNewAccept: true}
 
@@ -1889,7 +1889,7 @@ func TestStartSendingChunksResumeCatchUp(t *testing.T) {
 // ── remote_nuke ─────────────────────────────────────────────────────────
 
 // newRemoteNukeTestModel builds a minimal model with myDeviceID and
-// authorityPubKeys set (receiving-side verification) — dialTor left nil:
+// authorityPubKeys set (receiving-side verification), dialTor left nil:
 // executeRemoteNuke skips both network phases and returns
 // remoteNukeExecutedMsg right away, allowing handleRemoteNuke to be tested
 // synchronously without real I/O.
@@ -1905,7 +1905,7 @@ func newRemoteNukeTestModel(myDeviceID []byte, authorityPubKeys []ed25519.Public
 }
 
 // signedRemoteNukeAck generates a device-level key pair and signs a genuine
-// ack for targetDeviceID — used by tests that need to pass
+// ack for targetDeviceID, used by tests that need to pass
 // handleRemoteNukeAck's verification. The caller must still populate
 // the known devices with the returned entry, otherwise the signature would
 // verify correctly but the lookup by TargetDeviceID would fail.
@@ -2015,7 +2015,7 @@ func TestHandleRemoteNukeRejectsStaleTimestamp(t *testing.T) {
 
 // TestHandleRemoteNukeAcceptsOldIdentityDuringRotation covers the case
 // explicit in the design: the signature also verifies against an OLD
-// identity key, not only the current one — necessary because
+// identity key, not only the current one, necessary because
 // authorityPubKeys always includes both during an ongoing rotation
 // (see Keystore.AllAuthorityPubKeys).
 func TestHandleRemoteNukeAcceptsOldIdentityKey(t *testing.T) {
@@ -2069,7 +2069,7 @@ func TestHandleRemoteNukeAckCancelsFanOut(t *testing.T) {
 // TestHandleRemoteNukeAckForgedSignatureIgnored covers the other half of the
 // ack verification: an ack with a non-genuine signature (or
 // signed with a key that is not the one known for that TargetDeviceID) must
-// have NO effect — no fan-out stop, no removal from the persistent queue —
+// have NO effect, no fan-out stop, no removal from the persistent queue,
 // so the retry proceeds normally instead of blindly trusting an
 // unauthenticated confirmation.
 func TestHandleRemoteNukeAckForgedSignatureIgnored(t *testing.T) {
@@ -2109,7 +2109,7 @@ func TestHandleRemoteNukeAckForgedSignatureIgnored(t *testing.T) {
 
 // TestHandleRemoteNukeAckStaleTsIgnored verifies the TsFresh check on
 // remote_nuke_ack: an ack with a GENUINE signature but a ts outside the
-// freshness window must have no effect — an old captured ack must not be
+// freshness window must have no effect, an old captured ack must not be
 // able to stop the fan-out of a NEW remote_nuke command, nor make it look
 // like the device was destroyed when it was not.
 func TestHandleRemoteNukeAckStaleTsIgnored(t *testing.T) {
@@ -2437,7 +2437,7 @@ func TestExecuteRemoteNukeUsesAllIdentitiesContacts(t *testing.T) {
 }
 
 // runCmdTree runs cmd and, recursively, every sub-command of any resulting
-// tea.BatchMsg — the same work the bubbletea runtime would do (in separate
+// tea.BatchMsg, the same work the bubbletea runtime would do (in separate
 // goroutines, here synchronous) for a tea.Batch(...) returned by
 // Update()/its handlers.
 func runCmdTree(cmd tea.Cmd) {
@@ -2456,7 +2456,7 @@ func runCmdTree(cmd tea.Cmd) {
 // rel_init/rel_init_ack can update PeerRelIdentityPub even AFTER a room has
 // already been registered as host with this contact (e.g. the peer restored
 // from backup and regenerated its relationship keys while keeping the same
-// transport IdentityPub) — the secret registers a RESOLVER
+// transport IdentityPub), the secret registers a RESOLVER
 // (m.relKeysResolver), not a key pair: once applyRelInit persists the new key
 // (persistCmd, run here as the runtime would after Update()), the next
 // LookupSecret sees it immediately, with no separate refresh call needed.
@@ -2473,7 +2473,7 @@ func TestApplyRelInitRefreshesRoomRegistry(t *testing.T) {
 	bobDevicePub, _, _ := ed25519.GenerateKey(rand.Reader)
 
 	// fake "keystore": a mutex-protected map, read by the resolver and
-	// written by updateContactRelKeys — reproduces the same real scheme
+	// written by updateContactRelKeys, reproduces the same real scheme
 	// (resolver toward keystore.Keystore.RelKeysForDevice, asynchronous
 	// persistence via TUIParams.UpdateContactRelKeys) without serializing a
 	// real *keystore.Keystore.
@@ -2561,7 +2561,7 @@ func TestApplyRelInitRefreshesRoomRegistry(t *testing.T) {
 		t.Errorf("peerKey not resolved live after the rel_init_ack: want %x, got %x", newIdentPub, gotPeerKey.Pub)
 	}
 	if string(gotPeerKey.Pub) == string(oldPeerPub) {
-		t.Error("peerKey stayed the old one — the resolver doesn't read the updated state")
+		t.Error("peerKey stayed the old one, the resolver doesn't read the updated state")
 	}
 }
 
@@ -2651,7 +2651,7 @@ func TestApplyRelInitPromotesPlaceholderDespiteExtraDevice(t *testing.T) {
 // TestApplyRelInitDetectsConflict verifies that a rel_init/rel_init_ack
 // arriving on an already-confirmed contact (RelInitConfirmedByPeer),
 // proposing BOTH relationship keys different from the already-known ones,
-// must never automatically overwrite PeerRelIdentityPub/PeerRelContentPub —
+// must never automatically overwrite PeerRelIdentityPub/PeerRelContentPub,
 // the proposed keys are held in PendingPeerRel* until the user explicitly
 // confirms (/sec-verify).
 func TestApplyRelInitDetectsConflict(t *testing.T) {
@@ -2717,7 +2717,7 @@ func TestApplyRelInitDetectsConflict(t *testing.T) {
 	}
 
 	// Type "rel_init_ack" (not "rel_init"): the conflict branch for a request
-	// would also respond with a tea.Batch(persistCmd, ack) — here the direct
+	// would also respond with a tea.Batch(persistCmd, ack), here the direct
 	// persistCmd alone suffices, returned without wrapping for an ack
 	// (terminal, no response owed).
 	ts := shared.NowTS()
@@ -2777,7 +2777,7 @@ func TestApplyRelInitDetectsConflict(t *testing.T) {
 // TestApplyRelInitRejectsUnsignedOrInvalidSig verifies that a rel_init/
 // rel_init_ack lacking a valid Ed25519 signature against the sender's root
 // IdentityKey (already known, Contact.IdentityPub) is discarded before
-// touching any field — never applied, never put in Pending. Covers three
+// touching any field, never applied, never put in Pending. Covers three
 // cases: missing Sig, Sig signed with the wrong key, valid Sig but over a
 // payload different from the one declared (tampering).
 func TestApplyRelInitRejectsUnsignedOrInvalidSig(t *testing.T) {
@@ -2869,7 +2869,7 @@ func TestApplyRelInitRejectsUnsignedOrInvalidSig(t *testing.T) {
 // TestApplyRelInitAcceptsValidSigFromKnownDevicePub verifies the positive
 // complementary case: a valid signature, computed with the sender's root
 // IdentityPrivKey exactly over the declared fields, is accepted and applies
-// the proposed keys — the signature check doesn't block the legitimate
+// the proposed keys, the signature check doesn't block the legitimate
 // path (also covered by
 // TestApplyRelInitPromotesPlaceholderDespiteExtraDevice, here isolated
 // without a preexisting placeholder/device).
@@ -2935,7 +2935,7 @@ func TestApplyRelInitAcceptsValidSigFromKnownDevicePub(t *testing.T) {
 // TestApplyRelRotateRejectsStaleReplay verifies that a rotation request
 // (rel_identity_rotate) correctly signed with the peer's sibling ContentKey,
 // but with a `ts` outside the freshness window
-// (shared.TsFreshnessWindow), is discarded without applying any update —
+// (shared.TsFreshnessWindow), is discarded without applying any update,
 // even though the signature verifies in full. A captured old rotation
 // message, whose signature stays valid as long as the peer's sibling
 // ContentKey never changes, must not be replayable later to force a
@@ -2943,7 +2943,7 @@ func TestApplyRelInitAcceptsValidSigFromKnownDevicePub(t *testing.T) {
 func TestApplyRelRotateRejectsStaleReplay(t *testing.T) {
 	bobPub, _, _ := ed25519.GenerateKey(rand.Reader)
 	bobDevicePub, _, _ := ed25519.GenerateKey(rand.Reader)
-	// PeerRelContentPub/Priv: the PEER's (bob's) ContentKey, known locally —
+	// PeerRelContentPub/Priv: the PEER's (bob's) ContentKey, known locally,
 	// this is what bob uses to sign its own IdentityKey rotation.
 	peerContentPub, peerContentPriv, _ := ed25519.GenerateKey(rand.Reader)
 	oldPeerIdentPub, _, _ := ed25519.GenerateKey(rand.Reader)
@@ -3045,7 +3045,7 @@ func TestParseMessageSigInvalidTriggersSelfHeal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// knownPub is the one "me" has in its contact book for bob — the signature
+	// knownPub is the one "me" has in its contact book for bob, the signature
 	// below is computed with a DIFFERENT key, so verification fails exactly as
 	// with a misaligned peer ContentKey.
 	knownPub, _, err := ed25519.GenerateKey(rand.Reader)
@@ -3123,7 +3123,7 @@ func TestParseMessageSigInvalidTriggersSelfHeal(t *testing.T) {
 
 // TestParseMessageVerifiesAgainstAnyDeviceCandidateMultiDevice verifies the
 // receiving-side fan-out: a contact with 2 known devices, a message signed
-// with the SECOND device's ContentKey (never the first) — without `dp`
+// with the SECOND device's ContentKey (never the first), without `dp`
 // resolved to an exact device (as in the twin test above,
 // EncryptTestSealedFrame does not set it), contentPeerPubCandidatesFor must
 // fall back to BOTH devices, and verification must succeed by trying each
@@ -3142,13 +3142,13 @@ func TestParseMessageVerifiesAgainstAnyDeviceCandidateMultiDevice(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	// devA: the ContentKey known for bob's FIRST device — not the one the
+	// devA: the ContentKey known for bob's FIRST device, not the one the
 	// message is actually signed with below.
 	devAPub, _, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// devB: the ContentKey of the SECOND device — the real one, used to
+	// devB: the ContentKey of the SECOND device, the real one, used to
 	// compute the signature below.
 	devBPub, devBPriv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -3206,7 +3206,7 @@ func TestParseMessageVerifiesAgainstAnyDeviceCandidateMultiDevice(t *testing.T) 
 
 // TestBuildContentSigningKeysFanOutMultiDevice verifies that
 // buildContentSigningKeys produces ONE signature for EVERY device of the
-// recipient that has its own ContentKey established — not only the first
+// recipient that has its own ContentKey established, not only the first
 // one found: the content_sigs wire format already supports multiple
 // entries with the same "for", used here for the fan-out with no format
 // change.

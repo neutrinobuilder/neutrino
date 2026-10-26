@@ -26,7 +26,7 @@ type growthPool struct {
 }
 
 // newGrowthPool creates the pool at birth: one pending index (firstIdx)
-// — the NEXT batch, once this single one is consumed, will have size
+// the NEXT batch, once this single one is consumed, will have size
 // 2.
 func newGrowthPool(firstIdx int) growthPool {
 	return growthPool{Pending: []int{firstIdx}, NextBatchSize: 2}
@@ -36,9 +36,9 @@ func newGrowthPool(firstIdx int) growthPool {
 // immediately creates NextBatchSize fresh indices (continuing from
 // currentLen, the owning list's length BEFORE this call) and doubles
 // NextBatchSize for the batch after this one. newLen is the length the
-// caller's own list must grow to — equal to currentLen when no new
+// caller's own list must grow to, equal to currentLen when no new
 // batch was created this time. ok is false only if the pool was never
-// initialized (defensive — correct usage never actually runs dry,
+// initialized (defensive, correct usage never actually runs dry,
 // since a saturating consume always immediately refills within the
 // same call).
 func (p *growthPool) consume(currentLen int) (consumedIdx, newLen int, ok bool) {

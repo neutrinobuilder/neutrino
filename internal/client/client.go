@@ -47,14 +47,14 @@ type Client struct {
 	host          string
 	port          int
 	username      string
-	contactSecret []byte // sha256(shared password) — never sent over the network
+	contactSecret []byte // sha256(shared password), never sent over the network
 
 	// dialContext is set by SetDialer for connections via Tor/I2P.
 	dialContext func(context.Context, string, string) (net.Conn, error)
 
-	// devicePub/signDeviceSig — remote_nuke. devicePub (32-byte Ed25519
+	// devicePub/signDeviceSig, remote_nuke. devicePub (32-byte Ed25519
 	// public key) travels inside sealedMsg.DP of every sent message;
-	// signDeviceSig is a closure, not the raw private key — the same
+	// signDeviceSig is a closure, not the raw private key, the same
 	// principle already applied to IdentityKey (see DHTagFn in
 	// TUIParams): internal/client must never see the device's
 	// private material directly. nil signDeviceSig = no signature
@@ -62,9 +62,9 @@ type Client struct {
 	devicePub     []byte
 	signDeviceSig func(ciphertext []byte, ts string) []byte
 
-	// signMLDSA/pqcSign — hybrid PQC network identity. signMLDSA is a
+	// signMLDSA/pqcSign, hybrid PQC network identity. signMLDSA is a
 	// closure (same reason as signDeviceSig: never the raw private key),
-	// always present — separate from the
+	// always present, separate from the
 	// policy of using it: pqcSign (mutable via SetPQCSign, protected by
 	// pqcMu) is the per-room toggle chosen by the user, false by default
 	// (never active by default on every message, ~3.3KB cost per signature).
@@ -81,7 +81,7 @@ type Client struct {
 	// not a closure: unlike signDeviceSig/signMLDSA above, here
 	// internal/client already owns the key (it's the one exchanged at
 	// invite time and saved in the Contact), no need to hide it behind
-	// an indirection. relKeyMu protects mySigningKey/hostKey — SetHostKey
+	// an indirection. relKeyMu protects mySigningKey/hostKey, SetHostKey
 	// (self-heal, see below) rewrites them from a different goroutine
 	// than the one calling Connect/ConnectWithRetry (case roomErrMsg in
 	// tui.go vs. reconnectTab's tea.Cmd).
@@ -98,13 +98,13 @@ type Client struct {
 	// set by Connect. Peers use it (via c.peerMLKEMPubs, learned from
 	// init/user_joined) to encrypt our sender_key with HybridECIESEncrypt;
 	// we use it here to decapsulate with HybridECIESDecrypt. Regenerated
-	// on every (re)connection along with the rest of the handshake state —
+	// on every (re)connection along with the rest of the handshake state,
 	// nil before the first successful Connect. Protected by connMu along
-	// with Conn — see the comment there.
+	// with Conn, see the comment there.
 	mlkemDecap *mlkem.DecapsulationKey768
 
 	// senderKey is our 32-byte symmetric key, distributed to peers via ECIES.
-	// senderKeyID is a stable 8-hex-char identifier derived from senderKey —
+	// senderKeyID is a stable 8-hex-char identifier derived from senderKey,
 	// sent in the clear with each message so receivers can look up the right chain
 	// without the server learning who sent what.
 	// senderChainKey is the current HMAC ratchet state; senderMsgIdx resets at each rotation.
@@ -114,19 +114,19 @@ type Client struct {
 	senderMsgIdx   uint64
 
 	// outMsgSeq is a progressive counter separate from senderMsgIdx: never
-	// reset by RotateSenderKey, decoupled from the keyID — it's this
+	// reset by RotateSenderKey, decoupled from the keyID, it's this
 	// sender's "external" numeric sequence for the room (travels on the
 	// wire as "mseq"), used by the reliable delivery queue to correlate
 	// acks/retransmissions and by the explicit reply-to reference to
 	// point at a previous message stably across rotations. senderMsgIdx,
 	// by contrast, stays internal to the ratchet (chain step, resets to 0
-	// at every new generation) — the two sequences must not be confused:
+	// at every new generation), the two sequences must not be confused:
 	// this one isn't even the room's global sequence, which is assigned
 	// by the server itself (stamped on arrival, independent of the sender).
 	outMsgSeq uint64
 
 	// lastRotationSeq is the value of outMsgSeq at the time of the last
-	// rotation — MessagesSinceRotation() compares it with the current
+	// rotation, MessagesSinceRotation() compares it with the current
 	// outMsgSeq for the count-based rotation criterion (K messages per
 	// generation, see config.SenderKeyMessageBudget), complementary to
 	// the time-based criterion (SenderKeyInterval): whichever of
@@ -135,15 +135,15 @@ type Client struct {
 
 	// ratchetDH enables the Diffie-Hellman mix on every message
 	// (post-compromise security, beyond the HMAC ratchet's forward
-	// secrecy alone) — true only for two-member rooms (set by New via
+	// secrecy alone), true only for two-member rooms (set by New via
 	// the ratchetDH parameter). Groups stay on pure SenderKey: pairwise
 	// DH makes no sense beyond 2 parties, which is why SenderKey exists.
 	// outEphPriv/outEphPub are the ephemeral in use for the next send;
 	// outEphRing keeps retired ephemerals because the peer may still
-	// reference them as a "known point" in their own DH step — see
+	// reference them as a "known point" in their own DH step, see
 	// crypto.go: DeriveChainStepDH. Each one is dropped as soon as the
 	// peer references a newer one (pruneOutEphBefore), and in any case
-	// twice the message TTL after its retirement (expireOutEph) —
+	// twice the message TTL after its retirement (expireOutEph),
 	// independently of the sender_key generation, which never resets it.
 	// peerEphPub is the peer's last known ephemeral, used in our next send.
 	ratchetDH   bool
@@ -159,7 +159,7 @@ type Client struct {
 	peerKeyIDs      map[string]string          // userID → current keyID (for rotation cleanup)
 	peerSessionPubs map[string]*ecdh.PublicKey // userID → their X25519 session pub key (pruned on reconnect, see RegisterUser)
 	// peerMLKEMPubs: userID → their session ML-KEM-768 encapsulation key
-	// (learned from init/user_joined, mlkem_pub field — see
+	// (learned from init/user_joined, mlkem_pub field, see
 	// HandshakeResult.PeerMLKEMPub), pruned the same way as
 	// peerSessionPubs when the same peer reconnects (RegisterUser).
 	peerMLKEMPubs map[string]*mlkem.EncapsulationKey768
@@ -168,16 +168,16 @@ type Client struct {
 	sendMu sync.Mutex
 
 	// sentTexts/sentOrder: plaintext of just-sent messages, by msgID,
-	// awaiting the server's self-echo — see TakeSentText. With ratchetDH,
+	// awaiting the server's self-echo, see TakeSentText. With ratchetDH,
 	// the sending side's Diffie-Hellman mix uses the peer's CURRENT
 	// ephemeral pubkey (c.peerEphPub, updated only on receipt of a real
 	// message), but the dhr field that ends up in the message identifies
-	// a PEER key — when that same message comes back as a self-echo,
+	// a PEER key, when that same message comes back as a self-echo,
 	// decrypting it as if it were "another peer" would look up that
 	// EphID in OUR OWN outEphRing (which contains only OUR retired
 	// ephemerals, never the peer's): it's never found there, so the
 	// self-echo chain would permanently diverge from the real
-	// senderChainKey as soon as the DH mix is active — a structural
+	// senderChainKey as soon as the DH mix is active, a structural
 	// issue independent of any disconnection. The cache avoids the
 	// problem at the root: the self-echo skips the receiving ratchet
 	// entirely and reuses the text we already know, since we wrote it
@@ -185,11 +185,11 @@ type Client struct {
 	sentTexts map[uint64]sentTextEntry
 	sentOrder []uint64
 
-	// Conn is the current WS connection — assigned by Connect(), read by
+	// Conn is the current WS connection, assigned by Connect(), read by
 	// every other client method (Send, ReadMsg, Ping, Close,
 	// GracefulClose, the SendXxx). connMu protects BOTH the write
 	// (Connect) AND every read: reconnectTab (tui.go) calls Connect()
-	// again on the SAME Client instance, not a new one — a read loop
+	// again on the SAME Client instance, not a new one, a read loop
 	// (waitForRoom→ReadMsg), a pending Send(), or the ping watchdog may
 	// still be in flight on this instance when the reconnection writes a
 	// new Conn, otherwise a real data race on the pointer (unsynchronized
@@ -208,17 +208,17 @@ type Client struct {
 	userIDByKey map[string]string
 	userMapMu   sync.RWMutex
 
-	// pending — reliable delivery queue for broadcast messages sent by
-	// this client (numbering, ack, retransmission, backpressure) — see
+	// pending, reliable delivery queue for broadcast messages sent by
+	// this client (numbering, ack, retransmission, backpressure), see
 	// pending.go.
 	pending pendingState
 }
 
 // ratchetDH enables the SenderKey ratchet's post-compromise security
-// hardening (Diffie-Hellman mix on every message) — must be passed true
+// hardening (Diffie-Hellman mix on every message), must be passed true
 // only for two-member rooms (exactly 2 members); for groups it stays
 // false.
-// devicePub/signDeviceSig — remote_nuke: nil signDeviceSig is tolerated
+// devicePub/signDeviceSig, remote_nuke: nil signDeviceSig is tolerated
 // (no device signature on messages sent by this client, never blocking
 // on the receiving side); every identity has a device.
 func New(host string, port int, username string, contactSecret []byte, ratchetDH bool, devicePub []byte, signDeviceSig func([]byte, string) []byte, signMLDSA func([]byte, string) []byte, mySigningKey shared.RelSigningKey, hostKey shared.RelPeerKey) *Client {
@@ -270,13 +270,13 @@ func (c *Client) SetDialer(dialFn func(context.Context, string, string) (net.Con
 }
 
 // SetHostKey updates the host's IdentityKey-per-relationship used to
-// verify ServerHello.Sig/SigMLDSA — a self-heal for an automatic
+// verify ServerHello.Sig/SigMLDSA, a self-heal for an automatic
 // reconnect (reconnectTab, tui.go) that would otherwise forever reuse
 // the hostKey frozen at this Client's construction time, even after
 // case roomErrMsg has already corrected the copy in the address book:
 // without this setter an already-existing client would have no way to
 // re-read it. Must be called BEFORE the next Connect/ConnectWithRetry to
-// take effect — safe to call from a goroutine other than the one
+// take effect, safe to call from a goroutine other than the one
 // currently in Connect (relKeyMu).
 func (c *Client) SetHostKey(hostKey shared.RelPeerKey) {
 	c.relKeyMu.Lock()
@@ -285,7 +285,7 @@ func (c *Client) SetHostKey(hostKey shared.RelPeerKey) {
 }
 
 // conn returns the current WS connection (nil if not yet connected),
-// safe to call concurrently with Connect() — see the comment on the
+// safe to call concurrently with Connect(), see the comment on the
 // Conn field.
 func (c *Client) conn() *websocket.Conn {
 	c.connMu.RLock()
@@ -294,7 +294,7 @@ func (c *Client) conn() *websocket.Conn {
 }
 
 // mlkemDecapKey returns the current ML-KEM-768 decapsulation key, under
-// the same connMu as conn() — see the comment on the mlkemDecap field.
+// the same connMu as conn(), see the comment on the mlkemDecap field.
 func (c *Client) mlkemDecapKey() *mlkem.DecapsulationKey768 {
 	c.connMu.RLock()
 	defer c.connMu.RUnlock()
@@ -302,12 +302,12 @@ func (c *Client) mlkemDecapKey() *mlkem.DecapsulationKey768 {
 }
 
 // writeJSON writes a JSON frame on the current connection, taken under
-// connMu — the single point used by every SendXxx to avoid reading
+// connMu, the single point used by every SendXxx to avoid reading
 // c.Conn directly (see the comment on the field). Returns the same
 // "not connected" error already expected by callers if Conn is still
 // nil, instead of letting wsjson.Write panic on a nil *websocket.Conn.
 // frameTypeOf reads the "type" field from v for the WS channel trace
-// below — every writeJSON caller passes a map[string]any or
+// below, every writeJSON caller passes a map[string]any or
 // map[string]string, never a different type.
 func frameTypeOf(v any) string {
 	switch m := v.(type) {
@@ -371,7 +371,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	res, err := DoClientHandshake(ctx, conn, c.contactSecret, c.username, eciesPubB64, mySigningKey, hostKey)
 	if err != nil {
 		conn.CloseNow()
-		// %w (not errors.New) preserves ErrInvalidServerSig in the chain —
+		// %w (not errors.New) preserves ErrInvalidServerSig in the chain,
 		// the caller (cmdJoin/case roomErrMsg, tui.go) must be able to
 		// distinguish it with errors.Is from a network error to trigger
 		// the stale relationship key's self-heal, see handshake.go.
@@ -394,23 +394,23 @@ func (c *Client) Connect(ctx context.Context) error {
 type sealedMsg struct {
 	F   string `json:"f"`             // from: username
 	T   string `json:"t"`             // text
-	DH  string `json:"dh,omitempty"`  // base64 X25519 — our current ephemeral pubkey (two-member rooms only, ratchetDH)
+	DH  string `json:"dh,omitempty"`  // base64 X25519, our current ephemeral pubkey (two-member rooms only, ratchetDH)
 	DHR string `json:"dhr,omitempty"` // EphID of the peer pubkey used in the DH mix (two-member rooms only, ratchetDH)
 	// DP is the sender's device-level Ed25519 public key (remote_nuke,
-	// 32 bytes) — travels INSIDE the ciphertext, not outside: a stable
+	// 32 bytes), travels INSIDE the ciphertext, not outside: a stable
 	// per-device identifier in the clear would let the relay server
 	// correlate messages across different sessions/usernames, defeating
 	// the sealed-sender property already guaranteed elsewhere. The
 	// signature that authenticates it (device_sig/device_ts) stays
 	// outside the ciphertext, but is verified against THIS just-decrypted
-	// DP — self-contained in a single message, no bootstrap.
+	// DP, self-contained in a single message, no bootstrap.
 	DP []byte `json:"dp,omitempty"`
-	// RT — explicit reply reference: gseq (wsRawMsgData.GSeq, the room's
+	// RT, explicit reply reference: gseq (wsRawMsgData.GSeq, the room's
 	// global sequence number assigned by the server) of the message this
 	// is a reply to, 0 if none. Always chosen by the user (/msg N in
 	// TUI), never inferred from arrival times. Travels inside the
 	// ciphertext, not outside: gseq alone is already unique within the
-	// room, no need to pair it with the original sender's identity —
+	// room, no need to pair it with the original sender's identity,
 	// whoever displays the reply finds it in their own already-seen
 	// history (the reference can only point to an already-displayed
 	// message, guaranteed by the reordering buffer).
@@ -425,15 +425,15 @@ type sealedMsg struct {
 // contentKeys carries, by member key (MemberKeyOf), for each other
 // member of the current room
 // reachable through a known relationship (real contact or ephemeral
-// "introduced" one), OUR ContentKey(s)-per-relationship toward them —
+// "introduced" one), OUR ContentKey(s)-per-relationship toward them,
 // one per known device (fan-out: a member with multiple devices has an
 // independent relationship with each, so an independent content_sigs
-// signature for each, all with the same "for" — an ephemeral contact
+// signature for each, all with the same "for", an ephemeral contact
 // stays at a single element, no multi-device concept there). The caller
 // (tui.go, which has visibility into m.contacts/tab.ephemeralRels, never
 // this package) rebuilds it on every send, not a cache here: it always
 // reflects the current state (rotations, new members) with no need for
-// a dedicated setter to call on every change. Purely optional — a
+// a dedicated setter to call on every change. Purely optional, a
 // message with no entry at all (empty address book or no member yet
 // "established") is still sent, just without signatures.
 func (c *Client) Send(ctx context.Context, text string, contentKeys map[string][]shared.RelSigningKey) (uint64, error) {
@@ -441,7 +441,7 @@ func (c *Client) Send(ctx context.Context, text string, contentKeys map[string][
 }
 
 // SendReply is Send with an explicit reply reference (/msg N command in
-// TUI) — replyTo is the gseq of the message this is a reply to, always
+// TUI), replyTo is the gseq of the message this is a reply to, always
 // chosen by the user. A separate method instead of an extra parameter
 // on Send: nearly all callers (system messages like
 // pqcToggleAnnouncePrefix/groupMemberAddedPrefix, every existing test)
@@ -480,7 +480,7 @@ func (c *Client) sendWithReply(ctx context.Context, text string, contentKeys map
 
 	if err := c.writeJSON(ctx, s.frame); err != nil {
 		// Write failed: do NOT advance idx/chain/DH ephemeral. The next
-		// Send() must restart from the same position — otherwise a send
+		// Send() must restart from the same position, otherwise a send
 		// that never reached the peer would still consume a chain step
 		// and (with ratchetDH) an ephemeral key, misaligning the DH mix
 		// between the two sides without any message ever having been
@@ -547,7 +547,7 @@ func (c *Client) sealOut(msgID uint64, src *pendingSource) (sealedOut, error) {
 		return sealedOut{}, err
 	}
 	Dbg("send: idx=%d kid=%s… msgID=%d at %s", idx, kid, msgID, shared.Now())
-	// msg_id goes on the wire as a decimal string, not a JSON number — see
+	// msg_id goes on the wire as a decimal string, not a JSON number, see
 	// the comment on wsIncoming.MsgID in internal/server/ws.go: a random
 	// full-width uint64 almost always gets corrupted going through
 	// map[string]any on the client side (encoding/json always decodes it
@@ -557,11 +557,11 @@ func (c *Client) sealOut(msgID uint64, src *pendingSource) (sealedOut, error) {
 	if len(src.contentKeys) > 0 {
 		st := shared.NowTS()
 		sigs := make([]shared.ContentSigEntry, 0, len(src.contentKeys))
-		// One entry for EVERY key (device) toward that recipient — fan-out:
+		// One entry for EVERY key (device) toward that recipient, fan-out:
 		// a recipient with multiple known devices has an independent
 		// relationship with each, so an independent signature for each,
 		// all with the same "for" (the recipient tries them all against
-		// their own single known key for us — see
+		// their own single known key for us, see
 		// contentPeerPubCandidatesFor, tui.go). The map key, and "for", is
 		// the recipient's member key (MemberKeyOf), never a username.
 		for forMember, keys := range src.contentKeys {
@@ -612,7 +612,7 @@ func (c *Client) commitOut(s sealedOut) {
 // (TakeSentText). Done BEFORE the write, not after: on a local
 // connection (the host is in loopback toward its own server) the
 // server's self-echo can come back and be processed by the read
-// goroutine before the write call even returns — the cache would still
+// goroutine before the write call even returns, the cache would still
 // be empty and the own echo would fall onto the generic receiving
 // ratchet (which with ratchetDH always diverges on its own echo, see
 // sentTexts). Harmless if the write fails: an entry is left unconsumed,
@@ -632,13 +632,13 @@ func (c *Client) rememberSentText(msgID uint64, text string, replyTo uint64) {
 }
 
 // maxSentTextCache caps how large sentTexts can grow before discarding
-// the oldest entries (FIFO) — the server's self-echo almost always
+// the oldest entries (FIFO), the server's self-echo almost always
 // arrives within moments, no need to keep entries around long; a cap
 // avoids indefinite growth if a self-echo never arrived for some reason.
 const maxSentTextCache = 50
 
 // sentTextEntry is the value retained for our own send while awaiting
-// its self-echo — see TakeSentText. replyTo is the explicit reply
+// its self-echo, see TakeSentText. replyTo is the explicit reply
 // reference chosen at send time: the self-echo skips the receiving
 // ratchet (and thus the sealedMsg.RT decrypt), so it must be carried
 // here to stay visible on our own message once displayed.
@@ -648,7 +648,7 @@ type sentTextEntry struct {
 }
 
 // TakeSentText returns (and consumes) the plaintext and any reply
-// reference of a message we just sent ourselves, identified by msgID —
+// reference of a message we just sent ourselves, identified by msgID,
 // used to recognize and display the server's self-echo without having
 // to pass it back through the receiving ratchet (see the comment on
 // sentTexts/sentOrder).
@@ -663,7 +663,7 @@ func (c *Client) TakeSentText(msgID uint64) (text string, replyTo uint64, ok boo
 }
 
 // HasSentText checks WITHOUT consuming whether msgID is our own
-// self-echo — used by the caller (handleIncomingMessage) to recognize
+// self-echo, used by the caller (handleIncomingMessage) to recognize
 // it BEFORE the per-peer reordering gate (ExpectedIdx/msgBuffer), which
 // concerns only a PEER's chain-ratchet and never knows our own
 // senderKeyID: a self-echo routed there would stay buffered forever,
@@ -681,13 +681,13 @@ func (c *Client) SendMsgAck(ctx context.Context, toUserID string, msgID uint64) 
 	return c.writeJSON(ctx, map[string]any{
 		"type":       "msg_ack",
 		"to_user_id": toUserID,
-		"msg_id":     strconv.FormatUint(msgID, 10), // decimal string — see the comment in Send()
+		"msg_id":     strconv.FormatUint(msgID, 10), // decimal string, see the comment in Send()
 	})
 }
 
 // SendSelfRelayAck confirms to the server receipt of our own self-echo
 // (roomDelivery.Dispatch treats the sender as just another contact in
-// its own per-contact queue) — no to_user_id, the server resolves it
+// its own per-contact queue), no to_user_id, the server resolves it
 // from the session itself (see ws.go, case "self_relay_ack").
 func (c *Client) SendSelfRelayAck(ctx context.Context, msgID uint64) error {
 	return c.writeJSON(ctx, map[string]any{
@@ -729,7 +729,7 @@ func (c *Client) expireOutEph() {
 	c.outEphOrder = c.outEphOrder[n:]
 }
 
-// pruneOutEphBefore drops every retired ephemeral older than id — the
+// pruneOutEphBefore drops every retired ephemeral older than id, the
 // peer, which always references the latest of ours it has seen, just
 // referenced id, so none of its later messages can reference an older
 // one. Caller must hold peerMu.
@@ -747,11 +747,11 @@ func (c *Client) pruneOutEphBefore(id string) {
 }
 
 // ExpectedIdx returns the next expected idx for keyID and whether the
-// key is already known — used by the caller (the TUI) to decide,
+// key is already known, used by the caller (the TUI) to decide,
 // BEFORE calling DecryptMsg, whether an arrived frame should be
 // processed right away (idx == expected), held in a local reordering
 // buffer (idx > expected), or treated as a duplicate to still confirm
-// with an ack (idx < expected). known=false — key not yet received —
+// with an ack (idx < expected). known=false, key not yet received,
 // is not an error: the caller still buffers, waiting for
 // StorePeerSenderKey to register it.
 func (c *Client) ExpectedIdx(keyID string) (idx uint64, known bool) {
@@ -764,13 +764,13 @@ func (c *Client) ExpectedIdx(keyID string) (idx uint64, known bool) {
 }
 
 // DecryptMsg advances the HMAC ratchet (with DH mix for two-member
-// rooms) by EXACTLY one step and decrypts the ciphertext — never a
+// rooms) by EXACTLY one step and decrypts the ciphertext, never a
 // fast-forward over future idx values: an out-of-sequence arrival must
 // be buffered by the caller (see ExpectedIdx) and resubmitted here only
 // when its turn really comes. With zero-loss delivery (reliable queue,
 // see pending.go) a packet is never lost for good, so there's no need
-// to guess-recover a gap by skipping ahead in the chain — the chain
-// simply waits for its turn. Returns (from, plaintext) — from is empty
+// to guess-recover a gap by skipping ahead in the chain, the chain
+// simply waits for its turn. Returns (from, plaintext), from is empty
 // on failure or when idx isn't yet at its turn.
 func (c *Client) DecryptMsg(keyID, text string, idx uint64) (from, plaintext string, dp []byte, replyTo uint64) {
 	c.peerMu.Lock()
@@ -789,7 +789,7 @@ func (c *Client) DecryptMsg(keyID, text string, idx uint64) (from, plaintext str
 		return "", "[duplicate message]", nil, 0
 	}
 	if idx > expected {
-		// The caller should have buffered instead of calling here —
+		// The caller should have buffered instead of calling here,
 		// defensive, never a silent chain skip.
 		Dbg("decrypt: keyID=%s idx=%d > expected=%d → not yet its turn", keyID, idx, expected)
 		return "", "[waiting for earlier messages]", nil, 0
@@ -805,7 +805,7 @@ func (c *Client) DecryptMsg(keyID, text string, idx uint64) (from, plaintext str
 		// Decrypt failed: do NOT commit the chain advance (neither the
 		// plain fallback nor any DH mix further below, which isn't even
 		// computed here). Leaving peerChainKeys/peerMsgIdx exactly where
-		// they were lets a future well-aligned message reattach —
+		// they were lets a future well-aligned message reattach,
 		// committing a state regardless (right or wrong) would turn a
 		// single isolated hiccup into a permanent, cascading
 		// misalignment that no subsequent reconnection or re-invite
@@ -819,7 +819,7 @@ func (c *Client) DecryptMsg(keyID, text string, idx uint64) (from, plaintext str
 				if dhr != "" {
 					// The sender mixed dhr into its chain: without that
 					// same ephemeral the next chain key can't be
-					// computed. Refused without committing anything — the
+					// computed. Refused without committing anything, the
 					// caller sends no ack, so the sender re-encrypts the
 					// message under a new generation once its TTL
 					// expires. A plain step here would diverge the chain
@@ -854,7 +854,7 @@ func (c *Client) DecryptMsg(keyID, text string, idx uint64) (from, plaintext str
 // unseal decrypts ciphertext with msgKey and unmarshals the sealedMsg JSON.
 // aad must match what was passed to Encrypt (sequence number as seqBytes).
 // msgKey is zeroed after use regardless of outcome. dh/dhr are only set for two-member
-// rooms (ratchetDH) — see sealedMsg. ok is false only on genuine AEAD failure —
+// rooms (ratchetDH), see sealedMsg. ok is false only on genuine AEAD failure,
 // the caller (DecryptMsg) uses it to decide whether to commit the chain
 // advance: a text whose literal content happens to match the error
 // message "[decrypt failed]" must not be mistaken for an actual failure.
@@ -901,7 +901,7 @@ func (c *Client) SendSenderKey(ctx context.Context, toUserID string) error {
 // SendSenderKeyReliable sends OUR current sender_key to toUserID over
 // the reliable delivery channel (sendSenderKeyTo → registerPending/RetryDue,
 // the same mechanism already used by RotateSenderKey to distribute
-// after a rotation, msg_id + ack via msg_ack) — unlike SendSenderKey
+// after a rotation, msg_id + ack via msg_ack), unlike SendSenderKey
 // above (fire-and-forget): once this function succeeds in WRITING
 // the frame, delivery stays guaranteed even through automatic
 // retransmissions. The
@@ -937,7 +937,7 @@ func (c *Client) SendSenderKeyReliable(ctx context.Context, toUserID string) err
 // ── point-to-point bootstrap for "introduced" members ─────────────────────────
 
 // SendRelBootstrap sends toUserID our pair of EPHEMERAL relationship
-// keys for this room (see shared.RelBootstrapPayload) — the same hybrid
+// keys for this room (see shared.RelBootstrapPayload), the same hybrid
 // X25519+ML-KEM-768 channel already used for sender_key, a dedicated
 // "rel_bootstrap" frame routed point-to-point by the server (never a
 // broadcast to the whole room). Used only toward peers with no prior
@@ -966,18 +966,18 @@ func (c *Client) SendRelBootstrap(ctx context.Context, toUserID string, p shared
 
 // DecryptRelBootstrap decrypts an incoming "rel_bootstrap" frame, with
 // our current session key (the same pair used for this connection's
-// handshake, not a relationship key — the payload itself carries the
+// handshake, not a relationship key, the payload itself carries the
 // other party's ephemeral relationship keys).
 func (c *Client) DecryptRelBootstrap(payloadB64 string) (shared.RelBootstrapPayload, error) {
 	return shared.DecryptRelBootstrap(c.sessionPriv, c.mlkemDecapKey(), payloadB64)
 }
 
 // SendRelBootstrapAck confirms to toUserID that we received AND applied
-// their rel_bootstrap — SendRelBootstrap above is a one-shot frame with
+// their rel_bootstrap, SendRelBootstrap above is a one-shot frame with
 // no ack of its own (unlike msg/probe, which have a dedicated one):
 // without this, the sender has no way to know whether THEIR send ever
 // arrived, and a periodic retry (cmdRetryEphemeralRelBootstraps, tui.go)
-// would never know when to stop. No encrypted payload needed — unlike
+// would never know when to stop. No encrypted payload needed, unlike
 // the bootstrap itself, an ack carries no key material, just receipt
 // confirmation, over the same WS channel already authenticated by the
 // room handshake (same principle as msg_ack).
@@ -988,7 +988,7 @@ func (c *Client) SendRelBootstrapAck(ctx context.Context, toUserID string) error
 	})
 }
 
-// SendRelPromote/DecryptRelPromote — same scheme as
+// SendRelPromote/DecryptRelPromote, same scheme as
 // SendRelBootstrap/DecryptRelBootstrap, for the explicit promotion of an
 // ephemeral member to a real contact (see shared.RelPromotePayload).
 func (c *Client) SendRelPromote(ctx context.Context, toUserID string, p shared.RelPromotePayload) error {
@@ -1018,7 +1018,7 @@ func (c *Client) DecryptRelPromote(payloadB64 string) (shared.RelPromotePayload,
 }
 
 // SendRelPromoteAck confirms to toUserID that we received AND applied
-// their rel_promote — same fragility/same remedy as SendRelBootstrapAck
+// their rel_promote, same fragility/same remedy as SendRelBootstrapAck
 // above (SendRelPromote is a one-shot frame with no ack of its own). No
 // encrypted payload needed.
 func (c *Client) SendRelPromoteAck(ctx context.Context, toUserID string) error {
@@ -1032,7 +1032,7 @@ func (c *Client) SendRelPromoteAck(ctx context.Context, toUserID string) error {
 // chainKey from it, and registers the ratchet state for that peer under the new keyID.
 // The previous keyID entry for this peer is zeroed and removed.
 //
-// No-op if the received key matches an already-tracked keyID — by
+// No-op if the received key matches an already-tracked keyID, by
 // CONTENT (peerChainKeys[newKeyID] already exists), not by fromUserID:
 // that field changes on every reconnection (the server assigns a new
 // session user_id), so comparing only "same fromUserID → same keyID"
@@ -1043,7 +1043,7 @@ func (c *Client) SendRelPromoteAck(ctx context.Context, toUserID string) error {
 // all. Without this check, re-registering the SAME key would still
 // reset peerChainKeys/peerMsgIdx to idx=0, while the sender keeps
 // incrementing its own index from the real position, never reset on
-// its side — the two chains misalign without anything visible having
+// its side, the two chains misalign without anything visible having
 // happened.
 func (c *Client) StorePeerSenderKey(fromUserID, payloadB64 string) error {
 	key, err := shared.HybridECIESDecrypt(c.sessionPriv, c.mlkemDecapKey(), payloadB64)
@@ -1083,7 +1083,7 @@ func (c *Client) StorePeerSenderKey(fromUserID, payloadB64 string) error {
 	c.peerMsgIdx[newKeyID] = 0
 	if c.ratchetDH {
 		// New chain generation: the peer's ephemeral known under the old
-		// key is no longer relevant — starts fresh, reattaches to the
+		// key is no longer relevant, starts fresh, reattaches to the
 		// first dh received under newKeyID.
 		c.peerEphPub = nil
 	}
@@ -1094,7 +1094,7 @@ func (c *Client) StorePeerSenderKey(fromUserID, payloadB64 string) error {
 // current Unix time in milliseconds shifted left by 4, so a run of up to
 // 16 probes gets distinct values (base+0 … base+15) and consecutive runs
 // never overlap. Kept below 2^53: the pong is decoded into a
-// map[string]any, where seq becomes a float64 — exact only up to 2^53, a
+// map[string]any, where seq becomes a float64, exact only up to 2^53, a
 // larger value would make consecutive probes indistinguishable.
 func PingSeqBase() uint64 {
 	return uint64(time.Now().UnixMilli()) << 4
@@ -1123,16 +1123,16 @@ func (c *Client) SendPongProbe(ctx context.Context, toUserID string, seq uint64,
 
 // ── file transfer ──────────────────────────────────────────────────────────────
 // The content ciphertext is already encrypted once for all recipients
-// (shared.Encrypt with a random symmetric key) before reaching here —
+// (shared.Encrypt with a random symmetric key) before reaching here,
 // these methods only route it, exactly as SendSenderKey routes other
 // already-prepared payloads. The symmetric key itself travels inside
-// envelopes, one per recipient (shared.FileOfferEnvelope —
+// envelopes, one per recipient (shared.FileOfferEnvelope,
 // ContentKey-per-relationship).
 
 // SendFileAnnounce opens the announcement phase BEFORE any real
 // file_offer/chunk: a shared hash of the ciphertext (not yet
 // transferred) plus a signature over that hash for each recipient
-// (shared.FileAnnounceEnvelope) — one frame per recipient on the hub
+// (shared.FileAnnounceEnvelope), one frame per recipient on the hub
 // side, the same scheme as SendFileOffer. sigTS is common to
 // every envelope (the same signed timestamp in each, RelMsgSigPayload).
 func (c *Client) SendFileAnnounce(ctx context.Context, toUserIDs []string, transferID string, hash []byte, envelopes map[string]shared.FileAnnounceEnvelope, sigTS string) error {
@@ -1147,7 +1147,7 @@ func (c *Client) SendFileAnnounce(ctx context.Context, toUserIDs []string, trans
 }
 
 // SendFileAnnounceAck confirms to the sender that the announcement
-// signature has been verified (right away, or after a self-heal) —
+// signature has been verified (right away, or after a self-heal),
 // fire-and-forget toward the original sender, same scheme as
 // SendFileAccept. Only AFTER this ack does the sender send the real
 // file_offer to this recipient.
@@ -1161,7 +1161,7 @@ func (c *Client) SendFileAnnounceAck(ctx context.Context, toUserID, transferID s
 
 // SendFileOffer sends the REAL offer (file name/size/key, inside
 // meta_blob) to a recipient whose announcement phase has already
-// verified the signature — no signature of its own: authenticity is
+// verified the signature, no signature of its own: authenticity is
 // already established, this frame only carries data encrypted for the
 // recipient's ContentKey. One frame per recipient on the hub side, same
 // scheme as SendFileAnnounce.
@@ -1215,7 +1215,7 @@ func (c *Client) SendFileChunkAck(ctx context.Context, toUserID, transferID stri
 
 // SendFileVerifyResult reports the FINAL outcome of signature
 // verification/decryption to the original sender, after all chunks have
-// already been confirmed by SendFileChunkAck — that ack alone only
+// already been confirmed by SendFileChunkAck, that ack alone only
 // proves transport-level delivery, never that the recipient actually
 // verified/saved the file: without this second ack the sender would see
 // "delivered" even when the recipient discarded the file for an invalid
@@ -1230,7 +1230,7 @@ func (c *Client) SendFileVerifyResult(ctx context.Context, toUserID, transferID 
 }
 
 // SendFileResume announces to the original sender which byte to resume
-// an already-in-progress transfer from — after a reconnection of either
+// an already-in-progress transfer from, after a reconnection of either
 // side (a new session user_id in both cases), instead of starting over
 // from scratch. Idempotent: harmless to send even if the sender wasn't
 // actually stuck.
@@ -1264,7 +1264,7 @@ func (c *Client) RegisterSessionPub(userID, pubB64 string) {
 }
 
 // RegisterMLKEMPub caches a peer's ML-KEM-768 encapsulation key (mlkem_pub,
-// learned from init/user_joined — see HandshakeResult.PeerMLKEMPub).
+// learned from init/user_joined, see HandshakeResult.PeerMLKEMPub).
 func (c *Client) RegisterMLKEMPub(userID string, pubBytes []byte) {
 	if len(pubBytes) == 0 {
 		return
@@ -1286,7 +1286,7 @@ type memberEntry struct {
 	name string
 }
 
-// MemberKeyOf is the member key of a root identity key — the only
+// MemberKeyOf is the member key of a root identity key, the only
 // identifier of a room member, the same for every member of the room
 // whatever username label each one sees.
 func MemberKeyOf(identityPub []byte) string {
@@ -1299,7 +1299,7 @@ func MemberKeyOf(identityPub []byte) string {
 // RegisterUser records a room member received from the server: its
 // session userID, its root identity key and its display username. A
 // reconnect (frequent over I2P, rare over Tor) assigns the same member
-// a brand-new session userID — recognized by the identity key, never by
+// a brand-new session userID, recognized by the identity key, never by
 // the username: two members may share a username. The previous userID
 // is pruned, otherwise peerSessionPubs and members would gain one stale
 // entry per reconnect for the life of the process. A member with no
@@ -1328,7 +1328,7 @@ func (c *Client) RegisterUser(userID, username string, identityPub []byte) {
 	}
 }
 
-// UnregisterUser removes userID from the known members (user_left) —
+// UnregisterUser removes userID from the known members (user_left),
 // without this removal members/userIDByKey would grow one stale
 // entry per departed member, and the reliable delivery queue
 // (pending.go) would keep waiting forever for an ack from someone no
@@ -1366,7 +1366,7 @@ func (c *Client) LookupMemberKey(userID string) string {
 }
 
 // LookupUsername returns the display username of a session userID, or
-// "" if unknown — a label, never an identifier.
+// "" if unknown, a label, never an identifier.
 func (c *Client) LookupUsername(userID string) string {
 	c.userMapMu.RLock()
 	name := c.members[userID].name
@@ -1387,11 +1387,11 @@ func (c *Client) ReadMsg(ctx context.Context) (map[string]any, error) {
 	return v, nil
 }
 
-// Ping sends a WS ping and waits for the pong — used to detect a connection that has
+// Ping sends a WS ping and waits for the pong, used to detect a connection that has
 // gone silently stale (no read error, but no data flowing either: a known Tor failure
 // mode where a degraded circuit never delivers a clean close). Must be called
 // concurrently with an active ReadMsg loop: per websocket.Conn.Ping's own contract,
-// the pong is picked up by the ongoing Read, not by a separate read of its own — so if
+// the pong is picked up by the ongoing Read, not by a separate read of its own, so if
 // the read loop is truly stuck, this call correctly times out instead of hanging.
 func (c *Client) Ping(ctx context.Context) error {
 	conn := c.conn()
@@ -1404,7 +1404,7 @@ func (c *Client) Ping(ctx context.Context) error {
 func (c *Client) Username() string { return c.username }
 
 // Close and GracefulClose are no-ops if Conn is still nil: a room tab is created (and
-// closable by the user, e.g. /grp-exit) before its background Connect() call resolves —
+// closable by the user, e.g. /grp-exit) before its background Connect() call resolves,
 // see cmdInvite/cmdJoin/reconnectTab, tea.Cmd closures that call Connect
 // asynchronously. Closing the tab during that window must not crash the whole TUI.
 func (c *Client) Close() {
@@ -1429,7 +1429,7 @@ func (c *Client) IsRemote() bool { return c.dialContext != nil }
 func (c *Client) RatchetDH() bool { return c.ratchetDH }
 
 // SetPQCSign enables/disables the optional per-room ML-DSA-65 signature
-// on chat messages sent from now on (hybrid PQC network identity) —
+// on chat messages sent from now on (hybrid PQC network identity),
 // unlike ratchetDH (decided once at construction based on member
 // count), this is a mutable toggle: the choice to use it belongs to the
 // user, not automatic. No effect if signMLDSA is nil (no PQC identity
@@ -1448,7 +1448,7 @@ func (c *Client) PQCSign() bool {
 }
 
 // MessagesSinceRotation reports how many messages have been sent (Send,
-// not counting RotateSenderKey itself) since the last rotation —
+// not counting RotateSenderKey itself) since the last rotation,
 // count-based rotation criterion (config.SenderKeyMessageBudget),
 // complementary to the time-based criterion (SenderKeyInterval):
 // the caller rotates when this value reaches the threshold, regardless
@@ -1462,7 +1462,7 @@ func (c *Client) MessagesSinceRotation() uint64 {
 // sendSenderKeyTo encrypts newKey for a single peer (hybrid ECIES) and
 // writes it over the reliable delivery channel (pending.go, the same
 // mechanism as chat messages: numbered, acked, retransmitted verbatim on
-// missing confirmation) — sender_key is never fire-and-forget, it's a
+// missing confirmation), sender_key is never fire-and-forget, it's a
 // message like any other toward that recipient.
 func (c *Client) sendSenderKeyTo(ctx context.Context, peerID string, pub *ecdh.PublicKey, mlkemPub *mlkem.EncapsulationKey768, newKey []byte) {
 	payload, err := shared.HybridECIESEncrypt(pub, mlkemPub, newKey)
@@ -1492,12 +1492,12 @@ func (c *Client) sendSenderKeyTo(ctx context.Context, peerID string, pub *ecdh.P
 //     (PendingCountFor==0), the new key goes out right away, over the
 //     same reliable channel as any other message (sendSenderKeyTo);
 //   - if instead there's still a backlog toward that peer, distribution
-//     is DEFERRED (deferKeyDistribution) — sending the new key now would
+//     is DEFERRED (deferKeyDistribution), sending the new key now would
 //     make StorePeerSenderKey on their side discard the previous
 //     generation right while they still need the messages remaining
 //     queued for it. FlushDeferredKeyDistributions, invoked by the same
 //     periodic RetryDue cycle, sends it as soon as that backlog empties
-//     — an exact condition, not a heuristic timeout.
+//     an exact condition, not a heuristic timeout.
 //
 // The previous generation (the senderKey/senderChainKey active until
 // now) is NOT destroyed here: it simply stops being used for OUTGOING
@@ -1505,7 +1505,7 @@ func (c *Client) sendSenderKeyTo(ctx context.Context, peerID string, pub *ecdh.P
 // receiving side) decides on their own when they can release it, with
 // the same criterion.
 func (c *Client) RotateSenderKey(ctx context.Context) error {
-	// Same sendMu as Send() — see the comment on the field: serializes the
+	// Same sendMu as Send(), see the comment on the field: serializes the
 	// entire pipeline (distribution + activation) against concurrent
 	// Send() calls, so an in-flight send can't commit after the rotation
 	// has already swapped senderKeyID/senderChainKey, and a rotation
@@ -1517,7 +1517,7 @@ func (c *Client) RotateSenderKey(ctx context.Context) error {
 
 // rotateSenderKeyLocked is RotateSenderKey with sendMu already held.
 // deferBusy=false sends the new key to every peer right away, dropping
-// any older sender_key still pending or deferred toward it — used when
+// any older sender_key still pending or deferred toward it, used when
 // every unacknowledged message is about to be re-encrypted under the new
 // generation (reencryptExpired), so no peer needs the previous one any
 // longer.
@@ -1527,7 +1527,7 @@ func (c *Client) rotateSenderKeyLocked(ctx context.Context, deferBusy bool) erro
 		return err
 	}
 
-	// Snapshot the peers before distributing — avoids holding peerMu during ECIES.
+	// Snapshot the peers before distributing, avoids holding peerMu during ECIES.
 	c.peerMu.RLock()
 	peers := make(map[string]*ecdh.PublicKey, len(c.peerSessionPubs))
 	for id, pub := range c.peerSessionPubs {
@@ -1556,7 +1556,7 @@ func (c *Client) rotateSenderKeyLocked(ctx context.Context, deferBusy bool) erro
 	}
 
 	// Activate the new senderKey, update keyID, and reinitialize the
-	// ratchet — NEW traffic resumes right away, regardless of which
+	// ratchet, NEW traffic resumes right away, regardless of which
 	// peers have already received the key: whoever hasn't received it
 	// yet keeps seeing only their backlog queue until it arrives.
 	newChain := shared.InitChainKey(newKey)
@@ -1587,14 +1587,14 @@ func seqBytes(idx uint64) []byte {
 }
 
 // ConnectWithRetry attempts to connect up to maxAttempts times with
-// exponential backoff (20s, 40s, 80s…) — deliberately long: a Tor
+// exponential backoff (20s, 40s, 80s…), deliberately long: a Tor
 // circuit can take up to 90s to rebuild, a short backoff (2-4s) would
 // retry uselessly before it even has a chance to succeed. With
 // maxAttempts=5 (reconnectTab) the worst case before giving up is ~12
-// minutes (5×90s of attempts + 20+40+80+160s of waits) — /grp-reconnect
+// minutes (5×90s of attempts + 20+40+80+160s of waits), /grp-reconnect
 // (cmdReconnect) remains the fast path for a user who doesn't want to
 // wait out the full cycle: a single direct attempt, no backoff.
-// onRetry is called after every non-final failed attempt — useful for updating the UI.
+// onRetry is called after every non-final failed attempt, useful for updating the UI.
 func (c *Client) ConnectWithRetry(ctx context.Context, maxAttempts int, onRetry func(attempt int, err error)) error {
 	const perAttempt = 90 * time.Second // Tor can take up to 90s to build a circuit
 	delay := 20 * time.Second           // long backoff: Tor doesn't recover in 2-4s
@@ -1610,7 +1610,7 @@ func (c *Client) ConnectWithRetry(ctx context.Context, maxAttempts int, onRetry 
 		lastErr = err
 		Dbg("retry: attempt %d failed: %v", i, lastErr)
 		// ErrAlreadyConnectedElsewhere isn't a network problem another
-		// close-by attempt would fix — the only event that unblocks it
+		// close-by attempt would fix, the only event that unblocks it
 		// is the OTHER device disconnecting, a wait much longer than
 		// this backoff. The caller (tui.go) handles it with
 		// a dedicated fixed-interval loop: retrying again here would
@@ -1655,7 +1655,7 @@ func (c *Client) SeedSentTextForTest(msgID uint64, text string) {
 }
 
 // SessionKeysForTest returns our session X25519 public key and installs
-// dk as our ML-KEM-768 decapsulation key — the pair a peer encrypts a
+// dk as our ML-KEM-768 decapsulation key, the pair a peer encrypts a
 // sender_key toward, normally set up by the handshake.
 func (c *Client) SessionKeysForTest(dk *mlkem.DecapsulationKey768) *ecdh.PublicKey {
 	c.connMu.Lock()
@@ -1673,7 +1673,7 @@ func (c *Client) SeedPeerChainForTest(keyID string, chainKey []byte, msgIdx uint
 
 // EncryptTestSealedFrame builds a sealedMsg (from/text/devicePub, without
 // DH/DHR) and encrypts it with the same key/chain step used in
-// production by Client.Send — for building an incoming message frame
+// production by Client.Send, for building an incoming message frame
 // "by hand" in tests, without duplicating the internal wire format in
 // another package.
 func EncryptTestSealedFrame(chainKey []byte, idx uint64, from, text string, devicePub []byte) (string, error) {

@@ -23,7 +23,7 @@ import (
 )
 
 // RewrapSlot changes slot idx's password combination without touching
-// its content. ki is the slot's already-known raw content key — the
+// its content. ki is the slot's already-known raw content key, the
 // caller is responsible for checking newPasswordIdentity doesn't
 // collide with any other slot (passwordIdentityCollides) before
 // calling this.
@@ -47,7 +47,7 @@ func RewrapSlot(c *slotContainer, idx int, ki []byte, newPasswordFile, newPasswo
 }
 
 // RewrapOwnSlot is RewrapSlot applied to u's own slot, and updates u's
-// cached PasswordFile/PasswordIdentity to match — the common case (a
+// cached PasswordFile/PasswordIdentity to match, the common case (a
 // session changing its own password).
 func (u *UnlockedSlot) RewrapOwnSlot(newPasswordFile, newPasswordIdentity string) error {
 	if err := RewrapSlot(u.Container, u.Idx, u.Ki, newPasswordFile, newPasswordIdentity); err != nil {
@@ -59,7 +59,7 @@ func (u *UnlockedSlot) RewrapOwnSlot(newPasswordFile, newPasswordIdentity string
 }
 
 // VerifyPasswordIdentity reports whether candidate (combined with u's
-// own, already-known password_file) still opens u's own slot — used to
+// own, already-known password_file) still opens u's own slot, used to
 // confirm the "old password" step of a password change without
 // needing to re-read the file from disk.
 func (u *UnlockedSlot) VerifyPasswordIdentity(candidate string) bool {
@@ -68,7 +68,7 @@ func (u *UnlockedSlot) VerifyPasswordIdentity(candidate string) bool {
 }
 
 // PasswordIdentityAvailable reports whether candidate (combined with
-// u's own password_file) is still free to assign to u's own slot — it
+// u's own password_file) is still free to assign to u's own slot, it
 // doesn't already open ANY slot in the container (see
 // passwordIdentityCollides, which login would otherwise find
 // ambiguous).

@@ -23,7 +23,7 @@ import (
 
 // TestMyIdentityURIIncludesAllKeySegments: the nu:// URI shown by
 // cmdInfo("self")/cmdShowQR must carry every key segment, ML-DSA-65
-// included, like cmd/main.go's identityQRContent — otherwise a contact
+// included, like cmd/main.go's identityQRContent, otherwise a contact
 // added by scanning it would miss PQC signature verification.
 func TestMyIdentityURIIncludesAllKeySegments(t *testing.T) {
 	m := model{

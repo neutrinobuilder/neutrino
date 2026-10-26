@@ -18,20 +18,20 @@ package shared
 // DefaultFileWarpChunkSizeKiB is the default of the "warp" preset for the
 // file-transfer chunk size (see
 // internal/config.Config.FileWarpChunkSizeKiBOrDefault, internal/client/tui).
-// Lives here and not in internal/config because the server — which does not
-// read config.json and knows nothing about a user's chosen presets — still
+// Lives here and not in internal/config because the server, which does not
+// read config.json and knows nothing about a user's chosen presets, still
 // needs it to compute an adequate WebSocket read limit (see
 // MaxFileChunkWireBytes).
 const DefaultFileWarpChunkSizeKiB = 64
 
 // MaxFileChunkWireBytes computes the maximum size in bytes a file_chunk
 // WebSocket frame (wsFileChunkFwd, internal/server/ws.go) can reach once
-// rawChunkBytes bytes of ciphertext are base64-encoded — encoding/json does
-// this automatically for []byte fields — inside the message's JSON envelope.
+// rawChunkBytes bytes of ciphertext are base64-encoded, encoding/json does
+// this automatically for []byte fields, inside the message's JSON envelope.
 //
 // Used to set websocket.Conn.SetReadLimit: the coder/websocket library's
 // default is 32768 bytes (read.go: defaultReadLimit), insufficient for the
-// default "warp" preset (64 KiB raw ≈ 87KB after base64 encoding) — without
+// default "warp" preset (64 KiB raw ≈ 87KB after base64 encoding), without
 // this, the sender's connection closes with "StatusMessageTooBig" mid-transfer,
 // right after the recipient accepts.
 func MaxFileChunkWireBytes(rawChunkBytes int) int64 {

@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Package fountain implements pure-Go Luby Transform (LT) codes — an
+// Package fountain implements pure-Go Luby Transform (LT) codes, an
 // encoder and peeling decoder for fountain coding, meant for animated QR
 // optical transfer: the sender generates a potentially infinite stream of
 // encoded symbols, shown in a loop as animated QR codes; the receiver
 // reconstructs the message by collecting ~K·1.1-1.2 distinct symbols in
-// ANY order, tolerating lost, duplicated, or out-of-order frames — no
+// ANY order, tolerating lost, duplicated, or out-of-order frames, no
 // explicit retransmission needed.
 //
 // Not cryptographic: the integrity of the reconstructed content remains
@@ -28,7 +28,7 @@ package fountain
 
 import "errors"
 
-// maxBlocks caps k (number of source blocks per transfer) — beyond this
+// maxBlocks caps k (number of source blocks per transfer), beyond this
 // threshold, the cost of the linear search in sampleDegree and of the
 // decoder's "waiting" map would grow with no real benefit: a larger
 // payload should be split upstream into more transfers, not into
@@ -36,7 +36,7 @@ import "errors"
 const maxBlocks = 1 << 16
 
 // Symbol is an encoded symbol, ready for the wire (e.g. a QR frame's
-// payload) — ID identifies both the symbol itself (to discard duplicates)
+// payload), ID identifies both the symbol itself (to discard duplicates)
 // and, together with k, the degree and the set of source blocks that
 // compose it.
 type Symbol struct {
@@ -46,7 +46,7 @@ type Symbol struct {
 
 // Encoder generates a stream of Symbol from a fixed payload, split into K
 // blocks of BlockSize bytes (the last one zero-padded, never transmitted
-// beyond TotalLen — the caller already knows it and discards it
+// beyond TotalLen, the caller already knows it and discards it
 // downstream).
 type Encoder struct {
 	blocks [][]byte
@@ -55,7 +55,7 @@ type Encoder struct {
 
 // NewEncoder splits data into blockSize-byte blocks (the last one,
 // possibly partial, is extended with zeros). blockSize must be chosen by
-// the caller based on a QR frame's budget — Encoder has no visibility into
+// the caller based on a QR frame's budget, Encoder has no visibility into
 // QR codes/frames.
 func NewEncoder(data []byte, blockSize int) (*Encoder, error) {
 	if blockSize <= 0 {
@@ -80,7 +80,7 @@ func NewEncoder(data []byte, blockSize int) (*Encoder, error) {
 	return &Encoder{blocks: blocks, cdf: degreeCDF(k)}, nil
 }
 
-// K returns the number of source blocks — must be communicated to the
+// K returns the number of source blocks, must be communicated to the
 // receiver outside this package (e.g. in the QR frame header), together
 // with BlockSize() and the original payload's real length.
 func (e *Encoder) K() int { return len(e.blocks) }
@@ -89,7 +89,7 @@ func (e *Encoder) K() int { return len(e.blocks) }
 // unchanged for the whole transfer).
 func (e *Encoder) BlockSize() int { return len(e.blocks[0]) }
 
-// Next generates the encoded symbol for id — the caller iterates over IDs
+// Next generates the encoded symbol for id, the caller iterates over IDs
 // (sequential or random, as long as they aren't repeated within the same
 // transfer) to produce a stream of arbitrary length; there is no
 // "exhausted" state, different ids always produce new valid symbols.

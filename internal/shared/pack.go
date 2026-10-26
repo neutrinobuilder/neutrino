@@ -26,7 +26,7 @@ import (
 	"neutrino/internal/i18n"
 )
 
-// NowTS returns the current instant in RFC3339 UTC format — generic
+// NowTS returns the current instant in RFC3339 UTC format, generic
 // timestamp used to sign messages/files (RelMsgSigPayload, DeviceSigMsg,
 // PQCSigMsg...).
 func NowTS() string {
@@ -65,14 +65,14 @@ func PackData(data []byte, strongCompression bool) ([]byte, error) {
 	}
 	if buf.Len() >= len(data)+1 {
 		// LZMA2/XZ wasn't worth it (data already high-entropy, or payload
-		// too small for the .xz container overhead to pay off) —
+		// too small for the .xz container overhead to pay off),
 		// transparent fallback to raw, never worse than not compressing.
 		return append([]byte{packRaw}, data...), nil
 	}
 	return buf.Bytes(), nil
 }
 
-// UnpackData reverses PackData based on the one-byte marker — correct
+// UnpackData reverses PackData based on the one-byte marker, correct
 // regardless of how the sender set strongCompression, since the marker
 // declares it explicitly.
 func UnpackData(tagged []byte) ([]byte, error) {

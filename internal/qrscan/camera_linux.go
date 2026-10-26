@@ -39,7 +39,7 @@ import (
 )
 
 // V4L2 FourCC codes (v4l2_fourcc(a,b,c,d) = a | b<<8 | c<<16 | d<<24, same
-// as the linux/videodev2.h header) — blackjack/webcam doesn't predefine
+// as the linux/videodev2.h header), blackjack/webcam doesn't predefine
 // them by name (webcam.PixelFormat is a raw uint32, discovered only at
 // runtime via GetSupportedFormats), the same pattern used in its official
 // examples.
@@ -51,24 +51,24 @@ const (
 // ScanCamera captures frames from the first available V4L2 webcam
 // (/dev/video*) and tries to decode a QR code from each one, until it
 // finds a valid code or ctx expires. onFrame, if not nil, is called with
-// EVERY captured frame (even before attempting to decode it) — meant for a
+// EVERY captured frame (even before attempting to decode it), meant for a
 // live preview on the caller's side (see internal/client/tui,
 // cmdReadQRCamera): called on the same goroutine as this function, never
 // blocking for the caller, who should route it to a non-blocking
-// buffer/channel (as cmdReadQRCamera actually does — blocking here would
+// buffer/channel (as cmdReadQRCamera actually does, blocking here would
 // slow down capture itself).
 //
-// Pure Go (github.com/blackjack/webcam — no "import \"C\"", only ioctl
-// calls via golang.org/x/sys/unix), no external process — consistent
+// Pure Go (github.com/blackjack/webcam, no "import \"C\"", only ioctl
+// calls via golang.org/x/sys/unix), no external process, consistent
 // with the project's single-binary, no-external-service design, and
 // compatible with CGO_ENABLED=0 (static binaries, portable across
 // distributions).
 //
-// Prefers YUYV (uncompressed — the Y channel is already pure luminance,
+// Prefers YUYV (uncompressed, the Y channel is already pure luminance,
 // extracted directly without going through any image library) over MJPEG
 // (compressed; some UVC webcams omit the standard Huffman tables from the
 // stream, which the standard library's image/jpeg does not synthesize on
-// its own — avoiding MJPEG when not needed removes one decoding failure
+// its own, avoiding MJPEG when not needed removes one decoding failure
 // mode).
 func ScanCamera(ctx context.Context, onFrame func(image.Image)) (string, error) {
 	var result string
@@ -83,12 +83,12 @@ func ScanCamera(ctx context.Context, onFrame func(image.Image)) (string, error) 
 }
 
 // ScanCameraContinuous captures frames from the first available V4L2
-// webcam and decodes EVERY QR code found — unlike ScanCamera, it doesn't
+// webcam and decodes EVERY QR code found, unlike ScanCamera, it doesn't
 // stop at the first one: calls onDecoded for each successfully decoded QR
 // text, until onDecoded returns true (done) or ctx expires. Meant for a
 // stream of animated QR codes (see internal/qroptical): the same frame,
 // read repeatedly while it stays on screen, produces multiple onDecoded
-// calls with the same text — deduplicating is the caller's responsibility
+// calls with the same text, deduplicating is the caller's responsibility
 // (qroptical.Receiver already does it via its own symbol ID).
 func ScanCameraContinuous(ctx context.Context, onFrame func(image.Image), onDecoded func(text string) (done bool)) error {
 	return scanCameraLoop(ctx, onFrame, onDecoded)
@@ -113,7 +113,7 @@ func scanCameraLoop(ctx context.Context, onFrame func(image.Image), onDecoded fu
 	return lastErr
 }
 
-// videoDevicePaths lists /dev/video* in order — using V4L2's standard
+// videoDevicePaths lists /dev/video* in order, using V4L2's standard
 // naming scheme on Linux.
 func videoDevicePaths() ([]string, error) {
 	matches, err := filepath.Glob("/dev/video*")
@@ -124,7 +124,7 @@ func videoDevicePaths() ([]string, error) {
 	return matches, nil
 }
 
-// pickFormat chooses YUYV if available, otherwise MJPEG — see the comment
+// pickFormat chooses YUYV if available, otherwise MJPEG, see the comment
 // on ScanCamera for why.
 func pickFormat(formats map[webcam.PixelFormat]string) (format webcam.PixelFormat, isYUYV bool) {
 	if _, ok := formats[v4l2PixFmtYUYV]; ok {
@@ -151,7 +151,7 @@ func scanCameraDevice(ctx context.Context, path string, onFrame func(image.Image
 	// Moderate resolution: enough to read a QR code at close range,
 	// without overloading the CPU with the YUYV→greyscale conversion on
 	// every frame. The driver can negotiate a different size if it
-	// doesn't support exactly this one — the values ACTUALLY returned are
+	// doesn't support exactly this one, the values ACTUALLY returned are
 	// always used, never the requested ones.
 	_, width, height, err := cam.SetImageFormat(format, 1280, 720)
 	if err != nil {
@@ -208,9 +208,9 @@ func scanCameraDevice(ctx context.Context, path string, onFrame func(image.Image
 	}
 }
 
-// yuyvToGray extracts only the luminance channel (Y) from a YUYV frame —
+// yuyvToGray extracts only the luminance channel (Y) from a YUYV frame,
 // enough to read a QR code (black/white), avoiding any color conversion.
-// YUYV layout: for each pixel pair, 4 bytes Y0 U Y1 V — pixel x's Y byte is
+// YUYV layout: for each pixel pair, 4 bytes Y0 U Y1 V, pixel x's Y byte is
 // always at position x*2 of the row, whether x is even or odd.
 func yuyvToGray(data []byte, width, height uint32) *image.Gray {
 	img := image.NewGray(image.Rect(0, 0, int(width), int(height)))

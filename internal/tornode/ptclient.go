@@ -29,11 +29,11 @@ import (
 	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/webtunnel"
 )
 
-// ptTransports lists ONLY the supported pluggable transports —
+// ptTransports lists ONLY the supported pluggable transports,
 // deliberately NOT the lyrebird/transports registry package (the one
 // with Init()/Get()): that package unconditionally imports Snowflake
 // too (the entire pion/webrtc + AWS SDK v2 dependency tree) and Meeklite
-// (utls), even though only obfs4/webtunnel are needed — verified with
+// (utls), even though only obfs4/webtunnel are needed, verified with
 // "go list -deps": importing only lyrebird/transports/obfs4 (zero heavy
 // dependencies) and .../webtunnel (adds only utls, no AWS/webrtc) avoids
 // nearly all the bloat. Consistent with bridge_default="obfs4"/
@@ -45,17 +45,17 @@ var ptTransports = map[string]base.Transport{
 }
 
 // ptClient starts pluggable transports (obfs4, webtunnel, ...)
-// IN-PROCESS, in the same Go binary as Neutrino — no separate lyrebird
+// IN-PROCESS, in the same Go binary as Neutrino, no separate lyrebird
 // binary to cross-compile/bundle/run. For each requested transport it
 // opens a local SOCKS listener (goptlib): Tor itself connects to it as
 // a SOCKS client in "unmanaged" mode (torrc "ClientTransportPlugin
 // <name> socks5 <addr>", see torrc(5)), encoding the bridge's
 // destination and arguments (cert=..., iat-mode=...) in the SOCKS
-// request exactly as it would with a lyrebird launched in "exec" mode —
+// request exactly as it would with a lyrebird launched in "exec" mode,
 // goptlib decodes them into SocksRequest.Args, the lyrebird library
 // does the real handshake toward the remote bridge. Same mechanism and
 // same dependencies (both MIT/BSD, pure Go) used by Orbot via
-// github.com/tladesignz/IPtProxy — reimplemented minimally here (only
+// github.com/tladesignz/IPtProxy, reimplemented minimally here (only
 // the transports needed, no Snowflake/DNSTT) instead of importing the
 // entire library.
 type ptClient struct {
@@ -142,7 +142,7 @@ func ptAcceptLoop(f base.ClientFactory, ln *pt.SocksListener, shutdown chan stru
 }
 
 // ptHandleConn performs the pluggable transport handshake toward the
-// real bridge (f.Dial, direct connection — no bridge behind another
+// real bridge (f.Dial, direct connection, no bridge behind another
 // proxy) and then forwards bytes in both directions until close or shutdown.
 func ptHandleConn(f base.ClientFactory, conn *pt.SocksConn, shutdown chan struct{}) {
 	defer conn.Close()

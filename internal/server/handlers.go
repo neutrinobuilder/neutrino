@@ -33,19 +33,19 @@ type appCtx struct {
 	registry     *RoomRegistry
 	limiter      *RateLimiter
 	identityPriv ed25519.PrivateKey         // to decrypt incoming knocks
-	mlkemDecap   *mlkem.DecapsulationKey768 // durable twin of identityPriv — nil = hybrid knocks can't be decrypted, falls back to classic knocks only
+	mlkemDecap   *mlkem.DecapsulationKey768 // durable twin of identityPriv, nil = hybrid knocks can't be decrypted, falls back to classic knocks only
 	knockCh      chan<- shared.KnockPayload // nil if the server doesn't support knocks
-	// knownContactPubs returns the Ed25519 pubkeys of all known contacts —
+	// knownContactPubs returns the Ed25519 pubkeys of all known contacts,
 	// read on every knock, never nil itself (see RunOnListener), reflects
 	// the current address book even if it changes during the process's
 	// life. Mandatory mutuality (Briar-style model): a knock from someone
-	// who isn't already a contact is discarded BEFORE ECIES decryption —
+	// who isn't already a contact is discarded BEFORE ECIES decryption,
 	// see handleKnock, filter via KnockDHTag.
 	knownContactPubs    func() [][]byte
 	pingInterval        time.Duration // WS keepalive interval
 	cleanupInterval     time.Duration // rate limiter + stale session cleanup interval
-	sessionStaleTimeout time.Duration // threshold for RoomRegistry.CleanupStaleSessions — see ServerConfig.SessionStaleTimeout
-	// silenced (nil = never silenced): see ServerConfig.Silenced — if
+	sessionStaleTimeout time.Duration // threshold for RoomRegistry.CleanupStaleSessions, see ServerConfig.SessionStaleTimeout
+	// silenced (nil = never silenced): see ServerConfig.Silenced, if
 	// isSilenced() is true, every entry point closes immediately with no
 	// protocol response, before touching identityPriv/mlkemDecap.
 	silenced func() bool
@@ -74,7 +74,7 @@ func (a *appCtx) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // maxKnockBodyBytes limits POST /knock's HTTP body. Sized to fit
-// KnockPayload.RelBootstrap — two complete relationship key pairs
+// KnockPayload.RelBootstrap, two complete relationship key pairs
 // (Ed25519+ML-KEM-768+ML-DSA-65 each, ~6.3KB raw) plus
 // RelBootstrapPayload.Sig/SigMLDSA (root IdentityKey signature on the
 // bootstrap), which push the encrypted knock to ~21.6KB on its own
@@ -92,7 +92,7 @@ const maxKnockBodyBytes = 26000
 // has proven the sender holds this identity's key.
 const maxDeviceSyncBodyBytes = 8 << 20
 
-// POST /knock — receives a JSON envelope (shared.KnockEnvelope): a
+// POST /knock, receives a JSON envelope (shared.KnockEnvelope): a
 // plaintext static-static DH tag (shared.KnockDHTag) plus an ECIES-encrypted
 // payload toward our identity key (shared.EncryptKnock).
 func (a *appCtx) handleKnock(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +123,7 @@ func (a *appCtx) handleKnock(w http.ResponseWriter, r *http.Request) {
 	// self-probe nor any known contact is discarded WITHOUT EVER running
 	// DecryptKnock (no ECDH X25519+AES-GCM on a non-mutual knock). Identical
 	// response (202) whether the knock gets processed or discarded for
-	// non-mutuality — there must be no way to distinguish from the outside
+	// non-mutuality, there must be no way to distinguish from the outside
 	// "this isn't my contact" from "I processed it", otherwise mutuality
 	// itself would become a channel to enumerate the recipient's address
 	// book.
@@ -142,7 +142,7 @@ func (a *appCtx) handleKnock(w http.ResponseWriter, r *http.Request) {
 	}
 	if matchedPub == nil {
 		// Diagnostics: without this, a mutuality-filter failure is
-		// invisible even with `neutrino debug`/Debug active — that
+		// invisible even with `neutrino debug`/Debug active, that
 		// mechanism (internal/client.Dbg, see dbg() in this package)
 		// receives a knock only AFTER it has passed this filter and
 		// decryption. Only a prefix of the tag is logged (8 of 32 bytes),
@@ -155,7 +155,7 @@ func (a *appCtx) handleKnock(w http.ResponseWriter, r *http.Request) {
 	a.deliverKnock(w, env, matchedPub)
 }
 
-// POST /device-sync — a knock from another device of this same identity
+// POST /device-sync, a knock from another device of this same identity
 // (see shared.DeviceSyncPath). The tag in the header must be this
 // identity's own, checked before reading anything else: a mismatch gets
 // the same 202 as a non-mutual knock, so the endpoint reveals nothing.
@@ -202,7 +202,7 @@ func (a *appCtx) handleDeviceSync(w http.ResponseWriter, r *http.Request) {
 }
 
 // deliverKnock decrypts an envelope whose tag already matched matchedPub
-// and hands the payload to the knock channel — the part shared by POST
+// and hands the payload to the knock channel, the part shared by POST
 // /knock and POST /device-sync.
 func (a *appCtx) deliverKnock(w http.ResponseWriter, env shared.KnockEnvelope, matchedPub ed25519.PublicKey) {
 	payload, err := shared.DecryptKnock(a.identityPriv, a.mlkemDecap, env.Payload)
@@ -212,7 +212,7 @@ func (a *appCtx) deliverKnock(w http.ResponseWriter, env shared.KnockEnvelope, m
 		return
 	}
 	// Defense in depth: the decrypted sender must be exactly the contact
-	// (or ourselves) whose tag passed the filter above — the tag alone
+	// (or ourselves) whose tag passed the filter above, the tag alone
 	// already guarantees possession of a known private key, this verifies
 	// it wasn't used to declare a different identity inside the encrypted
 	// payload. Same 202 response, same reason as above.
@@ -226,12 +226,12 @@ func (a *appCtx) deliverKnock(w http.ResponseWriter, env shared.KnockEnvelope, m
 	case a.knockCh <- payload:
 		// No RoomRegistry self-registration here: whoever receives an
 		// invite (this knock) always connects ONLY AS A CLIENT toward the
-		// host who invited them (knock.FromAddr) — never runs their own
+		// host who invited them (knock.FromAddr), never runs their own
 		// server for that room, so a secret registered here, on THIS OWN
 		// registry, would never be consulted by anyone (RoomRegistry.
 		// LookupSecret only runs host-side, for INCOMING connections on
-		// its own server). The registration that actually matters — with
-		// the real relationship keys — remains the one the HOST performs
+		// its own server). The registration that actually matters, with
+		// the real relationship keys, remains the one the HOST performs
 		// on ITS OWN registry when generating the invite (cmdInvite,
 		// internal/client/tui).
 		w.WriteHeader(http.StatusAccepted)

@@ -34,7 +34,7 @@ import (
 
 // TestHandshakeE2ENoRelKeyRejected verifies that the server always rejects
 // a client whose IdentityKey-per-relationship is unknown to whoever
-// distributed the secret (zero-value peerKey — no residual permissive
+// distributed the secret (zero-value peerKey, no residual permissive
 // policy).
 func TestHandshakeE2ENoRelKeyRejected(t *testing.T) {
 	secret := []byte("shared-secret-handshake-e2e-test-256bit")
@@ -72,7 +72,7 @@ func TestHandshakeE2ENoRelKeyRejected(t *testing.T) {
 	defer conn.CloseNow()
 
 	// The client sends ClientHello anyway (no IdentityKey-per-relationship,
-	// zero-value mySigningKey) — the server must close the connection
+	// zero-value mySigningKey), the server must close the connection
 	// because the peerKey known from the bootstrap is empty, so we expect
 	// an error both client-side (recv server hello failed, connection
 	// closed) and server-side (explicit reject).
@@ -92,7 +92,7 @@ func TestHandshakeE2ENoRelKeyRejected(t *testing.T) {
 
 // TestHandshakeE2EWithRelKeys covers the normal case of two parties who
 // have already exchanged their IdentityKey-per-relationship at the invite
-// bootstrap (RoomRegistry.AddSecret) — no fingerprint to resolve, no cache,
+// bootstrap (RoomRegistry.AddSecret), no fingerprint to resolve, no cache,
 // no network fetch: both sides verify Sig against a key already known by
 // construction.
 func TestHandshakeE2EWithRelKeys(t *testing.T) {
@@ -177,7 +177,7 @@ func TestHandshakeE2EWithRelKeys(t *testing.T) {
 // TestHandshakeE2EMissingSigningKeyRejected verifies that if secretLookup
 // returns a valid peerKey (ClientHello.Sig verifies) but an empty
 // mySigningKey, the server must explicitly reject
-// (shared.ErrMissingSigningKey) BEFORE generating and sending ServerHello —
+// (shared.ErrMissingSigningKey) BEFORE generating and sending ServerHello,
 // never silently tolerate it and let the failure surface only later
 // client-side as an unverifiable empty signature. Not a case reachable by
 // any real caller (AddSecret/ReplaceSecret always require
@@ -212,7 +212,7 @@ func TestHandshakeE2EMissingSigningKeyRejected(t *testing.T) {
 		}
 		defer conn.CloseNow()
 		// peerKey known and valid (the client verifies correctly), but
-		// mySigningKey empty — exactly the scenario under test.
+		// mySigningKey empty, exactly the scenario under test.
 		lookup := func(nonceClient, proof []byte) ([]byte, string, string, []byte, []byte, shared.RelPeerKey, shared.RelSigningKey, bool) {
 			if _, ok := shared.VerifyRoomProof(secret, nonceClient, proof); ok {
 				return secret, "test-room", "", nil, nil, shared.RelPeerKey{Pub: clientEdPub, MLDSAPub: clientMLDSAPub}, shared.RelSigningKey{}, true
@@ -246,7 +246,7 @@ func TestHandshakeE2EMissingSigningKeyRejected(t *testing.T) {
 }
 
 // TestHandshakeE2ERejectsMissingMLKEM verifies that the server explicitly
-// rejects a ClientHello with an absent or wrong-length MLKEMPub —
+// rejects a ClientHello with an absent or wrong-length MLKEMPub,
 // mandatory, same rigor already verified for a
 // missing IdentityKey-per-relationship in TestHandshakeE2ENoRelKeyRejected.
 // Builds the ClientHello by hand (bypassing DoClientHandshake, which always
@@ -302,7 +302,7 @@ func TestHandshakeE2ERejectsMissingMLKEM(t *testing.T) {
 		Version:     shared.HandshakeVersion,
 		NonceClient: nonceClient,
 		SessionPub:  sessionPub,
-		// MLKEMPub deliberately absent — malformed payload to be rejected.
+		// MLKEMPub deliberately absent, malformed payload to be rejected.
 		RoomProof: shared.ComputeRoomProof(roomKey, nonceClient),
 		Username:  "eve",
 	}

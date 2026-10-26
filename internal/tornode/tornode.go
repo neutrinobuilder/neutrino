@@ -18,7 +18,7 @@
 // directly (go:embed); on other platforms the system `tor` daemon is used
 // as a fallback. On macOS the embedded tor also requires libevent.dylib alongside it
 // (extracted and possibly ad-hoc signed at runtime, see extractBinary/adhocSignDarwin)
-// — it's not static like on linux/amd64 and linux/arm64 (e.g. Termux/Android), which
+// it's not static like on linux/amd64 and linux/arm64 (e.g. Termux/Android), which
 // instead must be recompiled with download_build_tor-core.sh.
 //
 // To update the embedded linux binary:
@@ -91,13 +91,13 @@ type StartConfig struct {
 }
 
 // StartTor starts Tor with the full configuration, including optional
-// bridge support — a single attempt, no retry: returns as soon as the
+// bridge support, a single attempt, no retry: returns as soon as the
 // Tor process authenticates the control port, not when bootstrap
 // reaches 100% (see StartTorBridges for the wait-with-timeout and retry
 // on a second bridge set). If cfg.Bridges is non-nil, the requested
 // transports (obfs4/webtunnel, see ptTransports) are started in-process
 // (ptclient.go) and Tor is configured to use them in "unmanaged" mode
-// (ClientTransportPlugin ... socks5 <addr>) — no separate lyrebird
+// (ClientTransportPlugin ... socks5 <addr>), no separate lyrebird
 // binary. The entire Tor process output (stdout+stderr) is redirected
 // to node.LogCh() instead of os.Stdout/os.Stderr, so the terminal stays clean.
 func StartTor(ctx context.Context, cfg StartConfig) (*Node, error) {
@@ -110,7 +110,7 @@ func StartTor(ctx context.Context, cfg StartConfig) (*Node, error) {
 	switch {
 	case runtime.GOOS == "android":
 		// The real binary (libtor.so, guardianproject/tor-android) isn't
-		// go:embed — it arrives in the APK via jniLibs/<abi>/ and is
+		// go:embed, it arrives in the APK via jniLibs/<abi>/ and is
 		// already executable (755) because it's extracted by the
 		// PackageManager into nativeLibraryDir: no write, no chmod, no
 		// cleanup to do here (stays nil).
@@ -183,7 +183,7 @@ func StartTor(ctx context.Context, cfg StartConfig) (*Node, error) {
 // given bridge set to reach 100% before considering it failed and
 // moving to the next set (StartTorBridges). An obfs4/webtunnel bridge
 // blocked by the censor or expired never produces an explicit error
-// from StartTor/tor.Start — the bootstrap simply never advances past a
+// from StartTor/tor.Start, the bootstrap simply never advances past a
 // certain percentage (often 0-10%), so it must be detected by timeout,
 // not by error. The value is more permissive than a plain direct
 // bootstrap (inherently slower with a pluggable transport in the middle).
@@ -193,13 +193,13 @@ const DefaultBridgeBootstrapTimeout = 90 * time.Second
 // bootstrap doesn't reach 100% within timeout, it closes that attempt
 // and retries with fallback (if non-nil and non-empty). If the fallback
 // attempt also fails (or there's no fallback), it returns the last
-// attempt's error — ErrBridgeBootstrapTimeout if the timeout expired,
+// attempt's error, ErrBridgeBootstrapTimeout if the timeout expired,
 // StartTor's error otherwise. cfg.OnProgress, if present, is still
 // invoked for every advance of BOTH attempts (the user sees the
 // percentage even of an attempt later discarded); cfg.Bridges is
-// ignored — bridges are given explicitly via primary/fallback, one
+// ignored, bridges are given explicitly via primary/fallback, one
 // attempt at a time. onFallback, if non-nil, is called once right
-// before starting the fallback attempt — lets the caller notify the
+// before starting the fallback attempt, lets the caller notify the
 // user (otherwise the bootstrap percentage would seem to reset/stall
 // without explanation, being a brand-new Tor process restarting from 0%).
 func StartTorBridges(ctx context.Context, cfg StartConfig, primary, fallback *BridgeConfig, timeout time.Duration, onFallback func()) (*Node, error) {
@@ -217,12 +217,12 @@ func StartTorBridges(ctx context.Context, cfg StartConfig, primary, fallback *Br
 }
 
 // ErrBridgeBootstrapTimeout indicates that bootstrap with a bridge set
-// didn't reach 100% within the given timeout — not a Start error (the
+// didn't reach 100% within the given timeout, not a Start error (the
 // Tor process started and was closed here), but a stall.
 var ErrBridgeBootstrapTimeout = errors.New("bridge bootstrap timeout")
 
 // startAndAwaitBootstrap makes a single StartTor attempt with bridges
-// set and waits (with a timeout) for OnProgress to signal 100 — unlike
+// set and waits (with a timeout) for OnProgress to signal 100, unlike
 // StartTor alone, which returns as soon as the process authenticates
 // the control port, well before bootstrap is actually complete.
 func startAndAwaitBootstrap(ctx context.Context, cfg StartConfig, bridges *BridgeConfig, timeout time.Duration) (*Node, error) {
@@ -257,7 +257,7 @@ func startAndAwaitBootstrap(ctx context.Context, cfg StartConfig, bridges *Bridg
 
 // prepareBridgeArgs builds the ExtraArgs for Tor with the given
 // bridges. For each distinct pluggable transport name found in the
-// bridge lines (e.g. "obfs4", "webtunnel" — never a single hardcoded
+// bridge lines (e.g. "obfs4", "webtunnel", never a single hardcoded
 // name: a bridge_fallback of a different type than bridge_default works
 // correctly) it starts the transport in-process (ptclient.go) and adds
 // the corresponding "ClientTransportPlugin <name> socks5 <addr>" line.
@@ -434,7 +434,7 @@ func (n *Node) WatchHSPublished(ctx context.Context, onionAddr string) bool {
 }
 
 // HasCircuits returns true if Tor has at least one circuit in BUILT
-// state. Uses the control port — doesn't require SOCKS5 connections and
+// state. Uses the control port, doesn't require SOCKS5 connections and
 // responds in milliseconds.
 func (n *Node) HasCircuits() bool {
 	if n.t == nil || n.t.Control == nil {
@@ -474,7 +474,7 @@ func (n *Node) DialContext(ctx context.Context, network, addr string) (net.Conn,
 
 // SocksAddr returns the local "host:port" of Tor's SOCKS5 proxy, queried
 // live from the control port (same GETINFO net/listeners/socks lookup
-// bine's own Dialer does internally — see cretz/bine@v0.2.0/tor/dialer.go)
+// bine's own Dialer does internally, see cretz/bine@v0.2.0/tor/dialer.go)
 // rather than cached, since the embedded tor always starts with
 // "--SocksPort auto" and the port is only known after Tor has bound it.
 func (n *Node) SocksAddr() (string, error) {
@@ -499,9 +499,9 @@ func (n *Node) SocksAddr() (string, error) {
 // different tokens get separate circuits via IsolateSOCKSAuth (distinct
 // SOCKS5 credentials). The dialer is created once per token and reused
 // for subsequent connections. ctx covers only this construction
-// (n.t.Dialer, which with bine doesn't do blocking network I/O — it
+// (n.t.Dialer, which with bine doesn't do blocking network I/O, it
 // only builds a local wrapper, SOCKS5 authentication happens on the
-// first real dial) — accepted anyway for consistency with the
+// first real dial), accepted anyway for consistency with the
 // transport.Transport interface, of which this is the only real caller.
 func (n *Node) DialerForToken(ctx context.Context, token string) (func(context.Context, string, string) (net.Conn, error), error) {
 	n.mu.Lock()
@@ -563,7 +563,7 @@ func (n *Node) Close() error {
 	// Brief wait for the TCP to close and the goroutines to release readLock.
 	time.Sleep(150 * time.Millisecond)
 	for _, svc := range n.svcs {
-		svc.Close() // can fail (connection already closed) — error ignored
+		svc.Close() // can fail (connection already closed), error ignored
 	}
 	n.svcs = nil
 	err := n.t.Close()

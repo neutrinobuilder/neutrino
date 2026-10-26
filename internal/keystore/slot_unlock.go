@@ -27,7 +27,7 @@ import (
 // and, on the first match, decrypts that slot's own content into a
 // Keystore. idx and ki are returned alongside it so a later save can
 // reseal exactly this slot (see slot_container.go's doc comment on
-// slotContainer) without ever touching — or needing the password of —
+// slotContainer) without ever touching, or needing the password of,
 // any other slot: not duress's, not any other real identity's, not any
 // noise placeholder. ok reports whether any slot matched at all.
 func UnlockSlot(c *slotContainer, passwordFile, passwordIdentity string) (idx int, ki []byte, ks *Keystore, ok bool, err error) {

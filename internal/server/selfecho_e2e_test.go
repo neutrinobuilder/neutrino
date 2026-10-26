@@ -32,7 +32,7 @@ import (
 
 // decodeMLKEMPubFieldForTest/parseMsgIDForTest locally reimplement (test in
 // package server_test, with no access to the unexported sibling functions
-// of tui.go) the same decoding used by real clients — see the
+// of tui.go) the same decoding used by real clients, see the
 // comment on wsIncoming.MsgID (internal/server/ws.go) for why msg_id
 // travels as a decimal string, not a JSON number.
 func decodeMLKEMPubFieldForTest(raw map[string]any) []byte {
@@ -54,7 +54,7 @@ func parseMsgIDForTest(v any) uint64 {
 }
 
 // readUntil reads frames from cli until typ matches wantType or the
-// timeout expires — the exact order between frames of different types
+// timeout expires, the exact order between frames of different types
 // toward the same recipient isn't specified by the application protocol
 // (only the order BETWEEN frames of the SAME type is, guaranteed by the
 // per-contact FIFO queue, see hub.go), so the test doesn't assume a rigid
@@ -76,10 +76,10 @@ func readUntil(t *testing.T, ctx context.Context, cli *client.Client, wantType s
 }
 
 // TestSendSelfEchoAndDelivery is the end-to-end test verifying that
-// roomDelivery.Dispatch never excludes the sender from the fan-out — the
+// roomDelivery.Dispatch never excludes the sender from the fan-out, the
 // server's self-echo is what the client relies on to show its own
 // message in chat (TakeSentText, called only inside parseMessage
-// on an incoming "message" frame — no other point in the code adds the row
+// on an incoming "message" frame, no other point in the code adds the row
 // for one's own send). Covers two real clients, one real server: the
 // sender must receive its own self-echo, with the gseq already assigned
 // inside it (same reliable per-contact queue as anyone else, never a
@@ -94,7 +94,7 @@ func TestSendSelfEchoAndDelivery(t *testing.T) {
 
 	registry := serverhs.NewRoomRegistry()
 	// Two DIFFERENT members of the same room, not two devices of the same
-	// identity (that case — one device per identity per room — is covered
+	// identity (that case, one device per identity per room, is covered
 	// by TestRoomSlotRejectsSecondDeviceSameIdentity): distinct identityPub
 	// for A and B, otherwise the second Connect would be rejected with
 	// ErrAlreadyConnectedElsewhere.
@@ -195,7 +195,7 @@ func TestSendSelfEchoAndDelivery(t *testing.T) {
 	}
 
 	// The sender must receive its own self-echo, without which
-	// TakeSentText would never fire (see the comment on the test) —
+	// TakeSentText would never fire (see the comment on the test),
 	// already carries the assigned gseq, the server's sole acknowledgment.
 	echo := readUntil(t, ctx, cliA, "message")
 	data, _ := echo["data"].(map[string]any)

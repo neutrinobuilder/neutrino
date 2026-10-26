@@ -25,7 +25,7 @@ import (
 )
 
 // LoadBridgeFile reads a bridge lines file (tor_bridges format: one
-// line per bridge, blank lines and "#" comments ignored) — read by
+// line per bridge, blank lines and "#" comments ignored), read by
 // cmd/main.go from --bridges-file or from the file saved by "neutrino
 // get-bridges".
 func LoadBridgeFile(path string) (*BridgeConfig, error) {
@@ -53,7 +53,7 @@ func LoadBridgeFile(path string) (*BridgeConfig, error) {
 }
 
 // FilterBridgesByTransport keeps only the lines whose first field equals
-// transport (e.g. "obfs4" or "webtunnel" — the same value saved in
+// transport (e.g. "obfs4" or "webtunnel", the same value saved in
 // bridge_default/bridge_fallback).
 func FilterBridgesByTransport(bc *BridgeConfig, transport string) *BridgeConfig {
 	var kept []string

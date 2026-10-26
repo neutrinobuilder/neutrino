@@ -21,7 +21,7 @@ import (
 	"testing"
 )
 
-// TestRelPromoteSignVerify covers SignRelPromote/VerifyRelPromote — the
+// TestRelPromoteSignVerify covers SignRelPromote/VerifyRelPromote, the
 // signature that ties RelPromotePayload to the sender's EPHEMERAL
 // IdentityKey-per-relationship (see the comment on
 // RelPromotePayload.Ts/Sig/SigMLDSA), same principle as
@@ -100,7 +100,7 @@ func TestRelPromoteSignVerify(t *testing.T) {
 
 // TestRelPromoteSignVerifyMLDSA covers the parallel ML-DSA-65 counterpart.
 // mldsaPub here plays the role of ephemeralRel.peerIdentity.MLDSAPub on the
-// verifying side — the public companion of the seed used to sign, unrelated
+// verifying side, the public companion of the seed used to sign, unrelated
 // to the arbitrary transport* values used as the signed message's content.
 func TestRelPromoteSignVerifyMLDSA(t *testing.T) {
 	key, err := GenerateRelSigningKey()

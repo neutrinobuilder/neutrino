@@ -24,7 +24,7 @@ import (
 )
 
 // openDuressContent locates and decrypts the shared duress identity's
-// own content using K_i_duress — obtained from u's own DuressAccess
+// own content using K_i_duress, obtained from u's own DuressAccess
 // field, no password needed (see
 // duress_access.go). Returns duress's slot index too, since the
 // caller will need it to reseal that same slot afterward (see
@@ -52,7 +52,7 @@ func (u *UnlockedSlot) openDuressContent() (duressIdx int, duressKi []byte, dure
 
 // fillMirroredPlaceholder consumes one pending placeholder on u's own
 // identity and one on duress, writes real into the former, and
-// fakeContact(existingFirstNames) into the latter — existingFirstNames
+// fakeContact(existingFirstNames) into the latter, existingFirstNames
 // holds every other non-empty duress contact's current Username, letting
 // fakeContact detect a collision with its newly generated name and
 // disambiguate accordingly. Each side's own growth pool decides
@@ -94,15 +94,15 @@ func (u *UnlockedSlot) fillMirroredPlaceholder(duress *Keystore, real Contact, f
 // contact, covering both the one-at-a-time case (a direct /cnt-add, one
 // element in incoming) and a batch merge (sync/backup import, several
 // elements at once): for each element, an already-known IdentityPub
-// only updates LocalName/MLKEMPub in place (never touches duress — the
+// only updates LocalName/MLKEMPub in place (never touches duress, the
 // device-identity relationship fields are intentionally cleared,
 // renegotiated locally), while a genuinely new one goes through
 // fillMirroredPlaceholder. fromDevicePub attributes sibling-revocation
 // data the same way regardless of which branch an entry took.
 //
 // Any incoming entry whose IdentityPub already has a tombstone row
-// (u.Identity.HasDeletedContact) is skipped entirely — neither inserted
-// nor merged into an update — and its IdentityPub collected into
+// (u.Identity.HasDeletedContact) is skipped entirely, neither inserted
+// nor merged into an update, and its IdentityPub collected into
 // rejected, so the caller can reply to fromDevicePub with that
 // tombstone row (see Keystore.DeletedContactRow).
 //
@@ -167,7 +167,7 @@ func (u *UnlockedSlot) AddMirroredContacts(incoming []Contact, fromDevicePub []b
 }
 
 // fillPlaceholder is fillMirroredPlaceholder's counterpart for a
-// session with no duress mirror to keep in sync — consumes one pending
+// session with no duress mirror to keep in sync, consumes one pending
 // placeholder on u's own identity only. Mutates u.Identity in memory.
 func (u *UnlockedSlot) fillPlaceholder(real Contact) (realIdx int, err error) {
 	realIdx, newRealLen, ok := u.Identity.ContactPendingIdx.consume(len(u.Identity.Contacts))
@@ -182,10 +182,10 @@ func (u *UnlockedSlot) fillPlaceholder(real Contact) (realIdx int, err error) {
 }
 
 // AddPlainContacts is AddMirroredContacts' counterpart for a session
-// that has no duress mirror to keep in sync — the duress identity
+// that has no duress mirror to keep in sync, the duress identity
 // itself, managing its own contacts directly, since no further duress
 // exists beneath it to mirror into (duress's own DuressAccess field is
-// random noise, never a real wrapped key — see RandomDuressAccessField
+// random noise, never a real wrapped key, see RandomDuressAccessField
 // and openDuressContent's doc comment). Mutates u.Identity in memory;
 // the caller persists with u.SaveSlot (never SaveWithDuress).
 func (u *UnlockedSlot) AddPlainContacts(incoming []Contact, fromDevicePub []byte) (added, updated int, rejected [][]byte, err error) {
@@ -249,10 +249,10 @@ func (u *UnlockedSlot) EmptyPlainContact(realContactIdx int) error {
 
 // EmptyMirroredContact is the single deletion tool for a mirrored
 // contact: empties realContactIdx's values in place on u's own identity
-// (never removes the slot) — its index goes back into
+// (never removes the slot), its index goes back into
 // ContactPendingIdx.Pending, available for a future fill. The
 // corresponding duress contact, if the real one was ever actually
-// filled, is emptied and recycled the same way on duress's own side —
+// filled, is emptied and recycled the same way on duress's own side,
 // a contact that was never filled via AddMirroredContacts has no mirror
 // to empty at all (hadMirror is false, nothing on the duress side is
 // touched). The now-stale real→duress mapping is dropped.

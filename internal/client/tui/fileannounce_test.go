@@ -36,7 +36,7 @@ import (
 )
 
 // newCapturingWSConn is like newTestWSConn (tui_test.go) but also returns
-// a channel the test server publishes every received JSON frame on —
+// a channel the test server publishes every received JSON frame on,
 // needed here to verify WHO receives a file_offer, not just that the
 // send does not fail.
 func newCapturingWSConn(t *testing.T) (*websocket.Conn, <-chan map[string]any) {
@@ -70,7 +70,7 @@ func newCapturingWSConn(t *testing.T) (*websocket.Conn, <-chan map[string]any) {
 
 // newFileAnnounceTestModel builds a minimal model with a "bob" contact (one
 // device, known identity key) linked to the active tab through a
-// client.Client with no real network connection — enough to exercise
+// client.Client with no real network connection, enough to exercise
 // handleRoomMsg/contentPeerKeysFor/resolveContactByPub, which never touch the
 // connection itself on this path.
 func newFileAnnounceTestModel(t *testing.T, devKeyBytes []byte, peerContentPub, peerContentMLDSAPub []byte, confirmed bool) (*model, *roomTab) {
@@ -116,7 +116,7 @@ func announceRaw(fromUserID, transferID string, hash, sig, sigMLDSA []byte, sigT
 }
 
 // TestApplyFileAnnounceValidVerifiesImmediately verifies that a file_announce
-// with a valid signature is verified right away — the hash ends up in
+// with a valid signature is verified right away, the hash ends up in
 // m.verifiedFileHashes (consumed by the following file_offer), no self-heal,
 // no entry in pendingFileAnnounces.
 func TestApplyFileAnnounceValidVerifiesImmediately(t *testing.T) {
@@ -151,7 +151,7 @@ func TestApplyFileAnnounceValidVerifiesImmediately(t *testing.T) {
 
 // TestApplyFileAnnounceStaleKeyTriggersSelfHeal verifies that a signature
 // that fails to verify due to a misaligned ContentKey does NOT discard the
-// announce — it holds it pending (pendingFileAnnounces) and clears
+// announce, it holds it pending (pendingFileAnnounces) and clears
 // RelContentConfirmedByPeer, so the next rel_init_ack can resync and restart
 // verification without retransmitting any byte of the file.
 func TestApplyFileAnnounceStaleKeyTriggersSelfHeal(t *testing.T) {
@@ -231,7 +231,7 @@ func TestRetryPendingFileAnnouncesResyncsAfterRelInit(t *testing.T) {
 
 // TestRetryPendingFileAnnouncesDropsExpired covers the wait budget: an
 // announce whose deadline has already passed is silently dropped instead of
-// being re-verified forever — the sender discovers the timeout on its own,
+// being re-verified forever, the sender discovers the timeout on its own,
 // same behavior as an offer that was never accepted.
 func TestRetryPendingFileAnnouncesDropsExpired(t *testing.T) {
 	devKey := make([]byte, ed25519.PublicKeySize)
@@ -271,7 +271,7 @@ func TestRetryPendingFileAnnouncesDropsExpired(t *testing.T) {
 
 // TestFileAnnounceAckSendsOfferOnlyToThatRecipient verifies the core of the
 // sender-side design: the real file_offer (name/size/file key) goes ONLY to
-// the recipient that has already confirmed the announce signature — never
+// the recipient that has already confirmed the announce signature, never
 // to a second recipient that has not answered yet, even if its meta_blob
 // was already ready.
 func TestFileAnnounceAckSendsOfferOnlyToThatRecipient(t *testing.T) {

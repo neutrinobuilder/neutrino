@@ -29,12 +29,12 @@ type roomState struct {
 	sessions *SessionStore
 
 	// delivery is this room's server-side reliable delivery queue for
-	// broadcast messages (gseq + per-contact queue, see delivery.go) —
+	// broadcast messages (gseq + per-contact queue, see delivery.go),
 	// lives for the same duration as hub/sessions, zeroed together with
 	// them when the room empties out (releaseRoomIfEmptyLocked).
 	delivery *roomDelivery
 
-	// slotMu/slots enforce "one device per identity per room" — key
+	// slotMu/slots enforce "one device per identity per room", key
 	// string(root identityPub, STABLE, never the one that rotates), value
 	// the device+session currently occupying that slot. Dedicated lock
 	// (not RoomRegistry.mu): this structure lives for the duration of the
@@ -46,7 +46,7 @@ type roomState struct {
 }
 
 // identitySlot registers which session currently occupies an identity's
-// slot in a room — see roomState.ClaimIdentitySlot.
+// slot in a room, see roomState.ClaimIdentitySlot.
 type identitySlot struct {
 	userID    string
 	devicePub []byte
@@ -54,21 +54,21 @@ type identitySlot struct {
 
 // ClaimIdentitySlot enforces "one device per identity per room": if a
 // DIFFERENT device of the same identityPub already occupies the slot,
-// rejects (ok=false) — the caller (ws.go) must close the just-arrived
+// rejects (ok=false), the caller (ws.go) must close the just-arrived
 // connection without registering it, never let it in. If the slot is free,
-// or occupied by the SAME device (same devicePub — a genuine reconnection:
+// or occupied by the SAME device (same devicePub, a genuine reconnection:
 // new session user_id, same physical device), claims it for userID and
 // returns a non-empty evictUserID when a previous session already existed
 // and needs to be explicitly replaced (Hub.conns is keyed by userID: a new
 // userID doesn't overwrite the old one in the Hub's map on its own, it must
 // be kicked). Also registers identityPub as reachable at userID in
-// rs.delivery (SetLive) — roomDelivery.Dispatch/RetryAndEvict use it to
+// rs.delivery (SetLive), roomDelivery.Dispatch/RetryAndEvict use it to
 // know who to immediately deliver the backlog to for a member who just
 // (re)connected. Empty identityPub (should never happen for a real member,
 // but missing data must never block a connection) → no enforcement,
 // always ok, and no registration in live (SetLive is a no-op on an empty
 // identity). devicePub compared byte-by-byte: both empty counts as "same
-// device" (defensive case, no information to distinguish them —
+// device" (defensive case, no information to distinguish them,
 // better to not reject than to wrongly reject).
 func (rs *roomState) ClaimIdentitySlot(identityPub, devicePub []byte, userID string) (evictUserID string, ok bool) {
 	if len(identityPub) == 0 {
@@ -94,7 +94,7 @@ func (rs *roomState) ClaimIdentitySlot(identityPub, devicePub []byte, userID str
 }
 
 // ReleaseIdentitySlot frees identityPub's slot ONLY if userID still owns
-// it — a more recent reconnection of the SAME identity (already "evicted"
+// it, a more recent reconnection of the SAME identity (already "evicted"
 // by ClaimIdentitySlot above, with a new userID) may have already replaced
 // this entry before the OLD session's disconnection defer gets here:
 // without this check it would erase the new, just-registered session's
@@ -115,18 +115,18 @@ func (rs *roomState) ReleaseIdentitySlot(identityPub []byte, userID string) {
 
 // memberSecret is a valid secret for a room member, with an opaque label
 // (the username assigned by whoever distributed the secret). The server
-// never interprets label — it carries it along only so the application can
+// never interprets label, it carries it along only so the application can
 // override the username self-declared in ClientHello (see ws.go).
 // identityPub is the peer's STABLE (root) identity; devicePub is the
-// peer's device pubkey — both only informational here (no lookup uses
+// peer's device pubkey, both only informational here (no lookup uses
 // them, see below).
 //
 // resolveKeys resolves LIVE, on every call, the PEER's
 // IdentityKey-per-relationship (to verify ClientHello.Sig) and OUR OWN
-// toward that same peer (to sign ServerHello.Sig) — never a value cached at
+// toward that same peer (to sign ServerHello.Sig), never a value cached at
 // registration time, so a relationship rotation needs no refresh at any
 // call site. Can be nil (the host's self-entry toward itself with a fixed
-// ephemeral pair, or a caller that provides no resolver) — treated as "no
+// ephemeral pair, or a caller that provides no resolver), treated as "no
 // key available".
 type memberSecret struct {
 	secret      []byte
@@ -145,7 +145,7 @@ type roomEntry struct {
 }
 
 // RoomRegistry manages isolated chat rooms on a single server. Each room is
-// identified by a stable roomID, not by the secret used to authenticate —
+// identified by a stable roomID, not by the secret used to authenticate,
 // multiple secrets (one per invited member) can authenticate toward the
 // same room. Isolation between different rooms stays guaranteed by the HMAC
 // room_proof computed on the specific secret presented.
@@ -165,7 +165,7 @@ func NewRoomRegistry() *RoomRegistry {
 // doesn't exist). identityPub/devicePub are the peer's stable identity and
 // device pubkey (nil for a caller that doesn't know them yet, e.g. the
 // host's self-registration toward itself), only informational. resolveKeys
-// can be nil (no key available) — see memberSecret above.
+// can be nil (no key available), see memberSecret above.
 func (r *RoomRegistry) AddSecret(roomID string, secret []byte, label string, identityPub []byte, devicePub []byte, resolveKeys func() (shared.RelPeerKey, shared.RelSigningKey, bool)) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -178,7 +178,7 @@ func (r *RoomRegistry) AddSecret(roomID string, secret []byte, label string, ide
 }
 
 // ReplaceSecret removes oldSecret (if present) from roomID and adds
-// newSecret — used when a member is re-invited: the previous secret stops
+// newSecret, used when a member is re-invited: the previous secret stops
 // authenticating instead of staying valid indefinitely. identityPub/
 // devicePub/resolveKeys: see AddSecret.
 func (r *RoomRegistry) ReplaceSecret(roomID string, oldSecret, newSecret []byte, label string, identityPub []byte, devicePub []byte, resolveKeys func() (shared.RelPeerKey, shared.RelSigningKey, bool)) {
@@ -201,13 +201,13 @@ func (r *RoomRegistry) ReplaceSecret(roomID string, oldSecret, newSecret []byte,
 	e.secrets = append(e.secrets, memberSecret{secret: newSecret, label: label, identityPub: identityPub, devicePub: devicePub, resolveKeys: resolveKeys})
 }
 
-// RemoveSecret permanently removes secret from roomID, if present — unlike
+// RemoveSecret permanently removes secret from roomID, if present, unlike
 // ReplaceSecret (which substitutes it with a new one, for a re-invite)
 // nothing takes its place here: whoever presents it can no longer
 // authenticate toward this room until invited again with a fresh secret.
 // Used by /grp-ban. Also releases the room's runtime state (see
 // releaseRoomIfEmptyLocked) if, at this moment, it has no more active
-// connections — in the edge case where this was also the last secret left,
+// connections, in the edge case where this was also the last secret left,
 // the entire entry is removed from the registry: a group banned down to
 // the last member must not stay in RAM for the rest of the process's life.
 func (r *RoomRegistry) RemoveSecret(roomID string, secret []byte) {
@@ -237,14 +237,14 @@ func (r *RoomRegistry) RemoveSecret(roomID string, secret []byte) {
 
 // releaseRoomIfEmptyLocked is the common body of ReleaseRoomIfEmpty and
 // RemoveSecret, run under r.mu already held by the caller (Lock, not
-// RLock) — exists to be callable from RemoveSecret too, which already
+// RLock), exists to be callable from RemoveSecret too, which already
 // holds the same lock (a second Lock() from the same goroutine would
 // deadlock, sync.Mutex isn't reentrant in Go). If the room still has
 // active connections it does nothing (secrets and runtime state both stay
 // intact); otherwise, if it has no valid secret left, the whole entry is
 // removed from the registry (no way left to authenticate, the entry serves
 // no purpose anymore); otherwise only the runtime state (hub+sessions,
-// already empty with zero connections) is zeroed — secrets stay intact,
+// already empty with zero connections) is zeroed, secrets stay intact,
 // GetOrCreateRoom lazily recreates an empty one on the next connection,
 // exactly like for a room never yet used.
 func (r *RoomRegistry) releaseRoomIfEmptyLocked(roomID string, e *roomEntry) {
@@ -259,7 +259,7 @@ func (r *RoomRegistry) releaseRoomIfEmptyLocked(roomID string, e *roomEntry) {
 }
 
 // ReleaseRoomIfEmpty releases roomID's runtime state if, at this moment, it
-// has no more active connections — called from ws.go's message loop right
+// has no more active connections, called from ws.go's message loop right
 // after a member disconnects from a room (see releaseRoomIfEmptyLocked for
 // the logic). No-op if roomID doesn't exist or still has active
 // connections.
@@ -274,7 +274,7 @@ func (r *RoomRegistry) ReleaseRoomIfEmpty(roomID string) {
 }
 
 // KickMember forcibly disconnects userID from room roomID, if currently
-// connected — see Hub.Kick for the mechanism. Returns false if the room
+// connected, see Hub.Kick for the mechanism. Returns false if the room
 // doesn't have a runtime state yet (nobody ever connected) or the user
 // isn't among the active connections right now: not an error, the caller
 // removes the secret with RemoveSecret regardless.
@@ -286,7 +286,7 @@ func (r *RoomRegistry) KickMember(roomID, userID string) bool {
 		return false
 	}
 	// Resolves the root identity from userID (roomDelivery keeps the
-	// queue per identity, not per session userID) — if the session
+	// queue per identity, not per session userID), if the session
 	// has already disappeared on its own, there's no queue to forget here:
 	// RemoveSecret (called together with this from BanMember) handles it
 	// anyway via the removed secret's identityPub.
@@ -297,11 +297,11 @@ func (r *RoomRegistry) KickMember(roomID, userID string) bool {
 }
 
 // MemberIdentities returns the (stable) root identityPubs of all known
-// members of roomID — deduped, excludes secrets with no known identityPub
+// members of roomID, deduped, excludes secrets with no known identityPub
 // (defensive case, should never happen for a real member).
 // Used by roomDelivery.Dispatch (ws.go) as the recipient list for a
 // broadcast: a known member stays a recipient even while temporarily
-// offline — see the comment on Dispatch. nil if roomID has no entry.
+// offline, see the comment on Dispatch. nil if roomID has no entry.
 func (r *RoomRegistry) MemberIdentities(roomID string) [][]byte {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -330,7 +330,7 @@ func (r *RoomRegistry) MemberIdentities(roomID string) [][]byte {
 // to, the associated label (empty if unassigned), the peer's root
 // (stable) identityPub and devicePub (for ClaimIdentitySlot), the peer's
 // IdentityKey-per-relationship (to verify ClientHello.Sig), and our own
-// IdentityKey-per-relationship toward them (to sign ServerHello.Sig) —
+// IdentityKey-per-relationship toward them (to sign ServerHello.Sig),
 // resolved LIVE via memberSecret.resolveKeys, called here and not earlier,
 // outside r.mu: no RoomRegistry lock stays held during resolution, which
 // typically touches an independent lock (e.g. keystore.Keystore.mu).
@@ -386,9 +386,9 @@ func (r *RoomRegistry) GetOrCreateRoom(roomID string) *roomState {
 }
 
 // CleanupStaleSessions removes, across all rooms, the sessions that
-// SessionStore.CleanupStale considers idle for more than timeout — a
+// SessionStore.CleanupStale considers idle for more than timeout, a
 // backup safety net, not the primary cleanup mechanism: that remains the
-// per-connection ping/pong watchdog (ws.go, handleWS — a failed ping
+// per-connection ping/pong watchdog (ws.go, handleWS, a failed ping
 // cancels ctx, which unblocks the message loop and triggers the defer that
 // already calls room.sessions.Remove) and covers almost all normal
 // disconnection cases, clean or silent, on its own. This exists only for a
@@ -407,7 +407,7 @@ func (r *RoomRegistry) CleanupStaleSessions(timeout time.Duration) int {
 }
 
 // RetryDelivery runs roomDelivery.RetryAndEvict on every room with active
-// runtime state — meant for a periodic ticker on RunOnListener's side,
+// runtime state, meant for a periodic ticker on RunOnListener's side,
 // same cadence as the retry cycle already used client-side
 // (retryPendingInterval, tui.go) to stay consistent with the same backoff.
 func (r *RoomRegistry) RetryDelivery() {

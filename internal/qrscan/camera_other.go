@@ -23,7 +23,7 @@ import (
 	"image"
 )
 
-// ScanCamera is not available outside of "desktop" Linux — V4L2 is a
+// ScanCamera is not available outside of "desktop" Linux, V4L2 is a
 // Linux-specific API, excluded here on Android too (which still satisfies
 // the "linux" constraint, hence "!linux || android" rather than just
 // "!linux"): camera QR reading there goes through an entirely separate
@@ -32,7 +32,7 @@ func ScanCamera(ctx context.Context, onFrame func(image.Image)) (string, error) 
 	return "", errors.New("reading a QR code from the camera is only available on Linux")
 }
 
-// ScanCameraContinuous — same exclusion as ScanCamera outside of "desktop"
+// ScanCameraContinuous, same exclusion as ScanCamera outside of "desktop"
 // Linux.
 func ScanCameraContinuous(ctx context.Context, onFrame func(image.Image), onDecoded func(text string) (done bool)) error {
 	return errors.New("reading a QR code from the camera is only available on Linux")

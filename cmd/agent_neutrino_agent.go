@@ -46,12 +46,12 @@ type agentCreds struct {
 	DeviceLabel            string `json:"device_label"`
 	// RestoreFrom, if set on first start, names a directory written by
 	// --export-backup: the keystore is restored from its 24 words and
-	// backup file instead of creating a new identity — the birth of an
+	// backup file instead of creating a new identity, the birth of an
 	// additional device of that identity.
 	RestoreFrom string `json:"restore_from,omitempty"`
 	Lang                   string `json:"lang"`
 	// Config, if present, overrides config.json fields (same names and
-	// formats) for this instance — e.g. shorter probe/retry timers so a
+	// formats) for this instance, e.g. shorter probe/retry timers so a
 	// test doesn't wait for production intervals. Applied on every start
 	// and saved to config.json.
 	Config json.RawMessage `json:"config,omitempty"`
@@ -212,7 +212,7 @@ const (
 )
 
 // agentExportBackup writes the identity's 24 words and full backup file
-// to dir — the non-interactive counterpart of "neutrino backup".
+// to dir, the non-interactive counterpart of "neutrino backup".
 func agentExportBackup(dir string, creds agentCreds) error {
 	ksPath, err := keystore.DefaultPath()
 	if err != nil {
@@ -237,7 +237,7 @@ func agentExportBackup(dir string, creds agentCreds) error {
 }
 
 // agentRestore rebuilds an identity from a directory written by
-// agentExportBackup — the non-interactive counterpart of "neutrino
+// agentExportBackup, the non-interactive counterpart of "neutrino
 // restore" with words and backup file.
 func agentRestore(dir string) (*keystore.Keystore, error) {
 	words, err := os.ReadFile(filepath.Join(dir, agentBackupWords))

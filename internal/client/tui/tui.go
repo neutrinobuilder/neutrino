@@ -79,12 +79,12 @@ var (
 	styleTabChat       = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Padding(0, 1)
 	styleTabChatActive = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).
 				Background(lipgloss.Color("62")).Bold(true).Padding(0, 1)
-	// styleWarnName: yellow inline name — connected but without an
+	// styleWarnName: yellow inline name, connected but without an
 	// established ContentKey relationship (only Safety Number
 	// available). Used in a group's member list, never in the top tab bar.
 	styleWarnName = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))
 	// stylePQCOn/stylePQCOff color the "[PQC]" tag always present on
-	// every message line (chatLine.render) — green if this specific
+	// every message line (chatLine.render), green if this specific
 	// message carries an active ML-DSA-65 signature (our own or the
 	// sender's verified one), red otherwise. Dedicated (not reusing
 	// styleOwnMsg/styleErr directly) so this signal's meaning doesn't
@@ -98,7 +98,7 @@ var (
 	stylePaletteDesc = lipgloss.NewStyle().Foreground(lipgloss.Color("7"))
 )
 
-// maxLocalNameLen is the maximum length (in runes) of a local name —
+// maxLocalNameLen is the maximum length (in runes) of a local name,
 // deliberately kept short so the Contacts tab aligns the name column to the
 // same width every time, instead of a different row-by-row offset
 // ("accordion effect").
@@ -113,13 +113,13 @@ const maxLocalNameLen = 14
 const maxUsernameDisplayLen = 14
 
 // maxOffbandHintLen is the maximum length (in runes) of the out-of-band
-// contact info entered in /grp-contact-send — wide enough for a phone
+// contact info entered in /grp-contact-send, wide enough for a phone
 // number, an email address, or a Telegram handle, without becoming a
 // free-text notes field.
 const maxOffbandHintLen = 80
 
 // maxFileNameLen is the maximum length (in runes) of the file name
-// during a rename in saveRenameMode — well under the 255 bytes typical
+// during a rename in saveRenameMode, well under the 255 bytes typical
 // of filesystems even counting multi-byte characters, no need to
 // validate further.
 const maxFileNameLen = 200
@@ -138,7 +138,7 @@ const (
 	sigPending
 	sigOK
 	sigFailed
-	sigOwn // our own message — no meaningful self-verification (multi-signature per recipient, no single "our" ContentKey)
+	sigOwn // our own message, no meaningful self-verification (multi-signature per recipient, no single "our" ContentKey)
 )
 
 // ContactInfo describes a contact reachable via Tor or I2P.
@@ -151,32 +151,32 @@ type ContactInfo struct {
 	LastSeenAt   time.Time // local clock: last time reached via TCP in a probe cycle (zero = never)
 	Verified     bool      // full safety number comparison done out-of-band and confirmed (/sec-verify)
 	IntroducedBy string    // display name of whoever introduced this contact via a card, at that time; empty = added directly
-	// IntroducedByPub — identity key of whoever introduced this contact
+	// IntroducedByPub, identity key of whoever introduced this contact
 	// via a card: the introducer's identity, IntroducedBy only labels it.
 	IntroducedByPub ed25519.PublicKey
 	// MLKEMPub is the contact's durable ML-KEM-768 encapsulation key
 	// (1184 bytes), learned from the QR/URI at exchange time. Empty if
 	// that QR/URI carried no ML-KEM key: knocks toward the contact stay
-	// classic (X25519 only) until a QR with the key is exchanged — see
+	// classic (X25519 only) until a QR with the key is exchanged, see
 	// encryptKnockTagged/resolveMLKEMPubFor.
 	MLKEMPub []byte
 
 	// MLDSAPub is the contact's durable ML-DSA-65 signing public key
-	// (1952 bytes packed) — hybrid PQC network identity. Same treatment
+	// (1952 bytes packed), hybrid PQC network identity. Same treatment
 	// as MLKEMPub above: empty until the QR is (re-)exchanged, the
 	// parallel ML-DSA signatures stay unverifiable (never blocking)
 	// until then.
 	MLDSAPub []byte
 
-	// KnownDevicePub — the device-level Ed25519 public key of this
+	// KnownDevicePub, the device-level Ed25519 public key of this
 	// contact's last successfully verified message (TOFU, remote_nuke).
 	// A distinct concept from Keystore.KnownDevices (that one concerns
 	// OUR OWN identity, remote_nuke targeting); this one recognizes a
-	// CONTACT's device — a change doesn't block or invalidate anything,
+	// CONTACT's device, a change doesn't block or invalidate anything,
 	// it only produces a distinct on-screen tag ([DEV:new]).
 	KnownDevicePub []byte
 
-	// Devices — mirrors keystore.Contact.Devices, same type
+	// Devices, mirrors keystore.Contact.Devices, same type
 	// (keystore.DeviceRelation) and exact same meaning: an independent
 	// per-device relationship (relationship keys, confirmation/rotation/
 	// conflict state), keyed by string(DevicePub). SoleDevice() below
@@ -186,12 +186,12 @@ type ContactInfo struct {
 
 	// SiblingRevocations mirrors keystore.Contact.SiblingRevocations,
 	// read-only here (probeContacts' sibling retry queue only reads
-	// it — Acked is written back through AckSiblingRevocation on the
+	// it, Acked is written back through AckSiblingRevocation on the
 	// real keystore, never through this mirror).
 	SiblingRevocations map[string]*keystore.SiblingRevocation
 }
 
-// SoleDevice mirrors keystore.Contact.SoleDevice — returns the map's
+// SoleDevice mirrors keystore.Contact.SoleDevice, returns the map's
 // only entry if the contact has exactly one known device, false
 // otherwise (never a silent pick when there's more than one).
 func (c ContactInfo) SoleDevice() (*keystore.DeviceRelation, bool) {
@@ -205,7 +205,7 @@ func (c ContactInfo) SoleDevice() (*keystore.DeviceRelation, bool) {
 }
 
 // SoleDeviceOrPlaceholder mirrors
-// keystore.Contact.SoleDeviceOrPlaceholder — like SoleDevice, but with
+// keystore.Contact.SoleDeviceOrPlaceholder, like SoleDevice, but with
 // an empty Devices it returns a new, empty DeviceRelation instead of (nil, false).
 func (c ContactInfo) SoleDeviceOrPlaceholder() (*keystore.DeviceRelation, bool) {
 	if len(c.Devices) == 0 {
@@ -216,7 +216,7 @@ func (c ContactInfo) SoleDeviceOrPlaceholder() (*keystore.DeviceRelation, bool) 
 
 // EnsureSoleDevice is like SoleDeviceOrPlaceholder, but with an empty
 // Devices it CREATES the "" placeholder entry in the map instead of
-// just returning a local copy — requires a pointer
+// just returning a local copy, requires a pointer
 // (SoleDeviceOrPlaceholder has a value receiver, can't write into the
 // caller's map). Used to apply to the local mirror (m.contacts) the
 // keys generated by the probe cycle: without this, Devices would stay
@@ -239,7 +239,7 @@ func (c *ContactInfo) EnsureSoleDevice() (*keystore.DeviceRelation, bool) {
 }
 
 // SoleDeviceKey is SoleDevice but also returns the contact's DevicePub
-// — the key the entry lives under in Devices — needed by callers that
+// the key the entry lives under in Devices, needed by callers that
 // must pass it to RoomRegistry (AddSecret/ReplaceSecret/
 // RefreshSigningKeys): without it, RefreshSigningKeys couldn't
 // distinguish the right device from a possible other device of the same contact.
@@ -253,10 +253,10 @@ func (c ContactInfo) SoleDeviceKey() (devicePub []byte, dev *keystore.DeviceRela
 	return nil, nil, false
 }
 
-// ReadyDevices mirrors keystore.Contact.ReadyDevices — every device of
+// ReadyDevices mirrors keystore.Contact.ReadyDevices, every device of
 // this contact ready to be contacted/invited (confirmed, complete keys,
 // known address), unlike SoleDevice() it doesn't stop at "exactly one"
-// — used by the invite's fan-out.
+// used by the invite's fan-out.
 func (c ContactInfo) ReadyDevices() map[string]*keystore.DeviceRelation {
 	if len(c.Devices) == 0 {
 		return nil
@@ -274,7 +274,7 @@ func (c ContactInfo) ReadyDevices() map[string]*keystore.DeviceRelation {
 	return out
 }
 
-// DeviceByPub mirrors keystore.Contact.DeviceByPub — EXACT resolution
+// DeviceByPub mirrors keystore.Contact.DeviceByPub, EXACT resolution
 // for a DevicePub already known to the caller (e.g. an incoming ack's
 // RelRotatePayload.DevicePub), never ambiguous.
 func (c ContactInfo) DeviceByPub(pub []byte) (dev *keystore.DeviceRelation, ok bool) {
@@ -286,7 +286,7 @@ func (c ContactInfo) DeviceByPub(pub []byte) (dev *keystore.DeviceRelation, ok b
 }
 
 // DeviceWithPendingRelKeys mirrors
-// keystore.Contact.DeviceWithPendingRelKeys — the first device
+// keystore.Contact.DeviceWithPendingRelKeys, the first device
 // (deterministic order) with a pending relationship key conflict
 // (TrustDanger), not necessarily the only known device.
 func (c ContactInfo) DeviceWithPendingRelKeys() (devicePub []byte, dev *keystore.DeviceRelation, ok bool) {
@@ -308,11 +308,11 @@ func (c ContactInfo) DeviceWithPendingRelKeys() (devicePub []byte, dev *keystore
 }
 
 // RelEstablishedDevice returns the first device (deterministic order)
-// with the ContentKey-per-relationship established in both directions —
+// with the ContentKey-per-relationship established in both directions,
 // unlike SoleDevice(), it doesn't stop at "exactly one device": a
 // contact with multiple known devices can have a relationship already
 // working on one of them while another is still a bootstrap placeholder
-// or still negotiating — used by the Contacts list for the [REL:...] fingerprint.
+// or still negotiating, used by the Contacts list for the [REL:...] fingerprint.
 // A device with a revoked IdentityKey or ContentKey never counts as
 // established (see keystore.Contact.RelEstablishedDevice).
 func (c ContactInfo) RelEstablishedDevice() (*keystore.DeviceRelation, bool) {
@@ -349,12 +349,12 @@ func (c ContactInfo) RelRevoked() bool {
 }
 
 // PendingRelKeys carries the relationship keys PROPOSED by a
-// conflicting rel_init/rel_init_ack (see applyRelInit) — never applied
+// conflicting rel_init/rel_init_ack (see applyRelInit), never applied
 // directly, only held pending until /sec-verify confirms them
 // explicitly (TUIParams.ConfirmPendingRelKeys).
 type PendingRelKeys struct {
 	// DevicePub identifies the keystore.Contact.Devices entry this
-	// conflict belongs to — never the empty string (the bootstrap
+	// conflict belongs to, never the empty string (the bootstrap
 	// placeholder, see RelKeyUpdate below): a conflict, by construction,
 	// can only happen on an already-confirmed device, never one still negotiating.
 	DevicePub []byte
@@ -368,26 +368,26 @@ type PendingRelKeys struct {
 }
 
 // RelKeyUpdate carries a PARTIAL update of the relationship keys toward
-// ONE device of a contact — only the non-empty fields get applied by
+// ONE device of a contact, only the non-empty fields get applied by
 // the caller (TUIParams.UpdateContactRelKeys), the others stay whatever
 // was already there. Used by the rel_init/rel_init_ack cycle
 // (applyRelInit): one side may carry only "my just-generated keys" or
 // only "their just-received keys", without needing to know/repeat the rest.
 //
-// DevicePub identifies the keystore.Contact.Devices entry to update —
+// DevicePub identifies the keystore.Contact.Devices entry to update,
 // string(DevicePub) is the map's key. The empty string ("") is the
 // bootstrap placeholder: no peer device known yet, a single provisional
 // entry with OUR already-generated keys awaiting the first
 // rel_init/rel_init_ack (see keystore.Contact.AddContact/applyRelInit).
 // PromoteFromPlaceholder, if true, indicates this call must RENAME that
 // placeholder entry to the DevicePub key instead of creating a new one
-// — only the first time the peer's device pub becomes known.
+// only the first time the peer's device pub becomes known.
 type RelKeyUpdate struct {
 	DevicePub              []byte
 	PromoteFromPlaceholder bool
 
 	// Address is the network address declared by THIS device in its
-	// rel_init (KnockPayload.FromAddr) — where knocks and invites toward
+	// rel_init (KnockPayload.FromAddr), where knocks and invites toward
 	// this device are sent.
 	Address string
 
@@ -404,7 +404,7 @@ type RelKeyUpdate struct {
 	PeerRelContentMLKEMPub  []byte
 	PeerRelContentMLDSAPub  []byte
 	// RelIdentityConfirmedByPeer/RelContentConfirmedByPeer, if true, mark
-	// confirmation (a genuine rel_init_ack) — never turned back to false
+	// confirmation (a genuine rel_init_ack), never turned back to false
 	// by a partial patch, only ever turned on. rel_init/rel_init_ack
 	// always carries both keys in a single exchange, so they always turn
 	// on together on a real ack.
@@ -423,7 +423,7 @@ func (c ContactInfo) DisplayName() string {
 // NameWithUsername returns "LocalName (Username)" if a local name is
 // set, otherwise just Username (no redundant parentheses). Used in
 // messages concerning a single contact, to always keep the real network
-// name visible even when the user set an alias — see also the dense
+// name visible even when the user set an alias, see also the dense
 // multi-contact lists (e.g. a group's member bar), which deliberately
 // do NOT use it, to stay compact.
 func (c ContactInfo) NameWithUsername() string {
@@ -439,7 +439,7 @@ func (c ContactInfo) NameWithUsername() string {
 type TrustLevel int
 
 const (
-	// TrustDanger — see keystore.TrustDanger (exact same meaning):
+	// TrustDanger, see keystore.TrustDanger (exact same meaning):
 	// unresolved relationship key conflict, prevails over any other
 	// level computed from Verified/IntroducedBy.
 	TrustDanger  TrustLevel = iota - 1
@@ -451,7 +451,7 @@ const (
 
 // TrustLevel computes the contact's trust level (see
 // keystore.Contact.TrustLevel). An unresolved relationship key conflict
-// always prevails — see TrustDanger above.
+// always prevails, see TrustDanger above.
 func (c ContactInfo) TrustLevel() TrustLevel {
 	for _, dev := range c.Devices {
 		if len(dev.PendingPeerRelIdentityPub) > 0 || len(dev.PendingPeerRelContentPub) > 0 {
@@ -509,7 +509,7 @@ type GroupInfo struct {
 	Members   []GroupMember
 }
 
-// DeviceIdentityRef mirrors keystore.IdentityRef — an identity present
+// DeviceIdentityRef mirrors keystore.IdentityRef, an identity present
 // on a known device (remote_nuke).
 type DeviceIdentityRef struct {
 	Username    string
@@ -517,7 +517,7 @@ type DeviceIdentityRef struct {
 	MLKEMPub    []byte
 }
 
-// DeviceRecordInfo mirrors keystore.DeviceRecord — a known device
+// DeviceRecordInfo mirrors keystore.DeviceRecord, a known device
 // hosting (also) our own identity, toward which a remote_nuke command
 // can be directed (fan-out across all SiblingIdentities, not just the
 // one that led to registration).
@@ -529,19 +529,19 @@ type DeviceRecordInfo struct {
 	SiblingIdentities []DeviceIdentityRef
 }
 
-// DangerBroadcastPendingInfo mirrors keystore.DangerBroadcastPending —
+// DangerBroadcastPendingInfo mirrors keystore.DangerBroadcastPending,
 // see TUIParams.PendingDangerBroadcasts.
 type DangerBroadcastPendingInfo struct {
 	TargetDeviceID []byte
 	IdentityPubs   [][]byte // identity keys of the contacts not yet confirmed
 }
 
-// AllIdentityContactsInfo exposes — for ONE sibling identity present in
-// the keystore (including itself) — its contacts and a closure to
+// AllIdentityContactsInfo exposes, for ONE sibling identity present in
+// the keystore (including itself), its contacts and a closure to
 // sign/tag as THAT specific identity. Used only by the danger_end
 // broadcast: the target device, before wiping itself, must notify the
 // contacts of ALL its sibling identities (I1, I2, I3...), not just the
-// one it's running as in this session — internal/client never sees the
+// one it's running as in this session, internal/client never sees the
 // private keys directly, only this per-identity closure built in
 // cmd/main.go (the only place with access to Keystore.SiblingKeystores).
 type AllIdentityContactsInfo struct {
@@ -561,7 +561,7 @@ type roomErrMsg struct {
 	idx int
 	err error
 	// gen is the connection generation (roomTab.pingGen) active when
-	// THIS specific attempt (read or ping) started — compared against
+	// THIS specific attempt (read or ping) started, compared against
 	// the CURRENT value of tab.pingGen when the message arrives (see
 	// case roomErrMsg in Update). A late failure tied to a connection
 	// already replaced by a reconnect in the meantime (waitForRoom stuck
@@ -579,8 +579,8 @@ type roomConnectedMsg struct{ idx int }
 
 // pingWatchdogInterval/pingWatchdogTimeout regulate the active
 // reachability probe for every connected tab (see pingWatchdogTickMsg):
-// detects a silently stuck connection — no read error, but no data
-// flowing anymore, a known Tor failure mode — that would otherwise
+// detects a silently stuck connection, no read error, but no data
+// flowing anymore, a known Tor failure mode, that would otherwise
 // never trigger the automatic reconnect, which depends only on an
 // explicit ReadMsg error that never arrives in this scenario. A single
 // unanswered ping within pingWatchdogTimeout is not enough to
@@ -594,14 +594,14 @@ const (
 	pingWatchdogMissThreshold = 2
 )
 
-// wakeScanInterval — how often room members are scanned looking for
+// wakeScanInterval, how often room members are scanned looking for
 // someone "red" to send a wake to (case pingWatchdogTickMsg), and the
 // receiving-side cooldown on the same mechanism (case "wake" in
 // applyKnock/case knockMsg). Deliberately independent of
 // pingWatchdogInterval, which is slower and more tolerant.
 const wakeScanInterval = 30 * time.Second
 
-// groupNoJoinTimeout — how long to wait after opening a group
+// groupNoJoinTimeout, how long to wait after opening a group
 // (cmdInvite/cmdRecall) before prompting the host if no invitee has
 // joined yet (see groupNoJoinTimeoutMsg). Longer than
 // pingWatchdogInterval because this doesn't measure a transport failure
@@ -611,7 +611,7 @@ const groupNoJoinTimeout = 2 * time.Minute
 
 // pingWatchdogTickMsg triggers a probe round for tab idx, at generation
 // gen (see roomTab.pingGen). The actual probe starts from its handler
-// in Update, reading the model's state as it is THEN — not what was
+// in Update, reading the model's state as it is THEN, not what was
 // captured at scheduling time: tea.Tick only returns after the
 // interval, so any data captured before (tab.ctx, tab.cli) would
 // already be stale if the tab had reconnected in the meantime.
@@ -621,7 +621,7 @@ type pingWatchdogTickMsg struct {
 }
 
 // pingProbeFailedMsg signals a single probe cycle with no response
-// within pingWatchdogTimeout — not yet an error to propagate: its
+// within pingWatchdogTimeout, not yet an error to propagate: its
 // handler in Update increments roomTab.pingMisses and only raises
 // roomErrMsg once pingWatchdogMissThreshold is reached, see the comment
 // on the constant.
@@ -631,7 +631,7 @@ type pingProbeFailedMsg struct {
 	err error
 }
 
-// pingProbeOKMsg signals that the probe succeeded — resets
+// pingProbeOKMsg signals that the probe succeeded, resets
 // roomTab.pingMisses. Scheduling the next round doesn't depend on
 // this message: the external tick at wakeScanInterval (case
 // pingWatchdogTickMsg) always handles it, probe succeeded or not.
@@ -653,7 +653,7 @@ type groupNoJoinTimeoutMsg struct {
 type sendErrMsg struct{ err error }
 
 // replySentMsg signals that a send with an explicit reply reference
-// (/msg N) succeeded — used only to reset roomTab.pendingReplyTo
+// (/msg N) succeeded, used only to reset roomTab.pendingReplyTo
 // (one-shot, on success only: a send blocked by backpressure or failed
 // must leave the target intact, the user can simply retry). The
 // mutation happens here in Update() (the main goroutine), never inside
@@ -665,11 +665,11 @@ type probeResultMsg struct {
 	silent  bool // if true shows output only if someone is online
 }
 type contactProbeResult struct {
-	netUsername string // network username (display/debug only — NEVER a lookup key, two contacts can share it)
-	netPub      []byte // IdentityPub of the probed contact — the real lookup key in m.contactStates/m.contacts
+	netUsername string // network username (display/debug only, NEVER a lookup key, two contacts can share it)
+	netPub      []byte // IdentityPub of the probed contact, the real lookup key in m.contactStates/m.contacts
 	username    string // displayName shown in the UI
 	online      bool
-	// generatedRelKeys — non-nil if this cycle had to generate ON THE
+	// generatedRelKeys, non-nil if this cycle had to generate ON THE
 	// FLY our missing relationship keys toward this contact (see
 	// probeContacts): applied to m.contacts and persisted by case
 	// probeResultMsg, never mutated directly by the probe goroutine that
@@ -683,12 +683,12 @@ type contactState struct {
 	online *bool // nil=never probed, true=online, false=offline (TCP dial, unchanged on every cycle)
 	// seenByPeer is independent of online, not subordinate to it:
 	// nil=unknown, true=the contact sees us, false=no confirmation
-	// despite repeated attempts (not a diagnosis — see below).
+	// despite repeated attempts (not a diagnosis, see below).
 	//
 	// true is obtained through TWO independent paths, both stronger
 	// than "online": (a) full round-trip, we receive their probe_ack in
 	// response to our probe_ping; (b) direct proof, we receive their
-	// probe_ping — the mere receipt proves they reach
+	// probe_ping, the mere receipt proves they reach
 	// us, regardless of whether OUR response manages to reach them.
 	// Set by applyProbeAck and by probeAckCmdFor respectively. Once
 	// true it never decays automatically (see seenByPeerAt below for
@@ -697,7 +697,7 @@ type contactState struct {
 	// false is obtained ONLY if we reach them continuously (online=true
 	// for at least probeRetryCount CONSECUTIVE cycles, the same counter
 	// as dialWithRetry for dot1, reused here for conceptual consistency)
-	// without ever either of the two proofs above — NEVER while online
+	// without ever either of the two proofs above, NEVER while online
 	// is false or nil: if we don't reach them, we never even gave them
 	// the chance to respond to us, the absence of proof in that case
 	// says nothing about the opposite direction. Even once false, it
@@ -705,13 +705,13 @@ type contactState struct {
 	// goes offline: losing reachability doesn't invalidate the missing
 	// confirmation observed while they were reachable).
 	//
-	// false is NEVER a diagnosis — it doesn't imply NAT/firewall on
+	// false is NEVER a diagnosis, it doesn't imply NAT/firewall on
 	// their side: the exact same observation (no confirmation ever
 	// arrived, despite repeated attempts) is indistinguishable from at
 	// least three other causes, none of which the protocol can or
 	// should reveal: they removed us from their address book (their
 	// server still always responds 202, so as not to reveal a mismatch
-	// — revealing it would be a side channel exposing membership in
+	// revealing it would be a side channel exposing membership in
 	// someone else's address book); our own ping never reaches its
 	// destination (a failure of the application-level POST, not just
 	// the TCP dial that governs online); a genuine asymmetric network
@@ -719,11 +719,11 @@ type contactState struct {
 	seenByPeer *bool
 	// seenByPeerAt is the moment of the last transition to
 	// seenByPeer=true (never updated for a transition to false, which
-	// isn't a confirmation) — lets /cnt-info show "how long ago" instead
+	// isn't a confirmation), lets /cnt-info show "how long ago" instead
 	// of a static dot that never decays (see seenByPeer above).
 	seenByPeerAt time.Time
 	// onlineStreak counts the CONSECUTIVE probe cycles in which this
-	// contact came back online — reset on every cycle it comes back
+	// contact came back online, reset on every cycle it comes back
 	// offline. Used only to decide when to let seenByPeer expire from
 	// nil to false; irrelevant if seenByPeer is already true or already false.
 	onlineStreak int
@@ -736,7 +736,7 @@ type warmupMsg struct{}
 type rotateSenderKeyMsg struct{}
 
 // senderKeyRotatedMsg signals that RotateSenderKey succeeded for tabIdx
-// — resets tab.keySentTo (a successful send for the previous key
+// resets tab.keySentTo (a successful send for the previous key
 // doesn't count for the new one). A dedicated tea.Msg because
 // RotateSenderKey runs inside an async closure (func() tea.Msg):
 // tab.keySentTo, a plain map with no mutex of its own, must only be
@@ -744,7 +744,7 @@ type rotateSenderKeyMsg struct{}
 type senderKeyRotatedMsg struct{ tabIdx int }
 
 // senderKeySentMsg signals that SendSenderKeyReliable succeeded in
-// AT LEAST ONE send toward the member with key member in tabIdx — see the comment on
+// AT LEAST ONE send toward the member with key member in tabIdx, see the comment on
 // roomTab.keySentTo for exactly what this means (not a network ack,
 // just "writing the frame didn't fail right away").
 type senderKeySentMsg struct {
@@ -753,11 +753,11 @@ type senderKeySentMsg struct {
 }
 
 // retryPendingTickMsg triggers a round of RetryDue on every connected
-// tab — see retryPendingInterval and cmdRetryPending.
+// tab, see retryPendingInterval and cmdRetryPending.
 type retryPendingTickMsg struct{}
 
 // retryPendingInterval is how often it's checked whether some pending
-// message has exceeded its own backoff — independent of
+// message has exceeded its own backoff, independent of
 // messageRetryDelay (which is ONE message's backoff, not the check's
 // cadence): a fixed, short interval, since RetryDue is a cheap no-op
 // when there's nothing to retry.
@@ -766,20 +766,20 @@ const retryPendingInterval = 5 * time.Second
 type retryPendingRemoteNukesMsg struct{}
 
 // tickInterfaceLockCheckMsg triggers the periodic check of the
-// interface lock's inactivity threshold — not a tea.KeyMsg, so it
+// interface lock's inactivity threshold, not a tea.KeyMsg, so it
 // reaches its own case even when m.interfaceLocked is already true (the
 // gate on Update() intercepts only tea.KeyMsg, not other message types).
 type tickInterfaceLockCheckMsg struct{}
 
 // interfaceLockCheckInterval is the cadence of the periodic check of
-// the inactivity threshold — fine enough not to be perceived as a
+// the inactivity threshold, fine enough not to be perceived as a
 // delay, coarse enough not to weigh on the event loop.
 const interfaceLockCheckInterval = 5 * time.Second
 
 type knockMsg shared.KnockPayload
 
 // sysLockMsg fires each time the host OS reports an explicit session
-// lock — see sysLockCh/waitForSysLock.
+// lock, see sysLockCh/waitForSysLock.
 type sysLockMsg struct{}
 
 // pendingKnock is a knock awaiting a response, with the local receipt
@@ -795,23 +795,23 @@ type torLogMsg struct{ line string }
 type debugLogMsg struct{ line string }
 
 // qrDecodedMsg signals that a QR (file or camera, /cnt-read-qrcode) was
-// decoded successfully — routed as a message, not applied directly by
+// decoded successfully, routed as a message, not applied directly by
 // the decoding goroutine, because it must touch m.pendingContact via
 // startAddContactFromURI, never safe from another goroutine.
 type qrDecodedMsg struct{ uri string }
 
-// qrShowTickMsg advances the animated /show-qr popup's frame — gen must
+// qrShowTickMsg advances the animated /show-qr popup's frame, gen must
 // match model.qrShowGen when it arrives, otherwise it's a tick from an
 // already-closed session (Esc) and must be ignored, same principle as
 // tab.pingGen on roomErrMsg.
 type qrShowTickMsg struct{ gen int }
 
-// fileAcceptRetryMsg — every file_accept sent must correspond either to
+// fileAcceptRetryMsg, every file_accept sent must correspond either to
 // receipt of the first chunk or to an explicit timeout, never an
 // indefinite wait: if it fires and no chunk has arrived yet for
 // transferID (incomingFileTransfer.written == 0), the file_accept is
 // resent and a new tick rescheduled, until
-// incomingFileTransfer.acceptRetryDeadline expires — see
+// incomingFileTransfer.acceptRetryDeadline expires, see
 // model.fileAcceptRetryInterval.
 type fileAcceptRetryMsg struct {
 	transferID string
@@ -838,23 +838,23 @@ type localDisplayMsg struct {
 	text   string
 	// consoleInfo: if true, also duplicates the message into the
 	// Console tab without lighting up the red indicator (an
-	// informational outcome, not an error — e.g. a file transfer
+	// informational outcome, not an error, e.g. a file transfer
 	// completing). A genuine ERROR message never uses this double
 	// send: it always goes only to Console (tabIdx:
-	// m.consoleIdx, isError: true) — never into the tab/room the
+	// m.consoleIdx, isError: true), never into the tab/room the
 	// command came from, so errors don't end up scattered across chats.
 	consoleInfo bool
 	isError     bool // true = lights up the red indicator if it ends up in the Console tab
 
 	// transferID: empty for every other use of this message (the vast
-	// majority) — set only by startSendingChunks's three final outcomes
+	// majority), set only by startSendingChunks's three final outcomes
 	// to remove the entry from model.outgoingTransfersSending when the transfer
 	// terminates (success or fatal error), so it doesn't stay there forever.
 	transferID string
 }
 
 // fileReadyToSaveMsg signals that a received file was decrypted and the
-// signature verified — opens the filesystem browser to choose where to save it.
+// signature verified, opens the filesystem browser to choose where to save it.
 type fileReadyToSaveMsg struct {
 	tabIdx   int
 	fileName string
@@ -862,7 +862,7 @@ type fileReadyToSaveMsg struct {
 }
 
 // fileOfferMetaDecryptedMsg signals the outcome of background-decrypting
-// the {file_name, file_size, file_key} blob of an incoming file_offer —
+// the {file_name, file_size, file_key} blob of an incoming file_offer,
 // runs in a separate goroutine (tea.Cmd) to avoid blocking the Update()
 // loop while it does the hybrid ECIES work.
 type fileOfferMetaDecryptedMsg struct {
@@ -877,7 +877,7 @@ type fileOfferMetaDecryptedMsg struct {
 // fileOfferTimeoutMsg fires fileTransferOfferTimeout after a file_offer:
 // if the transfer still exists in m.outgoingTransfers (someone hasn't
 // responded yet), the send proceeds anyway with whoever already
-// accepted — a forgotten or disconnected recipient must not block the
+// accepted, a forgotten or disconnected recipient must not block the
 // send for everyone else.
 type fileOfferTimeoutMsg struct {
 	transferID string
@@ -890,7 +890,7 @@ type fileOfferTimeoutMsg struct {
 // accept and having to chase down anyone who arrives even a moment
 // later. If nobody has accepted yet when it expires, the case below
 // does nothing: it simply keeps waiting until fileTransferOfferTimeout.
-// Whoever accepts AFTER this window is still covered — during the send
+// Whoever accepts AFTER this window is still covered, during the send
 // by the (concurrent) resume mechanism, after the send by
 // startSendingChunks' grace window.
 type fileOfferBatchWindowMsg struct {
@@ -900,7 +900,7 @@ type fileOfferBatchWindowMsg struct {
 // fileEncryptedMsg is the result of the heavy work (reading the file
 // from disk + encrypting+compressing + one envelope per recipient,
 // ContentKey-per-relationship) done in the background by
-// onFilePresetChosen — see the comment there for why it must NEVER run
+// onFilePresetChosen, see the comment there for why it must NEVER run
 // synchronously inside Update(). err is set only on failure (file too
 // large for available RAM, no relationship established yet with any
 // recipient, etc.); all other fields are valid only if err is nil.
@@ -909,7 +909,7 @@ type fileEncryptedMsg struct {
 	transferID        string
 	fileName          string
 	ciphertext        []byte
-	hash              []byte                                 // sha256(ciphertext) — signed during the announcement phase, compared at the end of the transfer
+	hash              []byte                                 // sha256(ciphertext), signed during the announcement phase, compared at the end of the transfer
 	announceEnvelopes map[string]shared.FileAnnounceEnvelope // user_id → signature-only envelope (announcement phase)
 	envelopes         map[string]shared.FileOfferEnvelope    // user_id → meta_blob envelope (real offer, sent only after the announcement's ack)
 	sigTS             string                                 // common to all envelopes
@@ -923,7 +923,7 @@ type fileEncryptedMsg struct {
 // tickFileProgressMsg refreshes the "File" tab's render while at least
 // one transfer is active. fileTransferProgress is written by goroutines
 // outside the Update loop (sending/receiving chunks), so an explicit
-// tick is needed to force the View to redraw — bubbletea doesn't
+// tick is needed to force the View to redraw, bubbletea doesn't
 // redraw on its own from mutations external to the Update/Msg cycle.
 // Only reactivated when a transfer starts (not a perpetual ticker like
 // tickActive, to avoid burning CPU for nothing).
@@ -942,23 +942,23 @@ type contactAddedMsg struct {
 }
 
 // relRotationStartedMsg signals that StartRelIdentityRotationByPub/
-// StartRelContentRotationByPub succeeded — which is "identity" or "content".
+// StartRelContentRotationByPub succeeded, which is "identity" or "content".
 type relRotationStartedMsg struct {
 	username string
-	// contactPub is the chosen contact's IdentityPub — never ambiguous,
+	// contactPub is the chosen contact's IdentityPub, never ambiguous,
 	// unlike username (two contacts can share it, e.g. after a /nukex):
 	// the case consuming this message must find exactly the same contact
 	// resolved by cmdStartRelRotation, not the first one with the same name.
 	contactPub []byte
 	which      string
-	// newKeys — devicePub (string(pub)) → new key, one for EVERY device
-	// the rotation actually started for (fan-out) — never a single
+	// newKeys, devicePub (string(pub)) → new key, one for EVERY device
+	// the rotation actually started for (fan-out), never a single
 	// device picked at random.
 	newKeys map[string]shared.RelSigningKey
 }
 
 // contactCard is the contact card shared via /grp-contact-send,
-// transmitted as a small file (same pipeline as /grp-file-send —
+// transmitted as a small file (same pipeline as /grp-file-send,
 // per-recipient encryption with ContentKey-per-relationship, one frame
 // per recipient). The plaintext is contactCardPrefix + JSON(contactCard),
 // so the receiving side recognizes a contact card instead of a regular
@@ -973,10 +973,10 @@ type contactCard struct {
 	MLDSAPub    []byte `json:"mldsa_pub,omitempty"` // contact's durable ML-DSA-65 signing key (1952 bytes)
 	// OffbandHint: free text written by the introducer (phone, email,
 	// telegram id...) so the recipient can contact the card's subject
-	// out-of-band and compare the safety code — verification is
+	// out-of-band and compare the safety code, verification is
 	// impossible without an independent channel. Mandatory when sending
 	// (cmdSendContact never leaves it empty); never persisted on a
-	// saved contact — only shown at receipt time, then discarded.
+	// saved contact, only shown at receipt time, then discarded.
 	OffbandHint string `json:"offband_hint"`
 }
 
@@ -995,13 +995,13 @@ type pqcToggleAnnouncePayload struct {
 }
 
 // groupMemberAddedPrefix marks a system broadcast message (the normal
-// SenderKey channel, Client.Send — not contactCard's file pipeline)
+// SenderKey channel, Client.Send, not contactCard's file pipeline)
 // that announces a new member added to an already-open group via
 // /grp-add-member. The broadcast plaintext is groupMemberAddedPrefix +
 // JSON(groupMemberAddedPayload). A receiving client accepts the update
 // only if the WS-authenticated sender (tab.cli.LookupMemberKey(fromUserID),
 // tied to which per-member secret authenticated the session) matches
-// tab.hostKey: any other sender is silently discarded — only the
+// tab.hostKey: any other sender is silently discarded, only the
 // host can change the group's trusted composition (the "from" field
 // inside the encrypted payload is self-declared by the sender, not
 // authenticated, and must never be used for this decision).
@@ -1015,78 +1015,78 @@ type groupMemberAddedPayload struct {
 
 type chatLine struct {
 	username  string // display name of the sender
-	fromKey   string // sender's member key — "" for system lines
+	fromKey   string // sender's member key, "" for system lines
 	text      string
 	rawText   string
 	timestamp string
 	isSystem  bool
-	plain     bool // isSystem without a bullet or leading timestamp — only Console startup lines, which already embed their own time in the text (see consoleLines below)
-	// contentKeyTag — "REL:xxxxxxxx" (last 8 hex chars of the sender's
+	plain     bool // isSystem without a bullet or leading timestamp, only Console startup lines, which already embed their own time in the text (see consoleLines below)
+	// contentKeyTag, "REL:xxxxxxxx" (last 8 hex chars of the sender's
 	// ContentKey-per-relationship toward us) if sigStatus==sigOK, "" otherwise.
 	contentKeyTag string
 	// contentKeyEphemeral distinguishes a relationship born only from a
 	// room introduction (ephemeral bootstrap) from one with a contact
-	// persisted in the address book — used only to color the REL tag in
+	// persisted in the address book, used only to color the REL tag in
 	// chat (yellow for ephemeral), never to decide whether the signature
 	// is valid. Significant only if sigStatus==sigOK.
 	contentKeyEphemeral bool
 	sigStatus           sigStatus
 	msgID               uint64 // non-zero only for our own sent broadcast messages; used to track ACKs
-	// msgSeq — the sender's external sequence (Client.outMsgSeq on their
+	// msgSeq, the sender's external sequence (Client.outMsgSeq on their
 	// side, "mseq" on the wire): never reset by a sender_key rotation,
 	// unlike the ratchet's idx. Carried with the line, not read by the
 	// TUI itself.
 	msgSeq uint64
-	// gseq — the room's global sequence number (wsRawMsgData.GSeq,
+	// gseq, the room's global sequence number (wsRawMsgData.GSeq,
 	// roomDelivery), assigned by the server on arrival, unique within
 	// the room regardless of who wrote it. For our own messages it
 	// arrives with our own self-echo (recognized via TakeSentText),
 	// updated after the fact on the already-displayed line (see
-	// pendingAckLines) — stays 0 until the self-echo arrives. Shown in the header ("#N") and used
+	// pendingAckLines), stays 0 until the self-echo arrives. Shown in the header ("#N") and used
 	// by the /msg N command for the explicit reply reference: only a
 	// message with a known gseq can be chosen as a target.
 	gseq uint64
-	// replyTo — gseq of the message this is a reply to (sealedMsg.RT), 0
+	// replyTo, gseq of the message this is a reply to (sealedMsg.RT), 0
 	// if none. Never inferred: always an explicit user choice (/msg N
 	// before sending).
 	replyTo uint64
 	// ackers lists the member keys of members who confirmed receipt
 	// ("msg_ack" frame, resolved from from_user_id via
-	// tab.cli.LookupMemberKey) — not just a counter: lets /grp-msg-acks
+	// tab.cli.LookupMemberKey), not just a counter: lets /grp-msg-acks
 	// show WHO confirmed and who didn't, not just how many.
 	ackers map[string]bool
 
-	// deviceTag — the device tag's text (remote_nuke), already ready for
+	// deviceTag, the device tag's text (remote_nuke), already ready for
 	// rendering: "" if no valid device_sig (no tag shown, never a
 	// message rejection); "DEV:xxxxxxxx" (already-known device or first
 	// TOFU adoption) or "DEV:new" (a device different from the one
-	// already known for this contact — informational only). deviceTagNew
+	// already known for this contact, informational only). deviceTagNew
 	// distinguishes the style (yellow, not red: it's not an error).
 	deviceTag    string
 	deviceTagNew bool
 
-	// pqcActive — whether this message carries an active ML-DSA-65
+	// pqcActive, whether this message carries an active ML-DSA-65
 	// signature (hybrid PQC network identity): for our own message,
 	// simply whether pqc_sig was present in the frame at send time (no
 	// verification needed, it's ours); for someone else's message, only
-	// if pqc_sig is present AND verifies against Contact.MLDSAPub — a
+	// if pqc_sig is present AND verifies against Contact.MLDSAPub, a
 	// sender who declares pqc_sig but doesn't verify counts as "not
 	// active", never a rejection of the message itself. Always shown in
-	// chatLine.render (green/red), never omitted when absent — the
+	// chatLine.render (green/red), never omitted when absent, the
 	// signal must always be visible, not only when positive.
 	pqcActive bool
 }
 
-// replyPreview — already resolved by the caller (refreshViewport, which
+// replyPreview, already resolved by the caller (refreshViewport, which
 // has visibility into the whole tab.lines for the gseq lookup, never
-// here: render stays pure, a single message) — "username: preview" of
+// here: render stays pure, a single message), "username: preview" of
 // the message referenced by l.replyTo, or "" if l.replyTo==0 or the
 // referenced message isn't (or is no longer) in the displayed history
 // (can only happen on a freshly opened/truncated tab: the reference can
 // only point to a message already seen at the time it was chosen).
-// maxReplyPreviewLen — how much of the referenced message's text fits
+// maxReplyPreviewLen, how much of the referenced message's text fits
 // in the explicit reply reference's preview, truncated with "…" beyond
-// this threshold — just a visual reminder, the number (#N) remains the
+// this threshold, just a visual reminder, the number (#N) remains the
 // exact reference.
 const maxReplyPreviewLen = 40
 
@@ -1111,7 +1111,7 @@ func (l chatLine) render(myKey string, replyPreview string) string {
 	ts := styleMeta.Render(l.timestamp + " ")
 	var nameS string
 	if l.fromKey != "" && l.fromKey == myKey {
-		// Cyan for our own name, green for everyone else's — inverted
+		// Cyan for our own name, green for everyone else's, inverted
 		// relative to the styleOwnMsg/stylePeerMsg constants (which
 		// elsewhere stay green=us/cyan=others), deliberate only here and
 		// in the member bar (renderGroupBar): the entire group room
@@ -1133,7 +1133,7 @@ func (l chatLine) render(myKey string, replyPreview string) string {
 		body = l.contentKeyTag
 		// Yellow (styleWarnName) for a relationship born only from a
 		// room introduction (no direct contact), gray (styleMeta,
-		// default) for a persisted contact — lets one tell a
+		// default) for a persisted contact, lets one tell a
 		// "temporary" REL from one with someone actually in the address
 		// book at a glance.
 		if l.contentKeyEphemeral {
@@ -1148,7 +1148,7 @@ func (l chatLine) render(myKey string, replyPreview string) string {
 		body = i18n.T("tui.tag_own")
 	}
 	sigTag := style.Render(" [" + body + "]")
-	// ALWAYS present (never omitted) — same placeholder style as REL
+	// ALWAYS present (never omitted), same placeholder style as REL
 	// under verification ("DEV:........") when l.deviceTag is empty:
 	// message headers must all have the same format.
 	devTag := l.deviceTag
@@ -1172,14 +1172,14 @@ func (l chatLine) render(myKey string, replyPreview string) string {
 			ackTag = styleOwnMsg.Render(fmt.Sprintf(" ✓%d", len(l.ackers)))
 		}
 	}
-	// gseqTag — the room's global sequence number, the target of the
+	// gseqTag, the room's global sequence number, the target of the
 	// /msg N command: omitted until known (0 = self-echo not yet
 	// confirmed by the server, or a system message).
 	var gseqTag string
 	if l.gseq != 0 {
 		gseqTag = styleMeta.Render(fmt.Sprintf(" #%d", l.gseq))
 	}
-	// replyLine — explicit reply reference: extra line above the text,
+	// replyLine, explicit reply reference: extra line above the text,
 	// always present if l.replyTo!=0 even without a resolved preview
 	// (referenced message no longer in the displayed history).
 	var replyLine string
@@ -1191,7 +1191,7 @@ func (l chatLine) render(myKey string, replyPreview string) string {
 		}
 	}
 	// Two lines: header (time, name, all tags, ACK) above, message text
-	// below, indented — ansi.Wrap (refreshViewport) respects the "\n"
+	// below, indented, ansi.Wrap (refreshViewport) respects the "\n"
 	// already embedded in the string, so the lines wrap independently
 	// if too long for the viewport's width, never merged into one.
 	return ts + nameS + sigTag + ackTag + gseqTag + "\n" + replyLine + "  " + l.text
@@ -1205,12 +1205,12 @@ type roomTab struct {
 	isContacts bool // true = address book tab (can't be closed)
 	isGroups   bool // true = saved groups list tab (can't be closed)
 	isTor      bool // true = Tor process log tab
-	isFiles    bool // true = "File" tab — file transfer progress bars
+	isFiles    bool // true = "File" tab, file transfer progress bars
 	cli        *client.Client
 	ctx        context.Context
 	cancel     context.CancelFunc
 	lines      []chatLine
-	// online — member keys (client.MemberKeyOf of the root identity key)
+	// online, member keys (client.MemberKeyOf of the root identity key)
 	// of the members currently connected. A member is identified only
 	// by its key; memberLabels holds the username label each was invited
 	// under, for display only (see memberName).
@@ -1218,14 +1218,14 @@ type roomTab struct {
 	memberLabels map[string]string
 	// ephRels holds, per member key, the EPHEMERAL relationship
 	// (point-to-point bootstrap, rel_bootstrap channel) with a room
-	// member with no prior direct contact ("introduced") — never
+	// member with no prior direct contact ("introduced"), never
 	// persisted, discarded when the room closes. nil until needed (lazy init).
 	ephRels map[string]*ephemeralRel
-	// keySentTo — per member key, true if SendSenderKeyReliable has
+	// keySentTo, per member key, true if SendSenderKeyReliable has
 	// already succeeded in AT LEAST ONE send toward this peer for OUR
 	// current sender_key. Not a network ack (that already exists:
 	// sendSenderKeyTo uses the generic reliable channel,
-	// msg_id+msg_ack+RetryDue, same as every chat message) — it only
+	// msg_id+msg_ack+RetryDue, same as every chat message), it only
 	// serves to know whether the FIRST write ever succeeded:
 	// SendSenderKeyReliable can fail right away if
 	// peerSessionPubs/peerMLKEMPubs aren't yet populated for that peer
@@ -1233,38 +1233,38 @@ type roomTab struct {
 	// the entire session). Reset to nil (never a plain "all false": a
 	// peer already present but not yet revisited by the retry must be
 	// treated as "not sent yet", not "send failed") every time we
-	// generate a NEW sender_key (senderKeyRotatedMsg) — a successful
+	// generate a NEW sender_key (senderKeyRotatedMsg), a successful
 	// send for the previous key says nothing about the new one. nil
 	// until needed (lazy init, same scheme as ephRels).
 	keySentTo map[string]bool
 	unread    int
 	hasError  bool // true = an error was written here while the tab wasn't active (red indicator)
-	// pendingEscalated — true if the Console's soft warning (an
+	// pendingEscalated, true if the Console's soft warning (an
 	// unconfirmed message older than pendingEscalationAge) has already
-	// been shown for the CURRENT stall — avoids repeating it on every
+	// been shown for the CURRENT stall, avoids repeating it on every
 	// round of retryPendingTickMsg until the queue empties completely;
 	// goes back to false as soon as OldestPendingAge no longer reports
 	// anything pending, so a future new stall generates a new warning.
 	pendingEscalated bool
 
-	// pendingReplyTo — explicit reply reference (/msg N) for the
+	// pendingReplyTo, explicit reply reference (/msg N) for the
 	// NEXT send on this tab, one-shot: consumed and reset by
 	// sendMessage/replySentMsg only on a successful send (a send blocked
 	// by backpressure or failed leaves the target intact). 0 = none.
 	pendingReplyTo uint64
 
-	// msgBuffer — receive-side reordering: ciphertexts (the full raw
-	// frame, not just the text — the whole parseMessage must be replayed
+	// msgBuffer, receive-side reordering: ciphertexts (the full raw
+	// frame, not just the text, the whole parseMessage must be replayed
 	// once unblocked) that arrived out of sequence, held until their
-	// turn really comes — see handleIncomingMessage. keyID → idx → frame.
+	// turn really comes, see handleIncomingMessage. keyID → idx → frame.
 	msgBuffer    map[string]map[uint64]map[string]any
-	seenMsgIDs   map[uint64]struct{} // msgIDs already shown — see parseMessage
+	seenMsgIDs   map[uint64]struct{} // msgIDs already shown, see parseMessage
 	groupID      string              // non-empty if a group room
 	groupMembers []GroupMember       // the group's members (for /grp-save)
 	roomSecret   []byte              // our own secret (the one this client used to connect to the room's server)
 	hostKey      string              // member key of whoever opened the group (the WS server's host)
 
-	// secretsByMember — host tab only: the currently valid per-member
+	// secretsByMember, host tab only: the currently valid per-member
 	// secret, by member key AND by device (member key →
 	// string(devicePub) → secret). A contact with multiple invited
 	// devices (fan-out) has an independent entry for each, never one
@@ -1272,7 +1272,7 @@ type roomTab struct {
 	// to replace) and /grp-ban (revoke all of them, not just one).
 	secretsByMember map[string]map[string][]byte
 
-	// invitedKeys — host tab only: member keys of who was invited when the group
+	// invitedKeys, host tab only: member keys of who was invited when the group
 	// was opened (cmdInvite/cmdRecall), self excluded. Compared
 	// against tab.online (who actually joined) and
 	// departures[.]==memberDeclined (who explicitly declined, see
@@ -1280,10 +1280,10 @@ type roomTab struct {
 	// yet". Empty for invited members' tabs (non-host).
 	invitedKeys    []string
 	reconnecting   bool // true if an automatic reconnect is in progress
-	serverShutdown bool // true if the server sent server_shutdown — don't reconnect
+	serverShutdown bool // true if the server sent server_shutdown, don't reconnect
 
 	// rekeyOnNextInit: true between a manual /grp-reconnect and the
-	// first subsequent "init" frame — RotateSenderKey needs
+	// first subsequent "init" frame, RotateSenderKey needs
 	// peerSessionPubs already populated (the members' session pubs,
 	// known only after init) to be able to distribute the new key, so
 	// it can't be called right after cli.Connect(). Consumed once by
@@ -1294,7 +1294,7 @@ type roomTab struct {
 	rekeyOnNextInit bool
 
 	// awaitingJoin: true between /grp-join and the first outcome
-	// (connected or final error, after any automatic retries) —
+	// (connected or final error, after any automatic retries),
 	// controls when to dismiss the "Connecting…" popup opened by
 	// cmdJoin. Via Tor/I2P the first connection can take several
 	// seconds, especially over I2P: without this popup the TUI looks
@@ -1305,10 +1305,10 @@ type roomTab struct {
 	// Missing key = never connected or host crash (treated as memberCrashed).
 	departures map[string]memberState
 
-	// Incoming contact card — set by a contact_card DM; cleared by
+	// Incoming contact card, set by a contact_card DM; cleared by
 	// /cnt-save or /cnt-ignore. pendingCardFrom is the real sender's
 	// member key (resolved via LookupMemberKey on the transfer's
-	// from_user_id, NEVER the card's own content — that one only
+	// from_user_id, NEVER the card's own content, that one only
 	// describes WHO the card's subject is, not who sent it).
 	pendingCard     *contactCard
 	pendingCardFrom string
@@ -1326,27 +1326,27 @@ type roomTab struct {
 	pingGen int
 
 	// lastActivityAt: time of the last frame successfully received on
-	// this tab — a stronger liveness proof than an explicit ping/pong
+	// this tab, a stronger liveness proof than an explicit ping/pong
 	// because it also exercises both sides' application loops, not just
 	// the WS protocol-level auto-pong. pingWatchdogTickMsg skips the
 	// ping if this is recent enough (see above).
 	lastActivityAt time.Time
 
 	// lastPingProbeAt: last active probe attempt (or equivalent, see
-	// lastActivityAt above) — the external tick runs at wakeScanInterval's
+	// lastActivityAt above), the external tick runs at wakeScanInterval's
 	// cadence (more frequent, for wakes) but the actual probe should
 	// only be attempted every pingWatchdogInterval: this field says
 	// whether it's time yet or not.
 	lastPingProbeAt time.Time
 
 	// pingMisses: consecutive ping cycles with no response for the
-	// current connection — reset by any pong or activity received, a
+	// current connection, reset by any pong or activity received, a
 	// reconnect only triggers once pingWatchdogMissThreshold is reached
 	// (see the comment on the constant).
 	pingMisses int
 
 	// lastWakeActedAt: last time an incoming wake-up packet for this
-	// groupID actually triggered a reconnectTab — an anti-abuse,
+	// groupID actually triggered a reconnectTab, an anti-abuse,
 	// anti-redundancy cooldown on the receiving side (multiple members
 	// may detect the same outage and send the wake in parallel, or a
 	// malicious/buggy sender could flood more than one). See case
@@ -1355,14 +1355,14 @@ type roomTab struct {
 }
 
 // isStandardTab is true for the "service" tabs (Console, Contacts,
-// Groups, Tor, File) — everything that isn't a real chat room. Free
+// Groups, Tor, File), everything that isn't a real chat room. Free
 // text is never a valid action in these tabs.
 func (t *roomTab) isStandardTab() bool {
 	return t.isConsole || t.isContacts || t.isGroups || t.isTor || t.isFiles
 }
 
-// registerMember records one member from an init/user_joined entry —
-// session userID, root identity key, session keys and display label —
+// registerMember records one member from an init/user_joined entry,
+// session userID, root identity key, session keys and display label,
 // and returns its member key ("" if the entry carries no identity key:
 // such an entry is never registered).
 func (t *roomTab) registerMember(um map[string]any) string {
@@ -1385,7 +1385,7 @@ func (t *roomTab) registerMember(um map[string]any) string {
 }
 
 // setMemberLabel records the username label a member is known under in
-// this room — display only.
+// this room, display only.
 func (t *roomTab) setMemberLabel(key, name string) {
 	if key == "" || name == "" {
 		return
@@ -1446,7 +1446,7 @@ func decodeIdentityPubField(raw map[string]any) []byte {
 
 // TUIParams collects every parameter needed by the multi-room TUI.
 type TUIParams struct {
-	// Username — passed here directly by the caller, which already knows it.
+	// Username, passed here directly by the caller, which already knows it.
 	Username string
 	Contacts []ContactInfo
 	DialTor  func(context.Context, string, string) (net.Conn, error)
@@ -1461,7 +1461,7 @@ type TUIParams struct {
 	TorLogCh       <-chan string // network process log (Tor or I2P); nil = no dedicated tab
 	// SysLockCh receives one value each time the host OS reports an
 	// explicit session lock (systemd-logind on Linux desktop,
-	// see internal/syslock) — nil where unavailable (other platforms,
+	// see internal/syslock), nil where unavailable (other platforms,
 	// or no logind/D-Bus session to watch). Triggers the same immediate
 	// lock as cmdLock, never an unlock: the interface unlock always
 	// goes through its own configured secret.
@@ -1473,7 +1473,7 @@ type TUIParams struct {
 	BootLog     []string // startup lines (network bootstrap, hidden service/destination) to show in the Console tab
 	MyAddr      string
 	// AddressFromPub computes the network address reachable from an
-	// Ed25519 public key — OnionAddressFromPub or I2PAddressFromPub
+	// Ed25519 public key, OnionAddressFromPub or I2PAddressFromPub
 	// depending on the active network, decided by cmd/main.go. Needs
 	// only the public key, never the private one: applies to our own
 	// address (MyAddr, already computed) as well as contacts' addresses.
@@ -1484,10 +1484,10 @@ type TUIParams struct {
 	MyMLKEMPub []byte
 	LocalHost  string
 	LocalPort  int
-	// identityPub (both) can be nil if not yet known at call time —
+	// identityPub (both) can be nil if not yet known at call time,
 	// propagated to already-connected members via wsUserJoined/userInfo.
 	// AddRoom/ReplaceRoomSecret register a per-member secret on OUR OWN
-	// local server (RoomRegistry.AddSecret/ReplaceSecret) — peerKey is
+	// local server (RoomRegistry.AddSecret/ReplaceSecret), peerKey is
 	// the IdentityKey-per-relationship of the member who will present
 	// this secret (to verify ClientHello.Sig), mySigningKey is OUR OWN
 	// toward that same member (to sign ServerHello.Sig). For a real
@@ -1496,22 +1496,22 @@ type TUIParams struct {
 	// (loopback, no real contact involved): an ad-hoc ephemeral pair,
 	// the same one passed as mySigningKey to that connection's client.New.
 	// devicePub (in all three functions below) is the member/contact's
-	// device pubkey — the key their entry lives under in Contact.Devices.
+	// device pubkey, the key their entry lives under in Contact.Devices.
 	// Nil for the host's self-registration.
 	// resolveKeys, passed from tui.go to both, is never called here nor
-	// cached by the caller — RoomRegistry calls it back on EVERY
+	// cached by the caller, RoomRegistry calls it back on EVERY
 	// handshake verification, so no key pair is ever stored by value
 	// and no call site has to refresh it after a mutation.
 	AddRoom           func(roomID string, secret []byte, label string, identityPub ed25519.PublicKey, devicePub []byte, resolveKeys func() (shared.RelPeerKey, shared.RelSigningKey, bool))
 	ReplaceRoomSecret func(roomID string, oldSecret, newSecret []byte, label string, identityPub ed25519.PublicKey, devicePub []byte, resolveKeys func() (shared.RelPeerKey, shared.RelSigningKey, bool))
 	// ResolveRelKeysForDevice (keystore.Keystore.RelKeysForDevice) LIVE
-	// resolves the relationship key pair for an exact contact+device —
+	// resolves the relationship key pair for an exact contact+device,
 	// the source used by model.relKeysResolver to build the resolveKeys
 	// passed to AddRoom/ReplaceRoomSecret above, never for direct use elsewhere.
 	ResolveRelKeysForDevice func(identityPub, devicePub []byte) (shared.RelPeerKey, shared.RelSigningKey, bool)
 	// BanMember permanently removes a member's secret from roomID
 	// (RoomRegistry.RemoveSecret) and disconnects them if currently
-	// connected (RoomRegistry.KickMember) — /grp-ban, host only. userID
+	// connected (RoomRegistry.KickMember), /grp-ban, host only. userID
 	// can be empty (member offline at ban time): the secret is still
 	// removed, KickMember simply becomes a no-op. Returns whether an
 	// active connection was actually closed (for a diagnostic message
@@ -1519,7 +1519,7 @@ type TUIParams struct {
 	BanMember   func(roomID string, secret []byte, userID string) bool
 	SavedGroups []GroupInfo
 	SaveGroup   func(g GroupInfo) error
-	// OnContactDevicePub — called when a contact's observed device
+	// OnContactDevicePub, called when a contact's observed device
 	// pubkey differs from ContactInfo.KnownDevicePub (including first
 	// TOFU adoption), remote_nuke. Never blocking: persistence only.
 	OnContactDevicePub func(contactPub []byte, devicePub []byte) error
@@ -1527,34 +1527,34 @@ type TUIParams struct {
 	DeleteGroup        func(nameOrID string) error
 	// AddContact saves a new contact and IMMEDIATELY generates their two
 	// relationship keys (IdentityKey/ContentKey-per-contact toward
-	// them) — returned here so the caller (contactAddedMsg) can
+	// them), returned here so the caller (contactAddedMsg) can
 	// immediately populate the local ContactInfo mirror, without
 	// waiting for an extra round of I/O. The counterparts (PeerRel*)
 	// only arrive later, via rel_init/rel_init_ack.
 	AddContact func(username, localName string, identityPub, mlkemPub, mldsaPub []byte, introducedBy string, introducedByPub []byte) (myIdentKey, myContentKey shared.RelSigningKey, err error)
 	// UpdateContactRelKeys persists a partial update of an existing
-	// contact's relationship keys — only upd's non-empty fields get
+	// contact's relationship keys, only upd's non-empty fields get
 	// written, the others stay whatever was already in the address
 	// book. Used by the rel_init/rel_init_ack cycle (see applyRelInit):
 	// both to generate OUR OWN keys on the fly if they didn't exist yet
 	// (rare case), and to register the PEER's just-received public
 	// keys. Identifies the contact by IdentityPub (never by username,
-	// which can repeat across different contacts — a namesake after a
+	// which can repeat across different contacts, a namesake after a
 	// nuke+recreation by someone else): automatic/knock-driven, never a
 	// typed name available to a picker, must stay unambiguous.
 	UpdateContactRelKeys func(pub []byte, upd RelKeyUpdate) error
 	// ResetRelInitConfirmed resets to false ONLY the relevant flag
 	// (RelIdentityConfirmedByPeer or RelContentConfirmedByPeer, chosen
-	// by which — "identity"|"content") for ONE device of a contact —
+	// by which, "identity"|"content") for ONE device of a contact,
 	// the ONLY way to do this (UpdateContactRelKeys/RelKeyUpdate only
-	// ever turn them on together, never off, by design — see the
+	// ever turn them on together, never off, by design, see the
 	// comment on the field). Kept separate precisely because the
 	// self-heal always concerns exactly ONE of the two: the host's
 	// IdentityKey-per-relationship local copy ending up out of sync
 	// from a regeneration that never propagated (case roomErrMsg/
 	// client.ErrInvalidServerSig in tui.go, which="identity"), or the
 	// same mismatch on the ContentKey that signs MESSAGES/FILES
-	// (which="content") — resetting only the relevant one never blocks
+	// (which="content"), resetting only the relevant one never blocks
 	// ReadyDevices()/invites over an issue isolated to the other key. devicePub identifies the exact device (empty or
 	// non-matching falls back to SoleDevice for compatibility).
 	// Identifies the contact by IdentityPub, same reason as
@@ -1562,14 +1562,14 @@ type TUIParams struct {
 	ResetRelInitConfirmed func(pub, devicePub []byte, which string) error
 	// PromoteEphemeralContact persists as a new real Contact an
 	// ephemeral relationship already established and promoted by both
-	// sides (see finalizePromotion) — unlike AddContact, it generates no
+	// sides (see finalizePromotion), unlike AddContact, it generates no
 	// new key: myIdentKey/myContentKey and the peer's pubkeys are
 	// already the ones exchanged in the room's ephemeral bootstrap, only
 	// persisted here.
 	PromoteEphemeralContact func(username string, transportPub, transportMLKEMPub, transportMLDSAPub []byte, myIdentKey, myContentKey shared.RelSigningKey, peerIdent shared.RelPeerKey, peerIdentMLKEMPub []byte, peerContent shared.RelPeerKey, peerContentMLKEMPub []byte) error
 	// StartRelIdentityRotationByPub/StartRelContentRotationByPub start
 	// rotating one of the two relationship keys toward EVERY ready
-	// device of a contact (fan-out) — generate an independent new key
+	// device of a contact (fan-out), generate an independent new key
 	// for each, put the old one in the vault (for continuity during the
 	// pending window), and return the devicePub→new key map to
 	// immediately update the local ContactInfo mirror (same scheme as
@@ -1583,8 +1583,8 @@ type TUIParams struct {
 	// same Username, e.g. after a /nukex).
 	StartRelIdentityRotationByPub func(pub []byte) (map[string]shared.RelSigningKey, error)
 	StartRelContentRotationByPub  func(pub []byte) (map[string]shared.RelSigningKey, error)
-	// MarkRelRotationConfirmed closes the rotation — which is "identity"
-	// or "content" — after a real rel_*_rotate_ack, for ONE exact device
+	// MarkRelRotationConfirmed closes the rotation, which is "identity"
+	// or "content", after a real rel_*_rotate_ack, for ONE exact device
 	// (devicePub, from the ack's RelRotatePayload.DevicePub field):
 	// clears the pending flag and the old key in the vault ONLY for that
 	// device. Returns false if there was no rotation of that type in
@@ -1593,30 +1593,30 @@ type TUIParams struct {
 	// UpdateContactRelKeys above (automatic/knock-driven).
 	MarkRelRotationConfirmed func(pub, devicePub []byte, which string) bool
 	// MarkDeviceRevoked applies a verified revocation (knock
-	// "rel_revoke", see applyRelRevoke) to ONE device of a contact —
+	// "rel_revoke", see applyRelRevoke) to ONE device of a contact,
 	// revokeIdentity/revokeContent reflect which of the two
 	// certificates were present and verified. Returns false only if the
 	// contact or device weren't found, never for "already revoked"
-	// (idempotent by design — see keystore.Keystore.MarkDeviceRevoked).
+	// (idempotent by design, see keystore.Keystore.MarkDeviceRevoked).
 	// By IdentityPub, same reason as UpdateContactRelKeys above.
 	MarkDeviceRevoked func(pub, devicePub []byte, revokeIdentity, revokeContent bool) bool
 	// AckSiblingRevocation marks Acked=true in the
 	// Contact.SiblingRevocations pool for every entry referring to
-	// peerDevicePub, on receipt of a "rel_revoke_ack" — best-effort,
+	// peerDevicePub, on receipt of a "rel_revoke_ack", best-effort,
 	// no-op if the pool has no entry for that device. Doesn't
 	// distinguish between different siblings with independent
 	// relationships toward the same contact device (the ack carries no
-	// identifier of the sending sibling) — harmless, Acked is only a
+	// identifier of the sending sibling), harmless, Acked is only a
 	// retry optimization, never a security-relevant value.
 	AckSiblingRevocation func(pub, peerDevicePub []byte) bool
 	// IsDeviceNuked reports whether devicePub (a sibling device's own
 	// Keystore.DevicePub, never a DeviceID) is known to have been
-	// nuked — drives the sibling retry queue in probeContacts: a
+	// nuked, drives the sibling retry queue in probeContacts: a
 	// not-yet-Acked SiblingRevocations entry only gets resent once its
 	// SiblingDevicePub passes this check, never unconditionally.
 	IsDeviceNuked func(devicePub []byte) bool
 	// SetPendingRelKeys registers a relationship key conflict
-	// (TrustDanger) — keys PROPOSED by a rel_init/rel_init_ack, never
+	// (TrustDanger), keys PROPOSED by a rel_init/rel_init_ack, never
 	// applied directly (see applyRelInit). Identifies by IdentityPub,
 	// same reason as UpdateContactRelKeys above.
 	SetPendingRelKeys func(pub []byte, pending PendingRelKeys) error
@@ -1627,38 +1627,38 @@ type TUIParams struct {
 	ConfirmPendingRelKeys func(pub []byte) bool
 	ChangePassword        func(oldPwd, newPwd string) error
 	// SetDuress changes the decoy identity's own identity password
-	// (always non-empty — the decoy identity exists structurally and
-	// can never be removed) — see cmdDuress and model.pwdMode 5/6.
+	// (always non-empty, the decoy identity exists structurally and
+	// can never be removed), see cmdDuress and model.pwdMode 5/6.
 	SetDuress        func(newPwd string) error
 	KeystorePassword string
 
-	// SetLockSecret sets/replaces the interface lock's optional PIN — see
+	// SetLockSecret sets/replaces the interface lock's optional PIN, see
 	// cmdLockPIN. The identity password always unlocks the lock regardless
 	// (compared directly against KeystorePassword below, in RAM), so a PIN
 	// is never required for the lock to be usable.
 	SetLockSecret func(secret string, isPIN bool, duressMarker string, duressPosition int) error
 	// CheckLockSecret compares a candidate input against the configured
-	// lock PIN, if any — never against the keystore's real password
+	// lock PIN, if any, never against the keystore's real password
 	// (always a distinct value, checked separately in the TUI itself).
 	CheckLockSecret func(candidate string) keystore.LockCheckResult
 	// CheckDuressPassword compares candidate against the decoy identity's
-	// own identity password — recognized ALSO at the lock prompt, a
+	// own identity password, recognized ALSO at the lock prompt, a
 	// fallback path independent of the PIN's native duress
 	// (CheckLockSecret above).
 	CheckDuressPassword func(candidate string) bool
 	// InterfaceLockTimeout is the inactivity threshold after which the
-	// interface re-locks itself — zero disables the automatic lock (the
+	// interface re-locks itself, zero disables the automatic lock (the
 	// manual command remains always available regardless).
 	InterfaceLockTimeout time.Duration
 	// SaveInterfaceLockTimeout persists the threshold to config.json
 	// when changed live by /sec-lock-timeout, so it survives a restart.
 	SaveInterfaceLockTimeout func(time.Duration) error
 	// TimeNukeTimeout is how long the interface may stay LOCKED before
-	// an automatic nukex-equivalent secure erasure triggers — zero
+	// an automatic nukex-equivalent secure erasure triggers, zero
 	// disables it. See config.TimeNukeTimeoutDuration.
 	TimeNukeTimeout time.Duration
 	// SaveTimeNukeTimeout persists the threshold to config.json when
-	// changed live by /sec-nuke-timeout — same reason as
+	// changed live by /sec-nuke-timeout, same reason as
 	// SaveInterfaceLockTimeout above.
 	SaveTimeNukeTimeout    func(time.Duration) error
 	UpdateContactLocalName func(pub []byte, localName string) error
@@ -1673,7 +1673,7 @@ type TUIParams struct {
 	HSPublished bool
 
 	// GetBackupMnemonic recomputes the 24 BIP-39 words encoding the
-	// identity key on demand — a closure instead of a precomputed value
+	// identity key on demand, a closure instead of a precomputed value
 	// so they aren't kept in plaintext in RAM for the whole session:
 	// called only at the moment the user passes the password check for
 	// /sec-backup (case 4, pwdMode), the result is zeroed by the model
@@ -1684,12 +1684,12 @@ type TUIParams struct {
 
 	// SaveIdentityQR writes this identity's QR (plain .txt + multi-part
 	// PNG, same format as `neutrino show-qr`'s "image" choice) to disk
-	// and returns every path written — called only from /show-qr's own
+	// and returns every path written, called only from /show-qr's own
 	// "save as image" choice. A closure rather than a direct dependency
 	// on internal/keystore, for the same reason as GetBackupMnemonic
 	// above (this package must not depend on the keystore package); and
 	// unlike GetBackupMnemonic, this package must never call fmt.Print
-	// directly either — that would corrupt bubbletea's alt-screen buffer
+	// directly either, that would corrupt bubbletea's alt-screen buffer
 	// while the TUI is running, so the file-writing itself (which does
 	// print) stays on the cmd/main.go side of this closure.
 	SaveIdentityQR func() ([]string, error)
@@ -1699,7 +1699,7 @@ type TUIParams struct {
 	SenderKeyInterval time.Duration
 
 	// PendingSlotLimit/MessageRetryDelay/PendingEscalationAge/MessageTTL
-	// configure the reliable delivery queue (internal/client/pending.go) —
+	// configure the reliable delivery queue (internal/client/pending.go),
 	// resolved from config.json by the caller, never read directly by
 	// internal/client, same principle as SenderKeyInterval above. A
 	// value <= 0 leaves the client's hardcoded defaults (identical to
@@ -1709,19 +1709,19 @@ type TUIParams struct {
 	PendingEscalationAge time.Duration
 	MessageTTL           time.Duration
 
-	// SenderKeyMessageBudget — count-based rotation criterion (K
-	// messages per generation), complementary to SenderKeyInterval —
+	// SenderKeyMessageBudget, count-based rotation criterion (K
+	// messages per generation), complementary to SenderKeyInterval,
 	// see Client.MessagesSinceRotation.
 	SenderKeyMessageBudget int
 
-	// Timing — contact probes
+	// Timing, contact probes
 	ActiveInterval       time.Duration // periodic probe interval (default 1m)
 	ActiveInitialDelay   time.Duration // first probe delay (default 1m)
 	ProbeContactsTimeout time.Duration // probeContacts context timeout (default 90s)
 	ProbeRetryCount      int           // dial attempts per contact per cycle (default 3)
 	ProbeRetryDelay      time.Duration // backoff between attempts (default 20s)
 
-	// Timing — Tor circuits
+	// Timing, Tor circuits
 	TorProbeInterval     time.Duration // circuit check interval (default 5m)
 	TorProbeInitialDelay time.Duration // first check delay (default 10s)
 	WarmupInterval       time.Duration // warmup interval (default 5m)
@@ -1729,14 +1729,14 @@ type TUIParams struct {
 	WarmupTimeout        time.Duration // cmdWarmupCircuits timeout (default 1m)
 	SelfKnockTimeout     time.Duration // probeSelfKnock HTTP timeout (default 1m)
 
-	// Timing — knocks and invites. No field for config.KnockTimeout:
+	// Timing, knocks and invites. No field for config.KnockTimeout:
 	// that role (an invite's HTTP timeout) is covered here by
 	// InviteTimeout; config.KnockTimeout is not used by the TUI.
 	KnockHttpTimeout time.Duration // background automatic knocks timeout (default 15s)
 	KnockRetryDelay  time.Duration // backoff between knock retries (default 20s)
 	InviteTimeout    time.Duration // group invite timeout (default 30s)
 
-	// Limits — file transfer
+	// Limits, file transfer
 	FileTransferMaxSizeMiB       int           // maximum original file size for /grp-file-send (default 512)
 	FileWarpChunkSizeKiB         int           // chunk size, warp preset (default 64)
 	FileSlowChunkSizeKiB         int           // chunk size, slow preset (default 16)
@@ -1746,14 +1746,14 @@ type TUIParams struct {
 	FileWarpMaxInFlightChunks    int           // window of unacked chunks, warp preset (default 8)
 	FileSlowMaxInFlightChunks    int           // window of unacked chunks, slow preset (default 2)
 	FileTransferReconnectTimeout time.Duration // how long to wait for a recipient's ack before isolating them (default 2m)
-	FileAcceptRetryInterval      time.Duration // how often a recipient resends their own file_accept if the first chunk still hasn't arrived (default 30s) — see config.go for the value's rationale
+	FileAcceptRetryInterval      time.Duration // how often a recipient resends their own file_accept if the first chunk still hasn't arrived (default 30s), see config.go for the value's rationale
 	// StrongCompressionEnabled enables strong packing (LZMA2/XZ, see
 	// shared.PackData) as pre-compression of file/contact-card content
 	// before symmetric encryption (ContentKey-per-relationship).
 	// Default true (config.json: strong_compression_enabled).
 	StrongCompressionEnabled bool
 
-	// MarkContactVerifiedByPub — used by /sec-verify,
+	// MarkContactVerifiedByPub, used by /sec-verify,
 	// MarkContactUnverifiedByPub by /sec-unverify, on a contact always
 	// resolved by identity key.
 	MarkContactVerifiedByPub   func(pub []byte) error
@@ -1767,17 +1767,17 @@ type TUIParams struct {
 	// with Argon2id on every call, so writing on every single event
 	// would be needlessly costly.
 	FlushContactsActivity func(acks map[string]time.Time, seen map[string]time.Time) error
-	// DHTagFn computes shared.KnockDHTag(my_identity_priv, peerPub) — a
+	// DHTagFn computes shared.KnockDHTag(my_identity_priv, peerPub), a
 	// static-static DH tag attached in the clear to every POST /knock
 	// (pre-decryption filter on the server side, mandatory mutuality).
 	// A closure instead of the raw private key: internal/client must
 	// never see the identity's private material directly.
 	DHTagFn func(peerPub ed25519.PublicKey) ([]byte, error)
-	// DHTagFnOld — the same function as DHTagFn but with the OLD
+	// DHTagFnOld, the same function as DHTagFn but with the OLD
 	// root identity key during a root rotation. The DH tag is static-static, so
 	// it only matches if the sender signs with the key that EXACTLY
 	// matches the pubkey the recipient already has in their address
-	// book for them — a recipient still in pendingSet still has the
+	// book for them, a recipient still in pendingSet still has the
 	// OLD pubkey, so a knock tagged with the new key gets discarded by
 	// their server BEFORE being decrypted (identical 202 response,
 	// invisible on the sending side). probeContacts chooses per-recipient
@@ -1786,7 +1786,7 @@ type TUIParams struct {
 	DHTagFnOld func(peerPub ed25519.PublicKey) ([]byte, error)
 
 	// SignRelBootstrap/SignRelBootstrapMLDSA sign a proposal of
-	// relationship keys (+ device) with the sender's root IdentityKey —
+	// relationship keys (+ device) with the sender's root IdentityKey,
 	// ONLY the persistent rel_init/rel_init_ack channel
 	// (sendRelInitAndReport, never the room's ephemeral bootstrap), see
 	// the comment on RelBootstrapPayload.Ts/Sig/SigMLDSA in
@@ -1797,18 +1797,18 @@ type TUIParams struct {
 	SignRelBootstrap      func(identityPub, contentPub, devicePub ed25519.PublicKey, username, ts string) []byte
 	SignRelBootstrapMLDSA func(identityPub, contentPub, devicePub ed25519.PublicKey, username, ts string) []byte
 
-	// MyDevicePub/SignDeviceSig — remote_nuke. MyDevicePub is the
+	// MyDevicePub/SignDeviceSig, remote_nuke. MyDevicePub is the
 	// device-level Ed25519 public key (ks.DevicePubKey(), 32 bytes),
 	// inserted into sealedMsg.DP of every message sent in every room.
 	// SignDeviceSig signs shared.DeviceSigMsg with the device-level
-	// private key (ks.DevicePrivKey()) — a closure, same reason as
+	// private key (ks.DevicePrivKey()), a closure, same reason as
 	// DHTagFn: internal/client must never see the device's private key directly.
 	MyDevicePub   []byte
 	SignDeviceSig func(ciphertext []byte, ts string) []byte
 
-	// SignPQCSig — hybrid PQC network identity. Signs shared.PQCSigMsg
+	// SignPQCSig, hybrid PQC network identity. Signs shared.PQCSigMsg
 	// with the network identity's ML-DSA-65 private key
-	// (ks.MLDSAPrivKey()) — a closure, same reason as SignDeviceSig:
+	// (ks.MLDSAPrivKey()), a closure, same reason as SignDeviceSig:
 	// internal/client must never see the private key directly. Always
 	// passed (never nil): the actual
 	// activation is the per-room Client.SetPQCSign toggle, not the
@@ -1816,82 +1816,82 @@ type TUIParams struct {
 	SignPQCSig func(ciphertext []byte, ts string) []byte
 
 	// MyDeviceID/AuthorityPubKeys/KnownDevices/SignRemoteNuke/
-	// SignRemoteNukeAck — the remote_nuke protocol. MyDeviceID is our
+	// SignRemoteNukeAck, the remote_nuke protocol. MyDeviceID is our
 	// own Keystore.DeviceID (the target of a received remote_nuke
 	// command). AuthorityPubKeys is the set of Ed25519 public keys
 	// (current AND old) of ALL identities in this file
-	// (Keystore.AllAuthorityPubKeys) — an incoming remote_nuke command
+	// (Keystore.AllAuthorityPubKeys), an incoming remote_nuke command
 	// is verified against these: possessing the private key of any one
 	// of them is itself the authorization, no separate list of
 	// "authorized devices" to consult. KnownDevices is the list of
 	// devices THIS identity can direct a remote_nuke command toward
-	// (populated by "indoor" synchronization — empty until it has ever
+	// (populated by "indoor" synchronization, empty until it has ever
 	// run), read live (Keystore.KnownDevicesSnapshot) so a sync shows up
 	// at once. SignRemoteNuke signs an outgoing command with an identity
 	// from this file (the AUTHORITY, who sends the command);
 	// SignRemoteNukeAck signs the "about to disappear" confirmation with
-	// THIS device's DEVICE-level key (the target, who receives it) —
+	// THIS device's DEVICE-level key (the target, who receives it),
 	// two conceptually different keys, never the same closure.
 	MyDeviceID        []byte
 	AuthorityPubKeys  []ed25519.PublicKey
 	KnownDevices      func() []DeviceRecordInfo
 	SignRemoteNuke    func(targetDeviceID []byte, ts string) []byte
 	SignRemoteNukeAck func(targetDeviceID []byte, ts string) []byte
-	// AuthorityPubKeysMLDSA/SignRemoteNukeMLDSA — ML-DSA-65 counterpart
+	// AuthorityPubKeysMLDSA/SignRemoteNukeMLDSA, ML-DSA-65 counterpart
 	// of AuthorityPubKeys/SignRemoteNuke above (hybrid PQC network
 	// identity), same role. No counterpart for SignRemoteNukeAck: that
 	// one signs with the DEVICE-level key (DevicePriv), not the network
-	// identity — out of scope here.
+	// identity, out of scope here.
 	AuthorityPubKeysMLDSA []*mldsa65.PublicKey
 	SignRemoteNukeMLDSA   func(targetDeviceID []byte, ts string) []byte
 
-	// NetworkIdentityPubFor — used by the remote_nuke fan-out: a device
+	// NetworkIdentityPubFor, used by the remote_nuke fan-out: a device
 	// listed in KnownDevices hosts THIS identity by definition, but if
 	// it hosts it as an ADDITIONAL device (not D1) its real network
 	// address isn't OnionAddressFromPub applied directly to our own
 	// IdentityPub (which only reaches D1), but that same function
 	// applied to the derived key
-	// Keystore.NetworkIdentityPrivKeyFor(deviceID) — computable only by
+	// Keystore.NetworkIdentityPrivKeyFor(deviceID), computable only by
 	// whoever holds THIS identity's private root, i.e. always ourselves
 	// (never a third party's sibling identity, those remain the
 	// existing case above). Returns only the derived PUBLIC key (never
-	// the private one through this closure) — cmdRemoteNukeFanOut adds
+	// the private one through this closure), cmdRemoteNukeFanOut adds
 	// it as an ADDITIONAL candidate, never replacing the existing
 	// root-per-sibling-identity candidates.
 	NetworkIdentityPubFor func(deviceID []byte) ed25519.PublicKey
 
 	// MyMLDSAPub is our own durable ML-DSA-65 signing public key
-	// (ks.MLDSAPubBytes()), a twin of MyIdentityPub/MyMLKEMPub — used to
+	// (ks.MLDSAPubBytes()), a twin of MyIdentityPub/MyMLKEMPub, used to
 	// build RootRotatePayload.NewMLDSAPub.
 	MyMLDSAPub []byte
 
 	// RootRotationPending returns, read live, the contacts and sibling
 	// devices that haven't confirmed the latest root rotation yet
-	// (Keystore.RootRotationPendingSnapshot) — nil when no rotation is
+	// (Keystore.RootRotationPendingSnapshot), nil when no rotation is
 	// in progress.
 	RootRotationPending func() ([][]byte, [][]byte)
 
-	// OldIdentityPub — the PREVIOUS public root, read live
+	// OldIdentityPub, the PREVIOUS public root, read live
 	// (Keystore.OldIdentityPrivKeyForRotation().Public(), nil if no root
 	// rotation is in progress). Used to choose FromIdentityPub in knocks
-	// toward a contact still pending — see fromPubFor, probeContacts.
+	// toward a contact still pending, see fromPubFor, probeContacts.
 	OldIdentityPub func() ed25519.PublicKey
 
 	// AckRootRotationContact/AckRootRotationDevice/MaybeFinalizeRootRotation
-	// — wrappers of Keystore.AckRootRotationContact/AckRootRotationDevice/
+	// wrappers of Keystore.AckRootRotationContact/AckRootRotationDevice/
 	// MaybeFinalizeRootRotation that also save to disk.
 	AckRootRotationContact    func(pub []byte) bool
 	AckRootRotationDevice     func(deviceID []byte) bool
 	MaybeFinalizeRootRotation func()
 
 	// UpdateContactRootIdentity persists a contact's NEW root
-	// IdentityKey/MLKEMPub/MLDSAPub after a verified root_rotate — see
+	// IdentityKey/MLKEMPub/MLDSAPub after a verified root_rotate, see
 	// applyRootRotate. Also resets Contact.Verified (the previous
 	// verification concerned the old key).
 	UpdateContactRootIdentity func(pub []byte, newIdentityPub ed25519.PublicKey, newMLKEMPub, newMLDSAPub []byte) error
 
 	// StartRootRotation starts a root rotation WITH CONTINUITY by
-	// generating a new root (Keystore.StartRootRotation) — IMMEDIATELY
+	// generating a new root (Keystore.StartRootRotation), IMMEDIATELY
 	// publishes a second hidden service with the new key and starts a
 	// second server.RunOnListener on it (the old one stays active, no
 	// interruption for whoever hasn't received the announcement yet:
@@ -1901,7 +1901,7 @@ type TUIParams struct {
 	StartRootRotation func() (newIdentityPub ed25519.PublicKey, newMLKEMPub, newMLDSAPub []byte, newAddr string, err error)
 
 	// AdoptRootRotation applies a root received from a sibling device
-	// (device_sync) — the same new-hidden-service publication as
+	// (device_sync), the same new-hidden-service publication as
 	// StartRootRotation above, but the key arrives already prepared
 	// instead of being generated (Keystore.AdoptRootRotation). Behaves
 	// exactly like the device that started the rotation: same
@@ -1918,48 +1918,48 @@ type TUIParams struct {
 	BuildDeviceSyncRotationKnock func(useOldKey bool, targetDeviceID []byte) (string, error)
 
 	// BuildDeviceSyncSyncKnock builds a "device_sync" knock that carries
-	// ONLY an address-book synchronization — OUR OWN
+	// ONLY an address-book synchronization, OUR OWN
 	// (indoor.SyncPayload, built internally by whoever implements this
-	// closure, never passed by internal/client) — toward a sibling
+	// closure, never passed by internal/client), toward a sibling
 	// device, on explicit request (not automatic like the indoor LAN
 	// one).
 	BuildDeviceSyncSyncKnock func(useOldKey bool, targetDeviceID []byte) (string, error)
 
 	// BuildDeviceSyncAckKnock builds the fire-and-forget
-	// "device_sync_ack" knock — always with the CURRENT root (by
+	// "device_sync_ack" knock, always with the CURRENT root (by
 	// definition, the ack arrives after already having adopted it).
 	// includeSync true also makes it the return leg of an address-book
-	// synchronization (OUR OWN address book, built internally —
+	// synchronization (OUR OWN address book, built internally,
 	// bidirectional exchange).
 	BuildDeviceSyncAckKnock func(targetDeviceID []byte, includeSync bool) (string, error)
 
-	// OldNetworkIdentityPubFor — the same derivation as
+	// OldNetworkIdentityPubFor, the same derivation as
 	// NetworkIdentityPubFor but on the PREVIOUS root
 	// (Keystore.OldNetworkIdentityPrivKeyForRotation), nil if no root
 	// rotation is in progress. A sibling device that hasn't adopted the
 	// latest rotation yet remains reachable ONLY at this address
-	// (derived from the root it's still using) — the device_sync
+	// (derived from the root it's still using), the device_sync
 	// propagator tries BOTH candidates (old and new), never just one.
 	OldNetworkIdentityPubFor func(deviceID []byte) ed25519.PublicKey
 
 	// MergeSyncedContacts applies a remote address-book synchronization
 	// received from a sibling device (device_sync, SyncData JSON of
-	// indoor.SyncPayload) — decode+Keystore.AddMirroredContacts+Save,
+	// indoor.SyncPayload), decode+Keystore.AddMirroredContacts+Save,
 	// all here so internal/client doesn't need to import
 	// internal/indoor. rejectedRows is JSON-marshaled
 	// []keystore.DeletedContact for every incoming contact skipped
-	// because a tombstone for it already exists — the caller sends it
+	// because a tombstone for it already exists, the caller sends it
 	// back to the peer via BuildContactTombstoneKnock when non-empty.
 	MergeSyncedContacts func(data []byte) (rejectedRows []byte, err error)
 	// ContactsSnapshot returns the address book as stored in the keystore
-	// — read after a sync between our own devices to show the contacts
+	// read after a sync between our own devices to show the contacts
 	// and devices it brought in (see adoptSyncedContacts).
 	ContactsSnapshot func() []ContactInfo
 
 	// BuildContactTombstoneKnock builds a "contact_tombstone" knock
 	// carrying rows (JSON-marshaled []keystore.DeletedContact, from
 	// MergeSyncedContacts's rejectedRows or from an identical check run
-	// directly against a peer's live contacts) — sent fire-and-forget
+	// directly against a peer's live contacts), sent fire-and-forget
 	// toward whoever just sent a contact this identity already deleted.
 	BuildContactTombstoneKnock func(rows []byte) (string, error)
 
@@ -1983,9 +1983,9 @@ type TUIParams struct {
 	ConfirmContactTombstoneAcked func(acked []byte, peerDeviceID []byte)
 
 	// PendingRemoteNukeTargets/AddPendingRemoteNuke/ClearPendingRemoteNuke
-	// — a remote_nuke's target can stay unreachable for an arbitrary
+	// a remote_nuke's target can stay unreachable for an arbitrary
 	// time (powered off, seized but never turned back on...), so the
-	// command isn't a single attempt with limited backoff — it stays
+	// command isn't a single attempt with limited backoff, it stays
 	// queued (Keystore.PendingRemoteNukes) and is retried on every
 	// subsequent startup of THIS identity until a remote_nuke_ack
 	// arrives. PendingRemoteNukeTargets is the already-resolved list
@@ -1999,7 +1999,7 @@ type TUIParams struct {
 	ClearPendingRemoteNuke   func(targetDeviceID []byte) error
 
 	// MarkOwnDeviceNuked records THIS device's own DevicePub into
-	// Keystore.NukedDevicePubs, in RAM — called by cmdNukeX right before
+	// Keystore.NukedDevicePubs, in RAM, called by cmdNukeX right before
 	// its device-sync fan-out, so the very next BuildDeviceSyncSyncKnock
 	// sent to every known sibling carries this device in its
 	// NukedDevicePubs. Siblings learn it's gone via the existing
@@ -2007,11 +2007,11 @@ type TUIParams struct {
 	// learns this device is nuked (via that same gossip, transitively),
 	// its existing SiblingRevocations retry queue (probeContacts) starts
 	// sending the real rel_revoke to this identity's contacts on this
-	// device's behalf — no new sending mechanism needed for that part.
+	// device's behalf, no new sending mechanism needed for that part.
 	MarkOwnDeviceNuked func()
 
 	// PendingDangerBroadcasts/SetDangerBroadcastPending/
-	// ConfirmDangerBroadcast — the authority's danger_broadcast (toward
+	// ConfirmDangerBroadcast, the authority's danger_broadcast (toward
 	// its OWN contacts, the primary channel) must also reach a contact
 	// that isn't online within the authority's ~90s window.
 	// PendingDangerBroadcasts is the already-resolved list from
@@ -2019,7 +2019,7 @@ type TUIParams struct {
 	// per target device); probeContacts
 	// (the periodic probe cycle already running, ~every ActiveInterval)
 	// resends the danger_broadcast to every contact still on this list
-	// that comes back online in that cycle — no new timer, no dedicated
+	// that comes back online in that cycle, no new timer, no dedicated
 	// time window. SetDangerBroadcastPending registers the initial list
 	// at issue time (cmdRemoteNuke); ConfirmDangerBroadcast removes a
 	// contact on receipt of their danger_broadcast_ack (handleDangerBroadcastAck).
@@ -2027,24 +2027,24 @@ type TUIParams struct {
 	SetDangerBroadcastPending func(targetDeviceID []byte, pubs [][]byte) error
 	ConfirmDangerBroadcast    func(targetDeviceID, pub []byte) error
 
-	// PendingDangerEnds/SetDangerEndPending/ConfirmDangerEnd — same
+	// PendingDangerEnds/SetDangerEndPending/ConfirmDangerEnd, same
 	// scheme as PendingDangerBroadcasts above, a separate queue for
 	// "danger_end" (the DEFINITIVE "device confirmed destroyed" notice,
 	// not just "in progress"). Populated at two distinct points: by the
 	// TARGET itself, right before self-destructing (see
-	// AllIdentitiesContacts below — covers ALL sibling identities, not
+	// AllIdentitiesContacts below, covers ALL sibling identities, not
 	// just the active one); and by the AUTHORITY, on receipt of the
 	// remote_nuke_ack, as a safety net toward its OWN contacts (only
-	// those of the identities it holds — never ones never
-	// duplicated/synced) — a contact who didn't receive the direct
+	// those of the identities it holds, never ones never
+	// duplicated/synced), a contact who didn't receive the direct
 	// danger_end from the target (was offline at that moment) still
 	// receives it, later, from here.
 	PendingDangerEnds   []DangerBroadcastPendingInfo
 	SetDangerEndPending func(targetDeviceID []byte, pubs [][]byte) error
 	ConfirmDangerEnd    func(targetDeviceID, pub []byte) error
 
-	// AllIdentitiesContacts, if non-nil, exposes — for EVERY sibling
-	// identity present in the keystore (including itself) — that
+	// AllIdentitiesContacts, if non-nil, exposes, for EVERY sibling
+	// identity present in the keystore (including itself), that
 	// specific identity's address book and signing capability (see
 	// AllIdentityContactsInfo). Called ONLY by executeRemoteNuke for the
 	// danger_end broadcast right before self-destruction: it's the ONLY
@@ -2057,16 +2057,16 @@ type TUIParams struct {
 	// remote_nuke, with another instance holding the SAME identity
 	// (duplicated via `neutrino restore`): discovery via UDP multicast,
 	// encrypted address-book exchange + mutual registration as a known
-	// device — entirely in cmd/main.go (the address book and the
+	// device, entirely in cmd/main.go (the address book and the
 	// identity's private key must never pass through internal/client,
 	// same principle as every other closure here). Blocking until the
-	// first successful exchange or the window expires (~60s) — ALWAYS
+	// first successful exchange or the window expires (~60s), ALWAYS
 	// called from a background goroutine (tea.Cmd), never on Update()'s thread.
 	RunIndoorSync func(ctx context.Context) error
 
-	// MyDeviceLabel/SetDeviceLabel — the name the user chose for THIS
+	// MyDeviceLabel/SetDeviceLabel, the name the user chose for THIS
 	// device (Keystore.DeviceLabel, e.g. "Galaxy S22"), asked the first
-	// time in the wizard and always renameable with /sec-device-label —
+	// time in the wizard and always renameable with /sec-device-label,
 	// without a proper name, the only way to distinguish two or three
 	// known devices in /sec-remote-nuke's picker would be the raw
 	// DeviceID (16 random bytes in hex), useless for recognizing "this
@@ -2088,11 +2088,11 @@ type model struct {
 	lastTermH int
 	lastTermW int
 
-	// masked password state — replaces the textarea with a hidden prompt
+	// masked password state, replaces the textarea with a hidden prompt
 	// 0=off  1=current (passwd)  2=new (passwd)  3=confirm (passwd)  4=verify (backup)
 	// 5=new (duress)  6=confirm (duress)  7=new lock PIN  8=confirm
 	// lock PIN  9=PIN duress character  10=position of the duress
-	// character — see cmdLockPIN.
+	// character, see cmdLockPIN.
 	pwdMode  int
 	pwdBuf   string // current hidden input
 	pwdOld   string // current password entered
@@ -2103,26 +2103,26 @@ type model struct {
 	lockSetupMarker string // the PIN's duress character, a single rune
 
 	// interface lock on inactivity. Neutrino stays fully active while
-	// locked (Tor/I2P, rooms, sync — unchanged): the lock is a pure gate
+	// locked (Tor/I2P, rooms, sync, unchanged): the lock is a pure gate
 	// on operator input, intercepted BEFORE any other modal in Update()
-	// (see the gate at the top of "case tea.KeyMsg:") — no application
+	// (see the gate at the top of "case tea.KeyMsg:"), no application
 	// state touches these fields.
 	interfaceLocked      bool
 	lastActivityAt       time.Time
 	interfaceLockTimeout time.Duration // 0 = automatic lock disabled
 	lockUnlockBuf        string
 	lockUnlockErr        string
-	// lockedSinceAt/timeNukeTimeout: the "time" nuke trigger — set
+	// lockedSinceAt/timeNukeTimeout: the "time" nuke trigger, set
 	// whenever interfaceLocked transitions false→true (cmdLock, the
 	// auto-lock tick, sysLockMsg), checked on the same tick as
 	// interfaceLockTimeout above but measuring time ALREADY LOCKED, not
-	// inactivity before locking. 0 = disabled (default — see
+	// inactivity before locking. 0 = disabled (default, see
 	// config.TimeNukeTimeoutDuration).
 	lockedSinceAt   time.Time
 	timeNukeTimeout time.Duration
 
 	// confirmation of the data read (username/key/PQC) before the local
-	// name — shows the user what is about to be saved and waits for y/n,
+	// name, shows the user what is about to be saved and waits for y/n,
 	// BEFORE opening addContactMode: both for /cnt-add (pasted URI) and
 	// /cnt-read-qrcode (decoded QR), never a silent save of a key read
 	// from an external source (QR, pasted text) without an explicit summary.
@@ -2136,8 +2136,8 @@ type model struct {
 		pubBytes []byte
 		tabIdx   int
 		cardFrom string // member key of whoever sent the accepted contact card; empty if added directly (knock, QR, manual)
-		mlkemPub []byte // durable ML-KEM-768 encapsulation key (1184 bytes), from QR/URI — empty if the URI carried none
-		mldsaPub []byte // durable ML-DSA-65 signing key (1952 bytes), from QR/URI — empty if the URI carried none
+		mlkemPub []byte // durable ML-KEM-768 encapsulation key (1184 bytes), from QR/URI, empty if the URI carried none
+		mldsaPub []byte // durable ML-DSA-65 signing key (1952 bytes), from QR/URI, empty if the URI carried none
 	}
 
 	// local name editing state for /cnt-edit
@@ -2146,19 +2146,19 @@ type model struct {
 	pendingEditTabIdx   int
 	pendingEditUsername string
 	// pendingEditContactPub is the IdentityPub of the contact being
-	// edited — never ambiguous, unlike pendingEditUsername (display/prompt
+	// edited, never ambiguous, unlike pendingEditUsername (display/prompt
 	// text only): two contacts can share the same Username (e.g. after
 	// a /nukex), so the real resolution must go through this, not a
 	// second lookup by name once confirmed.
 	pendingEditContactPub []byte
 
 	// source choice state for /cnt-read-qrcode: first asks f/c (file or
-	// camera, a dedicated key, no free text), then — only for "file" —
+	// camera, a dedicated key, no free text), then, only for "file",
 	// opens the same filesystem browser as /grp-file-send (qrFileMode),
 	// instead of a typed path: an identity QR is often split across
 	// several numbered PNGs (part1, part2...), so the browser allows
 	// selecting more than one file at once (Space toggles, in selection
-	// order — see qrFileSelected) alongside the usual single-file pick
+	// order, see qrFileSelected) alongside the usual single-file pick
 	// (Enter with nothing toggled). Each selected image is decoded and
 	// fed through handleQRDecoded in that same order; correctness never
 	// actually depends on the order (every NTR3 chunk carries its own
@@ -2181,10 +2181,10 @@ type model struct {
 	qrMultiChunks map[int][]byte
 	qrMultiTotal  int
 
-	// camera live preview state for /cnt-read-qrcode — without it there
+	// camera live preview state for /cnt-read-qrcode, without it there
 	// is no visual feedback of what the webcam is framing until a
 	// result or error arrives. Rendered as ANSI art (half-height blocks,
-	// grayscale) directly in the terminal — no separate graphical
+	// grayscale) directly in the terminal, no separate graphical
 	// window, consistent with "works even over SSH/without an X server".
 	qrCameraPreviewMode    bool
 	qrCameraPreviewContent string
@@ -2192,7 +2192,7 @@ type model struct {
 	qrCameraPreviewCh      chan string
 	qrCameraResultCh       chan tea.Msg
 
-	// out-of-band contact info entry state for /grp-contact-send —
+	// out-of-band contact info entry state for /grp-contact-send,
 	// mandatory free text (phone, email, telegram id...) the introducer
 	// writes at send time, NEVER persisted (neither here nor in the
 	// recipient's keystore): only serves to let the recipient compare
@@ -2202,14 +2202,14 @@ type model struct {
 	sendContactHintBuf      string
 	sendContactHintTabIdx   int
 	sendContactHintUsername string
-	// sendContactHintContactPub is the chosen contact's IdentityPub —
+	// sendContactHintContactPub is the chosen contact's IdentityPub,
 	// empty for "self" (no ContactInfo involved). Never ambiguous,
 	// unlike sendContactHintUsername (display/"self" sentinel only):
 	// two contacts can share the same Username (e.g. after a /nukex),
 	// so finishSendContact must re-resolve by this, not by the name.
 	sendContactHintContactPub []byte
 
-	// 24-word BIP-39 popup — backupWords is populated only after the
+	// 24-word BIP-39 popup, backupWords is populated only after the
 	// password check (case 4, pwdMode) and zeroed as soon as the popup
 	// closes, never kept in plaintext for the rest of the session (see
 	// GetBackupMnemonic).
@@ -2217,9 +2217,9 @@ type model struct {
 	backupWords       []string
 	getBackupMnemonic func() ([]string, error)
 
-	// /show-qr format choice popup — idx 0 (default) saves a multi-part
+	// /show-qr format choice popup, idx 0 (default) saves a multi-part
 	// PNG to disk via saveIdentityQR, idx 1 shows the animated
-	// fountain-code QR (cmdShowQR) — same two choices as `neutrino
+	// fountain-code QR (cmdShowQR), same two choices as `neutrino
 	// show-qr`'s CLI prompt.
 	showQRFormatMode bool
 	showQRFormatIdx  int
@@ -2228,21 +2228,21 @@ type model struct {
 	// /cnt-info and /grp-info popup
 	textPopupMode    bool
 	textPopupContent string
-	// URI copyable with the "c" key while the popup is open — set only
+	// URI copyable with the "c" key while the popup is open, set only
 	// by cmdInfo (self and contact), empty for every other use of
 	// textPopupMode so the key stays "any key closes it" wherever
 	// there's nothing to copy.
 	textPopupCopyURI string
 
-	// /show-qr popup — fountain-coded animated QR (internal/qroptical),
+	// /show-qr popup, fountain-coded animated QR (internal/qroptical),
 	// the same mechanism already used by "qr send" (cmd/main.go), here
 	// inside a popup instead of a blocking loop: no password (identity
 	// isn't a secret), one small frame (~120 bytes of payload) instead
-	// of a single huge QR — a single QR with the whole identity
+	// of a single huge QR, a single QR with the whole identity
 	// (ML-KEM included) easily exceeds a terminal's dimensions, and
 	// quadrant compression distorts the aspect ratio
 	// (terminal cells are ~2:1 height:width, compressing horizontally
-	// too breaks it) — not needed here since every frame is already
+	// too breaks it), not needed here since every frame is already
 	// small on its own. qrShowGen invalidates ticks from an
 	// already-closed previous session (same pattern as tab.pingGen).
 	qrShowActive bool
@@ -2255,15 +2255,15 @@ type model struct {
 	nukeOnExit bool
 
 	// duress typed at the interface lock during an already-active
-	// session — the caller (RunTUI → runOnce, cmd/main.go) treats this
+	// session, the caller (RunTUI → runOnce, cmd/main.go) treats this
 	// exactly like nukeOnExit above: same contact-overwrite-in-place and
 	// promotion to the shared duress identity, same process, Tor/server
 	// never torn down.
 	duressWipeOnExit bool
 
 	// /sec-clear-all, confirmed: the caller (RunTUI → runOnce, cmd/main.go)
-	// wipes the whole config directory (keystore, backup, QR files — see
-	// wipeConfigDir) and exits the process — unlike nukeOnExit/
+	// wipes the whole config directory (keystore, backup, QR files, see
+	// wipeConfigDir) and exits the process, unlike nukeOnExit/
 	// duressWipeOnExit above, which keep it alive and swap to duress.
 	clearAllOnExit bool
 
@@ -2275,7 +2275,7 @@ type model struct {
 
 	// compaction mode (/compact on|off, console tab only): if true,
 	// refreshViewport collapses consecutive runs of chatLine with the
-	// same text (ignoring the timestamp, a separate field — no need to
+	// same text (ignoring the timestamp, a separate field, no need to
 	// strip it from any string) leaving only the last occurrence: a
 	// periodic event (e.g. "probe activation", every minute) after
 	// hours produces dozens of identical lines except for the time.
@@ -2287,14 +2287,14 @@ type model struct {
 	verifySafetyConfirmMode   bool
 	verifySafetyConfirmTarget string // username of the contact awaiting confirmation (display only)
 	// verifySafetyConfirmContactPub is the chosen contact's CURRENT
-	// IdentityPub (before any rotation applied by applyVerification) —
+	// IdentityPub (before any rotation applied by applyVerification),
 	// never ambiguous, unlike verifySafetyConfirmTarget: two contacts
 	// can share the same Username (e.g. after a /nukex), so
 	// applyVerification's real resolution must go through this.
 	verifySafetyConfirmContactPub []byte
 	verifySafetyPopupContent      string // full code + instructions, shown only in the popup
 
-	// verifySafetyConfirmRelDanger — true when this y/n confirmation
+	// verifySafetyConfirmRelDanger, true when this y/n confirmation
 	// resolves a relationship key conflict (TrustDanger) instead of the
 	// usual Safety Number: on "yes" it applies the pending keys
 	// (m.confirmPendingRelKeys) instead of applyVerification, and does
@@ -2332,34 +2332,34 @@ type model struct {
 	// internal/server/handlers.go).
 	myMLKEMPub []byte
 	dhTagFn    func(peerPub ed25519.PublicKey) ([]byte, error)
-	// signRelBootstrapFn/signRelBootstrapMLDSAFn — see TUIParams. Sign a
+	// signRelBootstrapFn/signRelBootstrapMLDSAFn, see TUIParams. Sign a
 	// proposal of relationship keys (+ device) with the sender's root
 	// IdentityKey, ONLY for the persistent rel_init/rel_init_ack channel
-	// (sendRelInitAndReport) — never for the room's ephemeral bootstrap.
+	// (sendRelInitAndReport), never for the room's ephemeral bootstrap.
 	signRelBootstrapFn      func(identityPub, contentPub, devicePub ed25519.PublicKey, username, ts string) []byte
 	signRelBootstrapMLDSAFn func(identityPub, contentPub, devicePub ed25519.PublicKey, username, ts string) []byte
 	localHost               string
 	localPort               int
 	myUsername              string
-	// myDevicePub/signDeviceSig — remote_nuke, see TUIParams.
+	// myDevicePub/signDeviceSig, remote_nuke, see TUIParams.
 	myDevicePub   []byte
 	signDeviceSig func(ciphertext []byte, ts string) []byte
-	// signPQCSig — hybrid PQC network identity, see TUIParams.SignPQCSig.
+	// signPQCSig, hybrid PQC network identity, see TUIParams.SignPQCSig.
 	signPQCSig func(ciphertext []byte, ts string) []byte
 	// myDeviceID/authorityPubKeys/knownDevices/signRemoteNuke/
-	// signRemoteNukeAck — remote_nuke protocol, see TUIParams.
+	// signRemoteNukeAck, remote_nuke protocol, see TUIParams.
 	myDeviceID        []byte
 	authorityPubKeys  []ed25519.PublicKey
 	knownDevices      func() []DeviceRecordInfo
 	signRemoteNuke    func(targetDeviceID []byte, ts string) []byte
 	signRemoteNukeAck func(targetDeviceID []byte, ts string) []byte
-	// authorityPubKeysMLDSA/signRemoteNukeMLDSA — hybrid PQC network
+	// authorityPubKeysMLDSA/signRemoteNukeMLDSA, hybrid PQC network
 	// identity: ML-DSA-65 counterpart of authorityPubKeys/signRemoteNuke,
 	// same role (an additional, independent verification/signature,
-	// never the only one checked — see handleRemoteNuke).
+	// never the only one checked, see handleRemoteNuke).
 	authorityPubKeysMLDSA []*mldsa65.PublicKey
 	signRemoteNukeMLDSA   func(targetDeviceID []byte, ts string) []byte
-	// networkIdentityPubFor — used by the remote_nuke fan-out, see
+	// networkIdentityPubFor, used by the remote_nuke fan-out, see
 	// TUIParams.NetworkIdentityPubFor.
 	networkIdentityPubFor func(deviceID []byte) ed25519.PublicKey
 
@@ -2367,7 +2367,7 @@ type model struct {
 	// oldIdentityPubForRotation/ackRootRotationContact/
 	// ackRootRotationDevice/maybeFinalizeRootRotation/
 	// updateContactRootIdentity/startRootRotation/adoptRootRotation/
-	// buildDeviceSyncKnock — root rotation with continuity, see the
+	// buildDeviceSyncKnock, root rotation with continuity, see the
 	// matching TUIParams fields.
 	myMLDSAPub                    []byte
 	rootRotationPending           func() ([][]byte, [][]byte)
@@ -2388,7 +2388,7 @@ type model struct {
 	applyContactTombstoneReplies  func(rows []byte) ([]byte, error)
 	buildContactTombstoneAckKnock func(acked []byte) (string, error)
 	confirmContactTombstoneAcked  func(acked []byte, peerDeviceID []byte)
-	// remoteNukeCancels/remoteNukeMu — a context.CancelFunc per target
+	// remoteNukeCancels/remoteNukeMu, a context.CancelFunc per target
 	// DeviceID (hex), active for the duration of an outgoing
 	// remote_nuke command's fan-out; canceled on the first received
 	// remote_nuke_ack (handleRemoteNukeAck) or on the fan-out's natural
@@ -2398,7 +2398,7 @@ type model struct {
 	// doesn't protect between the two).
 	// remoteNukeMu is a *sync.Mutex (not a direct value): model gets
 	// continuously copied by value by the bubbletea runtime (Update
-	// receives/returns model, not *model, in many places) — a
+	// receives/returns model, not *model, in many places), a
 	// by-value-embedded sync.Mutex would get copied every round,
 	// breaking mutual exclusion; a shared pointer, created once at the
 	// model's construction, stays the same lock regardless of how many
@@ -2407,41 +2407,41 @@ type model struct {
 	// comparable in Go except to nil) precisely so
 	// cmdRemoteNukeFanOut's deferred cleanup can distinguish "I'm still
 	// the current entry" from "a more recent retry already replaced me"
-	// — see the comment on remoteNukeEntry.
+	// see the comment on remoteNukeEntry.
 	remoteNukeCancels map[string]*remoteNukeEntry
 	remoteNukeMu      *sync.Mutex
 	// pendingRemoteNukeTargets/addPendingRemoteNuke/clearPendingRemoteNuke
-	// — see TUIParams.
+	// see TUIParams.
 	pendingRemoteNukeTargets []DeviceRecordInfo
 	addPendingRemoteNuke     func(targetDeviceID []byte) error
 	clearPendingRemoteNuke   func(targetDeviceID []byte) error
-	// markOwnDeviceNuked — see TUIParams.MarkOwnDeviceNuked.
+	// markOwnDeviceNuked, see TUIParams.MarkOwnDeviceNuked.
 	markOwnDeviceNuked func()
 	// pendingDangerBroadcasts/setDangerBroadcastPending/
-	// confirmDangerBroadcast — see TUIParams. pendingDangerBroadcasts is
+	// confirmDangerBroadcast, see TUIParams. pendingDangerBroadcasts is
 	// mutated both here in memory (consulted on every probeContacts
 	// cycle) and persisted via the two closures.
 	pendingDangerBroadcasts   []DangerBroadcastPendingInfo
 	setDangerBroadcastPending func(targetDeviceID []byte, pubs [][]byte) error
 	confirmDangerBroadcast    func(targetDeviceID, pub []byte) error
 	// pendingDangerEnds/setDangerEndPending/confirmDangerEnd/
-	// allIdentitiesContacts — see TUIParams.
+	// allIdentitiesContacts, see TUIParams.
 	pendingDangerEnds     []DangerBroadcastPendingInfo
 	setDangerEndPending   func(targetDeviceID []byte, pubs [][]byte) error
 	confirmDangerEnd      func(targetDeviceID, pub []byte) error
 	allIdentitiesContacts func() []AllIdentityContactsInfo
 	// dangerEndSeen records (hex(TargetDeviceID) → true) the devices for
-	// which the DEFINITIVE danger_end has already arrived — a guard
+	// which the DEFINITIVE danger_end has already arrived, a guard
 	// against reversed arrival order relative to the preliminary
 	// danger_broadcast (the first makes a single target→contact hop,
 	// the second a double round authority→target→ack→authority→contact:
 	// it can easily arrive first). If a preliminary danger_broadcast
 	// arrives AFTER the definitive one for the same device has already
 	// been seen, it doesn't generate a second, misleading Console
-	// message ("in progress" after "confirmed destroyed") — the ack is
+	// message ("in progress" after "confirmed destroyed"), the ack is
 	// still sent regardless, so the sender's queue closes normally.
 	dangerEndSeen map[string]bool
-	// runIndoorSync/indoorSyncing — remote_nuke, see TUIParams.
+	// runIndoorSync/indoorSyncing, remote_nuke, see TUIParams.
 	// indoorSyncing prevents two overlapping synchronizations (same
 	// principle as model.probing for /active): both would bind the
 	// same TCPPort, the second would fail the bind regardless.
@@ -2457,20 +2457,20 @@ type model struct {
 	pendingKnocks           []pendingKnock
 	sysLockCh               <-chan struct{}
 
-	// inviteModalMode/inviteModalKnock — modal popup for an incoming
+	// inviteModalMode/inviteModalKnock, modal popup for an incoming
 	// group invite: ALWAYS shows the first unhandled pendingKnocks
 	// with GroupID != "", one at a time. Enter = Accept (cmdJoin), Esc
-	// = Ignore (ignoreInvite) — see showNextInviteModal.
+	// = Ignore (ignoreInvite), see showNextInviteModal.
 	inviteModalMode  bool
 	inviteModalKnock *pendingKnock
 
 	// groupNoJoinConfirmMode/groupNoJoinConfirmTabIdx/pendingNoJoinPrompts
-	// — the "nobody has accepted the invite to <group> yet, close the
+	// the "nobody has accepted the invite to <group> yet, close the
 	// room?" popup (host side only), Enter = Yes closes, Esc = No keeps
 	// waiting. Same queue+self-healing pattern as
 	// pendingKnocks/showNextInviteModal: multiple groups with no
 	// response can hit the timeout nearly simultaneously, or the popup
-	// may have to wait for another already-open modal to close — see
+	// may have to wait for another already-open modal to close, see
 	// queueGroupNoJoinPrompt/showNextGroupNoJoinModal.
 	groupNoJoinConfirmMode   bool
 	groupNoJoinConfirmTabIdx int
@@ -2489,7 +2489,7 @@ type model struct {
 	helpScroll int
 
 	// filesystem browser for /grp-file-send (choosing the file to send)
-	// — hand-rolled (not bubbles/filepicker: that library exposes no
+	// hand-rolled (not bubbles/filepicker: that library exposes no
 	// filter from outside, needed for the typed search below).
 	sendFileMode    bool
 	sendFileDir     string    // currently shown directory
@@ -2501,14 +2501,14 @@ type model struct {
 	sendFileSize    int64
 
 	// sendFileData/sendFileDisplayName: an alternative to sendFilePath
-	// for content already in memory instead of on disk — used by
+	// for content already in memory instead of on disk, used by
 	// /grp-contact-send, which reuses /grp-file-send's entire pipeline
 	// (recipient picker, preset, encryption, signature) starting from
 	// synthesized bytes instead of a file.
 	sendFileData        []byte
 	sendFileDisplayName string
 
-	// recipients popup for /grp-file-send (group rooms only — in a
+	// recipients popup for /grp-file-send (group rooms only, in a
 	// two-member room the recipient is implicit, no popup)
 	sendFileRecipientsMode bool
 	sendFileCandidates     []string        // member keys of present members with an established relationship
@@ -2516,25 +2516,25 @@ type model struct {
 	sendFileRecipientsIdx  int
 	sendFileRecipients     []string // member keys of the confirmed recipients, carried into the preset step
 
-	// recipients popup for /grp-invite (new group) — same mechanism as
+	// recipients popup for /grp-invite (new group), same mechanism as
 	// /grp-file-send's recipient picker, but opt-in: nothing preselected on open.
 	invitePickerMode bool
 	inviteCandidates []string        // every contact in the address book, as picker keys (contactPickerKey)
 	inviteSelected   map[string]bool // opt-in: true = will be invited (by picker key, independent of the filter)
 	inviteIdx        int             // highlighted row in the FILTERED list (see inviteFilteredCandidates)
-	inviteFilter     string          // text typed to filter — Space stays a selection toggle, doesn't go into the filter
+	inviteFilter     string          // text typed to filter, Space stays a selection toggle, doesn't go into the filter
 
-	// participants popup for /grp-ping with no argument — current
+	// participants popup for /grp-ping with no argument, current
 	// room's members, self excluded. With exactly one other member, the
 	// ping goes directly, skipping the picker.
 	pingPickerMode bool
 	pingCandidates []string
 	pingPickerIdx  int
 
-	// /grp-msg-acks popup — list of our own latest messages in this
+	// /grp-msg-acks popup, list of our own latest messages in this
 	// room (up to msgAcksMaxCandidates, most recent first), Enter on
 	// one of them shows which members confirmed receipt and which
-	// didn't (msgAcksDetailMode, read-only — any key closes it, same
+	// didn't (msgAcksDetailMode, read-only, any key closes it, same
 	// treatment as helpMode). msgAcksCandidates holds indices into
 	// tab.lines, not the chatLine values themselves: the line can
 	// receive other acks in the meantime, the index stays valid because
@@ -2545,7 +2545,7 @@ type model struct {
 	msgAcksDetailMode    bool
 	msgAcksDetailLineIdx int
 
-	// /sec-remote-nuke popup — a single-selection picker on
+	// /sec-remote-nuke popup, a single-selection picker on
 	// the known devices (no sensible textual argument for a device: no
 	// name resolution like other picker commands), then an explicit y/n
 	// confirmation before actually sending (irreversible, destructive
@@ -2555,67 +2555,67 @@ type model struct {
 	remoteNukeConfirmMode bool
 	remoteNukeConfirmIdx  int
 
-	// speed preset popup for /grp-file-send — "slow" is the default
+	// speed preset popup for /grp-file-send, "slow" is the default
 	// (idx 0), "warp" must be chosen explicitly (idx 1).
 	sendFilePresetMode bool
 	sendFilePresetIdx  int
 	// sendFileCompressOn is the compression flag (strong LZMA2/XZ pack)
-	// for THIS send, toggleable in the same popup with Tab — initialized
+	// for THIS send, toggleable in the same popup with Tab, initialized
 	// to strongCompressionEnabled (config.json) every time the popup
 	// opens, not a fixed default: the user sees/changes the actually
 	// configured state, not an independent value.
 	sendFileCompressOn bool
 
-	// active transfers — sending side and receiving side, keyed by transferID.
+	// active transfers, sending side and receiving side, keyed by transferID.
 	outgoingTransfers map[string]*outgoingFileTransfer
 	incomingTransfers map[string]*incomingFileTransfer
 
-	// outgoingTransfersSending — SEPARATE from outgoingTransfers: the
+	// outgoingTransfersSending, SEPARATE from outgoingTransfers: the
 	// latter tracks only the "awaiting accept/reject" phase and gets
 	// removed the exact instant the real send starts (the three points
 	// that call startSendingChunks). Without this second registry,
 	// "file_chunk_ack" (which looks up the transfer to route the ack to
 	// the sending goroutine) would NEVER find anything once the send
-	// has started — every chunk would always time out, isolating every
+	// has started, every chunk would always time out, isolating every
 	// recipient in the same cycle. Populated at the same three points
 	// that remove from outgoingTransfers, cleaned up by
 	// localDisplayMsg.transferID when the transfer ends (success or fatal error).
 	outgoingTransfersSending map[string]*outgoingFileTransfer
 
-	// verifiedFileHashes — the ciphertext hash already verified during
+	// verifiedFileHashes, the ciphertext hash already verified during
 	// the announcement phase (case "file_announce"), awaiting the real
 	// file_offer (case "file_offer" consumes it to populate
-	// incomingFileTransfer.hash) — used at the end of the transfer for
+	// incomingFileTransfer.hash), used at the end of the transfer for
 	// an integrity comparison, not a signature re-check. Keyed by
 	// transferID, small value (32 bytes), no explicit cleanup needed
 	// beyond natural consumption by "file_offer".
 	verifiedFileHashes map[string][]byte
 
-	// pendingFileAnnounces — a file_announce whose signature didn't
+	// pendingFileAnnounces, a file_announce whose signature didn't
 	// verify on the first attempt (the sender's key out of sync) stays
-	// here instead of being discarded — self-heal, see
+	// here instead of being discarded, self-heal, see
 	// retryPendingFileAnnounces (called by applyRelInit when a
 	// rel_init_ack resynchronizes the device in question). Expires at a
 	// deadline (the same fileTransferOfferTimeout the sender uses to
 	// stay consistent about when to give up).
 	pendingFileAnnounces map[string]*pendingFileAnnounce
 
-	// pendingInvites — an invite (cmdInvite/cmdRecall/cmdReinvite/
+	// pendingInvites, an invite (cmdInvite/cmdRecall/cmdReinvite/
 	// cmdAddMember) toward a contact still missing BOTH confirmed
 	// relationship keys (RelIdentityConfirmedByPeer/
 	// RelContentConfirmedByPeer) doesn't fail outright:
 	// queuePendingInvite immediately triggers a fresh rel_init
 	// (immediate probe) toward each not-ready contact and queues the
 	// real invite here, executed automatically by retryPendingInvites
-	// as soon as ALL involved contacts come out ready — the same
+	// as soon as ALL involved contacts come out ready, the same
 	// verify-then-heal-then-transfer principle already used for
 	// file_announce, extended from a single device to an entire invite.
 	// Bound by inviteTimeout (the same timeout already used for the
-	// invite knock, never a new dedicated timeout) — swept by the
+	// invite knock, never a new dedicated timeout), swept by the
 	// periodic probe cycle (case probeResultMsg), not a dedicated ticker.
 	pendingInvites []*pendingInvite
 
-	// pendingJoins — the counterpart of pendingInvites for the opposite
+	// pendingJoins, the counterpart of pendingInvites for the opposite
 	// direction: an invite RECEIVED and accepted (cmdJoin) when the
 	// relationship keys toward the inviting host weren't known yet
 	// (host just restarted, rel_init still in transit) stays here
@@ -2627,19 +2627,19 @@ type model struct {
 
 	// pendingFileOffers queues file_offers whose metadata has already
 	// been decrypted (fileOfferMetaDecryptedMsg) but for which no popup
-	// has been shown yet — NEVER write the fileOffer* fields directly
+	// has been shown yet, NEVER write the fileOffer* fields directly
 	// from there, only from showNextFileOfferModal(): two close-together
 	// file_offers (e.g. a file + a contact card, or two files from the
 	// same sender) whose background decryption completed nearly at the
 	// same time would overwrite each other's fileOffer* fields with no
 	// queue at all: the first offer would stay "orphaned" in
 	// m.incomingTransfers (never getting a popup) while only the latest
-	// one arrived would be shown — the sender would see it time out as
+	// one arrived would be shown, the sender would see it time out as
 	// if it had been ignored. The same pattern already used for group
 	// invites (pendingKnocks + showNextInviteModal), replicated identically here.
 	pendingFileOffers []string
 
-	// file_offer receipt confirmation popup — accept/reject before a single byte moves.
+	// file_offer receipt confirmation popup, accept/reject before a single byte moves.
 	fileOfferMode            bool
 	fileOfferTransferID      string
 	fileOfferFromUserID      string
@@ -2650,7 +2650,7 @@ type model struct {
 	fileOfferTabIdx          int
 
 	// rename + folder choice for saving a received file (already
-	// decrypted and verified — see fileReadyToSaveMsg): two sequential
+	// decrypted and verified, see fileReadyToSaveMsg): two sequential
 	// steps (same scheme as sendFileMode → sendFileRecipientsMode →
 	// sendFilePresetMode), saveRenameMode lets the user correct the
 	// sender's proposed name before choosing the folder in saveDirMode.
@@ -2663,7 +2663,7 @@ type model struct {
 	savePendingData []byte
 	savePendingName string // proposed name, editable in saveRenameMode
 	// saveTitle overrides the rename popup's title (tui.recv_file_rename_title
-	// otherwise) — set by callers other than a received file, e.g.
+	// otherwise), set by callers other than a received file, e.g.
 	// cmdConsoleExport, for which the received-file wording would be
 	// wrong. Reset to "" on every exit path of this flow, so it never
 	// leaks into the next (ordinary received-file) use.
@@ -2681,20 +2681,20 @@ type model struct {
 	deleteGroup          func(nameOrID string) error
 	addContact           func(username, localName string, identityPub, mlkemPub, mldsaPub []byte, introducedBy string, introducedByPub []byte) (myIdentKey, myContentKey shared.RelSigningKey, err error)
 	updateContactRelKeys func(pub []byte, upd RelKeyUpdate) error
-	// setPendingRelKeys/confirmPendingRelKeys — see
+	// setPendingRelKeys/confirmPendingRelKeys, see
 	// TUIParams.SetPendingRelKeys/ConfirmPendingRelKeys (TrustDanger).
 	setPendingRelKeys     func(pub []byte, pending PendingRelKeys) error
 	confirmPendingRelKeys func(pub []byte) bool
-	// resetRelInitConfirmed — see TUIParams.ResetRelInitConfirmed.
+	// resetRelInitConfirmed, see TUIParams.ResetRelInitConfirmed.
 	resetRelInitConfirmed func(pub, devicePub []byte, which string) error
-	// promoteEphemeralContact — see TUIParams.PromoteEphemeralContact.
+	// promoteEphemeralContact, see TUIParams.PromoteEphemeralContact.
 	promoteEphemeralContact func(username string, transportPub, transportMLKEMPub, transportMLDSAPub []byte, myIdentKey, myContentKey shared.RelSigningKey, peerIdent shared.RelPeerKey, peerIdentMLKEMPub []byte, peerContent shared.RelPeerKey, peerContentMLKEMPub []byte) error
 	// startRelIdentityRotationByPub/startRelContentRotationByPub/markRelRotationConfirmed
-	// — see the matching TUIParams fields.
+	// see the matching TUIParams fields.
 	startRelIdentityRotationByPub func(pub []byte) (map[string]shared.RelSigningKey, error)
 	startRelContentRotationByPub  func(pub []byte) (map[string]shared.RelSigningKey, error)
 	markRelRotationConfirmed      func(pub, devicePub []byte, which string) bool
-	// markDeviceRevoked/ackSiblingRevocation — see
+	// markDeviceRevoked/ackSiblingRevocation, see
 	// TUIParams.MarkDeviceRevoked/AckSiblingRevocation.
 	markDeviceRevoked          func(pub, devicePub []byte, revokeIdentity, revokeContent bool) bool
 	ackSiblingRevocation       func(pub, peerDevicePub []byte) bool
@@ -2711,14 +2711,14 @@ type model struct {
 	markContactVerifiedByPub   func(pub []byte) error
 	markContactUnverifiedByPub func(pub []byte) error
 	flushContactsActivity      func(acks map[string]time.Time, seen map[string]time.Time) error
-	// dhTagFnOld — see TUIParams.DHTagFnOld.
+	// dhTagFnOld, see TUIParams.DHTagFnOld.
 	dhTagFnOld        func(peerPub ed25519.PublicKey) ([]byte, error)
 	dirtyLastAck      map[string]time.Time // string(identity key) → local time, accumulated since the last flush (probe_ack)
 	senderKeyInterval time.Duration
 
 	// pendingSlotLimit/messageRetryDelay/pendingEscalationAge/messageTTL
 	// configure the reliable delivery queue on every connected tab.cli
-	// (SetPendingLimits) — same principle as senderKeyInterval above.
+	// (SetPendingLimits), same principle as senderKeyInterval above.
 	pendingSlotLimit       int
 	messageRetryDelay      time.Duration
 	pendingEscalationAge   time.Duration
@@ -2754,7 +2754,7 @@ type model struct {
 	strongCompressionEnabled     bool
 }
 
-// fileAcceptRetryIntervalDefault — see config.go FileAcceptRetryInterval
+// fileAcceptRetryIntervalDefault, see config.go FileAcceptRetryInterval
 // for the value's full rationale: 30s is less than 1/3 of
 // FileTransferReconnectTimeout's default (2m), so it guarantees at
 // least 4 file_accept sends before the sender isolates the recipient.
@@ -2790,7 +2790,7 @@ func newModel(p TUIParams) model {
 	ta.Focus()
 	ta.SetHeight(3)
 	ta.ShowLineNumbers = false
-	// Default CharLimit (0, no limit, see bubbles/textarea) — an
+	// Default CharLimit (0, no limit, see bubbles/textarea), an
 	// insufficient fixed cap here would silently truncate a pasted
 	// identity URI carrying all three PQC keys
 	// (Ed25519+ML-KEM-768+ML-DSA-65, up to ~4300 characters) with no
@@ -3010,10 +3010,10 @@ func (m model) tickActive() tea.Cmd {
 }
 
 func (m model) Init() tea.Cmd {
-	// Terminal window title — a best-effort bonus for terminals that
+	// Terminal window title, a best-effort bonus for terminals that
 	// show it in their own bar/tab: the reliable indication of the
 	// active identity is the "fake tab" at the top of renderTabBar
-	// (identityPrefix), text inside the TUI's own content — always
+	// (identityPrefix), text inside the TUI's own content, always
 	// visible regardless of the terminal's support for this OSC
 	// sequence, unlike the window title alone (on some setups it never
 	// appears). m.myUsername is already populated at this point
@@ -3056,7 +3056,7 @@ func (m model) Init() tea.Cmd {
 		// backoff) before Tor/I2P even have a single circuit ready.
 		cmds = append(cmds, tea.Tick(m.warmupInitialDelay, func(time.Time) tea.Msg { return retryPendingRemoteNukesMsg{} }))
 	}
-	// Always scheduled, regardless of the current threshold — the
+	// Always scheduled, regardless of the current threshold, the
 	// threshold can be changed live (/sec-lock-timeout) without
 	// restarting the process, so the ticker must keep running
 	// regardless; the case below is a no-op if m.interfaceLockTimeout <= 0.
@@ -3080,16 +3080,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// The nine gates below (up to saveDirMode) intercept BEFORE the
-	// switch msg := msg.(type) further down — but ONLY if msg is really
+	// switch msg := msg.(type) further down, but ONLY if msg is really
 	// a tea.KeyMsg. Without this guard, a msg of any OTHER type
 	// (roomServerMsg, tickFileProgressMsg, incomingChunkWrittenMsg, ...)
 	// that arrived while one of these popups was open would be
 	// discarded here with "return m, nil" instead of reaching its own
-	// case in the switch below — and these three types are only
+	// case in the switch below, and these three types are only
 	// re-armed by their own case (case roomServerMsg/
 	// tickFileProgressMsg/incomingChunkWrittenMsg), never elsewhere: a
 	// single message lost this way would stop that "waiter" for the rest
-	// of the process's life — for waitForRoom, the whole room would stop
+	// of the process's life, for waitForRoom, the whole room would stop
 	// receiving any traffic (chat, ack, chunk). Starting a second
 	// transfer (even a tiny contact card) always goes through one of
 	// these popups (sendFilePresetMode at minimum), and with a first
@@ -3098,7 +3098,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// the popup is open.
 	if _, isKeyMsg := msg.(tea.KeyMsg); isKeyMsg {
 
-		// /grp-file-send filesystem browser — intercepted BEFORE the
+		// /grp-file-send filesystem browser, intercepted BEFORE the
 		// switch because every key here has a dedicated navigation
 		// meaning, never free text.
 		if m.sendFileMode {
@@ -3156,7 +3156,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		// /grp-file-send recipients popup (group only) — preselected, Space
+		// /grp-file-send recipients popup (group only), preselected, Space
 		// deselects (opt-out).
 		if m.sendFileRecipientsMode {
 			if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -3194,9 +3194,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /grp-invite (new group) recipients popup — nothing preselected,
+		// /grp-invite (new group) recipients popup, nothing preselected,
 		// Space selects (opt-in), typing filters by name (Space stays
-		// dedicated to selection, doesn't go into the filter — see
+		// dedicated to selection, doesn't go into the filter, see
 		// inviteFilteredCandidates), the same interaction scheme as
 		// /grp-file-send's picker with the filter added.
 		if m.invitePickerMode {
@@ -3279,7 +3279,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /grp-msg-acks popup — choosing one of our own messages to see
+		// /grp-msg-acks popup, choosing one of our own messages to see
 		// who confirmed receipt.
 		if m.msgAcksPickerMode {
 			if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -3307,7 +3307,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /grp-msg-acks detail — read-only, any key closes it (same
+		// /grp-msg-acks detail, read-only, any key closes it (same
 		// treatment as helpMode).
 		if m.msgAcksDetailMode {
 			if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -3319,7 +3319,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /sec-remote-nuke popup — single-selection picker on
+		// /sec-remote-nuke popup, single-selection picker on
 		// the known devices, Enter moves to the explicit confirmation below
 		// (never a direct send from here).
 		if m.remoteNukePickerMode {
@@ -3348,7 +3348,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /sec-remote-nuke confirmation — Ctrl+C/Esc always cancel
+		// /sec-remote-nuke confirmation, Ctrl+C/Esc always cancel
 		// (destructive, irreversible action for the target device,
 		// never triggered by mistake); only an explicit "s"/"y" proceeds,
 		// never /nukex's immediate behavior.
@@ -3379,7 +3379,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /sec-clear-all confirmation — Ctrl+C/Esc always cancel
+		// /sec-clear-all confirmation, Ctrl+C/Esc always cancel
 		// (destructive, irreversible for the whole config directory, never
 		// triggered by mistake); only an explicit "s"/"y" proceeds.
 		if m.clearAllConfirmMode {
@@ -3404,7 +3404,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /show-qr format choice popup — same two choices as `neutrino
+		// /show-qr format choice popup, same two choices as `neutrino
 		// show-qr`'s CLI prompt, Up/Down toggles, Enter confirms.
 		if m.showQRFormatMode {
 			if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -3425,7 +3425,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /grp-file-send speed preset popup — only two options, Up/Down
+		// /grp-file-send speed preset popup, only two options, Up/Down
 		// toggles, Enter confirms the highlighted one (slow preselected by default).
 		if m.sendFilePresetMode {
 			if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -3449,7 +3449,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// file_offer receipt confirmation popup — accept/reject before a
+		// file_offer receipt confirmation popup, accept/reject before a
 		// single byte moves. A "self-healing" gate (same pattern as
 		// showNextInviteModal): promotes the next queued offer as soon
 		// as nothing else is blocking, without having to touch every
@@ -3490,7 +3490,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// acceptRetryDeadline starts here, not when the first
 					// chunk arrives: every file_accept sent must
 					// correspond either to the file's arrival or to an
-					// explicit timeout (never an indefinite wait) — a
+					// explicit timeout (never an indefinite wait), a
 					// file_accept can be silently lost, see Hub.Send in
 					// internal/server/hub.go: no backlog for a recipient
 					// not registered at that exact instant.
@@ -3510,12 +3510,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// "nobody has accepted the invite yet, close the room?" popup —
+		// "nobody has accepted the invite yet, close the room?" popup,
 		// a "self-healing" gate, same pattern as fileOfferMode above.
 		// Enter/s/y = closes the room (closeTabAt), Esc/n = keeps
 		// waiting (a simple dismiss, no new timer: the next useful
-		// trigger is another explicit decline or — if still nobody has
-		// joined — it's still possible to close manually with /grp-exit
+		// trigger is another explicit decline or, if still nobody has
+		// joined, it's still possible to close manually with /grp-exit
 		// at any time).
 		if !m.groupNoJoinConfirmMode {
 			m.showNextGroupNoJoinModal()
@@ -3544,7 +3544,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// received file rename (step 1/2) — name proposed by the sender,
+		// received file rename (step 1/2), name proposed by the sender,
 		// editable before choosing the folder; same buffer scheme as
 		// editContactMode.
 		if m.saveRenameMode {
@@ -3583,7 +3583,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		// destination folder choice (step 2/2) — a hand-rolled directory
+		// destination folder choice (step 2/2), a hand-rolled directory
 		// browser like sendFileMode, but only subfolders (never files:
 		// only choosing where to save here) plus a synthetic entry at
 		// the top ("save here") representing the current directory itself.
@@ -3646,19 +3646,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		// Interface lock on inactivity — intercepts EVERY key BEFORE
+		// Interface lock on inactivity, intercepts EVERY key BEFORE
 		// any other gate/modal when active: no queued popup (invite,
 		// file/contact-card offer) can receive input while the
 		// interface is locked, they stay unchanged and become
 		// responsive again only after unlocking. No application state
-		// is touched here — Tor/I2P, connections, open rooms, the probe
+		// is touched here, Tor/I2P, connections, open rooms, the probe
 		// cycle all keep running unchanged. The identity password always
 		// unlocks (compared directly against keystorePassword, in RAM for
 		// the session); an optional PIN (CheckLockSecret) also unlocks if
 		// configured. A duress recognized here (CheckLockSecret or
 		// CheckDuressPassword) arms the same
 		// device-sync fan-out as cmdNukeX (armDuressWipe), which sets
-		// duressWipeOnExit and closes the TUI once it completes — the
+		// duressWipeOnExit and closes the TUI once it completes, the
 		// actual overwrite+promote+continue (never a process exit, never
 		// back to the wizard) happens afterward, in the caller
 		// (RunTUI → cmd/main.go:runOnce), exactly like nukeOnExit/cmdNukeX
@@ -3679,7 +3679,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.lastActivityAt = time.Now()
 					return m, nil
 				case keystore.LockCheckDuress:
-					// The lock's native duress (character+position) —
+					// The lock's native duress (character+position),
 					// never a silent unlock: arms the device-sync fan-out
 					// (armDuressWipe) then closes the TUI; the actual
 					// teardown-and-re-entry happens in the caller (see
@@ -3688,7 +3688,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				default:
 					if m.lockUnlockBuf != "" && m.lockUnlockBuf == m.keystorePassword {
 						// The identity password always unlocks the lock,
-						// whether or not a PIN was also configured — see
+						// whether or not a PIN was also configured, see
 						// cmdLock.
 						m.interfaceLocked = false
 						m.lockUnlockBuf, m.lockUnlockErr = "", ""
@@ -3697,7 +3697,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					if m.checkDuressPassword != nil && m.checkDuressPassword(m.lockUnlockBuf) {
 						// The keystore's already-existing duress password
-						// recognized by the lock — same treatment as the
+						// recognized by the lock, same treatment as the
 						// branch above.
 						return m, m.armDuressWipe()
 					}
@@ -3723,11 +3723,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.lastActivityAt = time.Now()
 
-		// queued group invite popup — a "self-healing" gate: promotes
+		// queued group invite popup, a "self-healing" gate: promotes
 		// the next invite as soon as nothing else is blocking (e.g.
 		// right after another popup closes), without having to touch
 		// every other popup's exit points one by one. Enter = Accept,
-		// Esc = Ignore — see showNextInviteModal/ignoreInvite.
+		// Esc = Ignore, see showNextInviteModal/ignoreInvite.
 		if !m.inviteModalMode {
 			m.showNextInviteModal()
 		}
@@ -3752,7 +3752,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// 24-word backup popup — any key closes it, the words don't stay
+		// 24-word backup popup, any key closes it, the words don't stay
 		// in RAM beyond this moment (see GetBackupMnemonic).
 		if m.backupMode {
 			m.backupMode = false
@@ -3760,7 +3760,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// generic text popup (/cnt-info, /grp-info, /sec-safety) —
+		// generic text popup (/cnt-info, /grp-info, /sec-safety),
 		// any key closes it, except "c" when the popup carries a
 		// copyable URI (cmdInfo self/contact): there it copies to the
 		// clipboard and stays open, any subsequent key closes it as usual.
@@ -3774,7 +3774,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// animated /show-qr popup — any key closes it, same scheme as
+		// animated /show-qr popup, any key closes it, same scheme as
 		// textPopupMode above; qrShowGen incremented so a qrShowTickMsg
 		// already in flight for this session is recognized as stale.
 		if m.qrShowActive {
@@ -3939,7 +3939,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// /sec-verify confirmation — after showing the full code, only
+		// /sec-verify confirmation, after showing the full code, only
 		// waits for y/n: the comparison must be done out-of-band BEFORE
 		// answering here.
 		if m.verifySafetyConfirmMode {
@@ -3976,7 +3976,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// masked input — intercepts every key
+		// masked input, intercepts every key
 		if m.pwdMode != 0 {
 			cancelMsg := i18n.T("tui.pwd_cancel_change")
 			switch m.pwdMode {
@@ -4046,7 +4046,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.backupWords = words
 					m.backupMode = true
 					return m, nil
-				case 5: // new decoy identity password — the shared decoy
+				case 5: // new decoy identity password, the shared decoy
 					// identity exists structurally in every file (N-slot
 					// format) and can't be removed, only changed: an
 					// empty entry is simply invalid, like
@@ -4080,7 +4080,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 						return localDisplayMsg{tabIdx: locIdx, text: i18n.T("tui.duress_set")}
 					}
-				case 7: // new lock PIN (see cmdLockPIN) — an additional, optional
+				case 7: // new lock PIN (see cmdLockPIN), an additional, optional
 					// unlock path: the identity password always unlocks the lock
 					// regardless (see cmdLock), so this never needs to differ
 					// from it to stay meaningful.
@@ -4112,7 +4112,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, consoleErrTab(m.consoleIdx, styleErr.Render(i18n.T("tui.pwd_mismatch_cancelled")))
 					}
 					m.pwdMode, m.pwdBuf = 9, ""
-				case 9: // PIN duress character — a single digit
+				case 9: // PIN duress character, a single digit
 					r := []rune(m.pwdBuf)
 					if len(r) != 1 || r[0] < '0' || r[0] > '9' {
 						m.pwdMode, m.pwdBuf = 0, ""
@@ -4120,7 +4120,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, consoleErrTab(m.consoleIdx, styleErr.Render(i18n.T("tui.err_lock_duress_marker_invalid")))
 					}
 					m.lockSetupMarker, m.pwdBuf, m.pwdMode = m.pwdBuf, "", 10
-				case 10: // duress character's position — see Keystore.LockDuressPosition
+				case 10: // duress character's position, see Keystore.LockDuressPosition
 					pinLen := len([]rune(m.lockSetupSecret))
 					pos, perr := strconv.Atoi(strings.TrimSpace(m.pwdBuf))
 					if perr != nil || pos < 0 || pos > pinLen {
@@ -4155,7 +4155,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// summary of the data read (username/key/PQC) + y/n confirmation,
-		// before the local name prompt — same y/n scheme as
+		// before the local name prompt, same y/n scheme as
 		// verifySafetyConfirmMode above.
 		if m.addContactConfirmMode {
 			switch msg.Type {
@@ -4164,7 +4164,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, localTab(m.defaultTabIdx(), styleMeta.Render(i18n.T("tui.add_contact_cancelled")))
 			case tea.KeyEnter:
 				// Enter alone confirms (affirmative default, see
-				// tui.add_contact_confirm_prompt — the active language's
+				// tui.add_contact_confirm_prompt, the active language's
 				// affirmative letter, always the uppercase one in the
 				// prompt): the user has already seen the
 				// summary, the "save?" question is meant for a quick
@@ -4230,8 +4230,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 				// introducedBy: who sent the card, only if it describes
-				// someone else (a card that "describes itself" — an
-				// edge case — counts as a direct addition).
+				// someone else (a card that "describes itself", an
+				// edge case, counts as a direct addition).
 				var introducedBy string
 				var introducedByPub []byte
 				if pc.cardFrom != "" {
@@ -4258,7 +4258,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						MLDSAPub:        pc.mldsaPub,
 						IntroducedBy:    introducedBy,
 						IntroducedByPub: introducedByPub,
-						// No peer device known yet — "" placeholder
+						// No peer device known yet, "" placeholder
 						// entry (see TUIParams.AddContact/RelKeyUpdate),
 						// promoted by the first real rel_init/rel_init_ack.
 						Devices: map[string]*keystore.DeviceRelation{
@@ -4292,7 +4292,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// source choice for /cnt-read-qrcode: a single dedicated key
-		// (f/c), never free text — avoids any ambiguity with a file
+		// (f/c), never free text, avoids any ambiguity with a file
 		// path that could start with "f" or "c".
 		if m.qrChooseMode {
 			switch msg.Type {
@@ -4323,7 +4323,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// camera live preview for /cnt-read-qrcode — Esc cancels the
+		// camera live preview for /cnt-read-qrcode, Esc cancels the
 		// capture (m.qrCameraCancel) and closes the popup right away;
 		// the capture goroutine's final message, if it arrives later,
 		// is silently discarded (see case qrCameraDoneMsg: guarded by qrCameraPreviewMode).
@@ -4340,7 +4340,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// filesystem browser for /cnt-read-qrcode (after choosing "file")
-		// — same component as /grp-file-send's browser (fsEntry/listDir),
+		// same component as /grp-file-send's browser (fsEntry/listDir),
 		// with Space added for multi-select: an identity QR is often
 		// split across several numbered PNGs, Space toggles each onto
 		// m.qrFileSelected (in the order toggled) without leaving the
@@ -4408,7 +4408,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// out-of-band contact info prompt for /grp-contact-send —
+		// out-of-band contact info prompt for /grp-contact-send,
 		// mandatory: Enter with an empty buffer does nothing, the
 		// prompt itself explains why (see View()).
 		if m.sendContactHintMode {
@@ -4506,12 +4506,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					sel := items[m.paletteIdx]
 					// Always two steps: an Enter after a few letters (or
 					// after navigating with the arrows without typing
-					// the full name) ONLY completes the field's text —
+					// the full name) ONLY completes the field's text,
 					// never executes or opens a surprise picker. A
 					// command with no parameters still executes right
 					// away, since there's nothing else to type; a
 					// command with a parameter needs a second Enter on
-					// the now-complete name to confirm — at that point
+					// the now-complete name to confirm, at that point
 					// handleInput opens the picker if the argument stays
 					// empty, exactly as if typed by hand.
 					if strings.TrimSpace(m.ta.Value()) != sel.Cmd {
@@ -4560,7 +4560,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case tea.KeyLeft:
 				// With text in the textarea, ←/→ move the writing
-				// cursor instead of switching tabs — tab switching with
+				// cursor instead of switching tabs, tab switching with
 				// the arrows stays active only on an empty line
 				// (Shift+Tab/Tab remain always available to switch tabs).
 				if m.ta.Value() == "" && len(m.tabs) > 1 {
@@ -4586,7 +4586,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			// No other block on typing: any text can be typed in any
 			// tab. The only check remains at Enter (handleInput/
-			// sendMessage) — a command must start with "/", free text
+			// sendMessage), a command must start with "/", free text
 			// is a valid action only inside a real chat room (isStandardTab()).
 		}
 
@@ -4600,12 +4600,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// KeyMap reduced to only PgUp/PgDown (the only documented
 			// keyboard scroll, besides the mouse wheel).
 			// bubbles/viewport's default keymap also binds
-			// j/k/u/d/b/f/h/l/space vim-style — since m.vp.Update(msg)
+			// j/k/u/d/b/f/h/l/space vim-style, since m.vp.Update(msg)
 			// runs on EVERY key, in parallel with m.ta.Update(msg) (see
 			// the bottom of Update()), those same letters typed to
 			// write a message would scroll the viewport as a side
 			// effect. HalfPageUp/HalfPageDown/Up/Down/Left/Right stay at
-			// the zero value (key.Binding{}, no key bound — key.Matches
+			// the zero value (key.Binding{}, no key bound, key.Matches
 			// never finds a match on an empty binding).
 			m.vp.KeyMap = viewport.KeyMap{
 				PageDown: key.NewBinding(key.WithKeys("pgdown")),
@@ -4617,7 +4617,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.vp.Height = vpH
 		}
 		// -4: styleBorder's border (2) + horizontal padding (2), which
-		// wraps m.ta.View() at render time — SetWidth must reserve that
+		// wraps m.ta.View() at render time, SetWidth must reserve that
 		// space, not fill the entire terminal width (otherwise the
 		// right border ends up off-screen).
 		m.ta.SetWidth(msg.Width - 4)
@@ -4629,7 +4629,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			tab.lastActivityAt = time.Now()
 			typ, _ := msg.raw["type"].(string)
 			cmds := m.handleRoomMsg(msg.idx, msg.raw)
-			// The indicator only flags real chat messages — not every
+			// The indicator only flags real chat messages, not every
 			// protocol frame (init, user_joined/left, sender_key,
 			// file_offer/accept/reject/chunk/ack, msg_ack...)
 			// that still arrives on this channel.
@@ -4642,7 +4642,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case incomingChunkWrittenMsg:
 		// Outcome of ONE chunk written to disk by the dedicated
-		// goroutine — see the comment on incomingFileTransfer for why
+		// goroutine, see the comment on incomingFileTransfer for why
 		// this doesn't run inside handleRoomMsg/case "file_chunk".
 		// Updates written/progress, sends the ack, and only here (never
 		// in case "file_chunk") decides whether the transfer is complete.
@@ -4657,7 +4657,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			// The writer goroutine already exited on its own on this
 			// same error (a return inside startIncomingChunkWriter, not
-			// a chunkCh close) — dropIncomingTransfer closes it here
+			// a chunkCh close), dropIncomingTransfer closes it here
 			// regardless, harmless and consistent with the other
 			// abandonment points.
 			m.dropIncomingTransfer(msg.transferID)
@@ -4686,7 +4686,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// complete, not written>=fileSize: fileSize is the
 			// encrypted blob's size, but a chunk buffered awaiting
 			// reordering (see startIncomingChunkWriter) isn't "written"
-			// yet despite having already arrived — the only reliable
+			// yet despite having already arrived, the only reliable
 			// end-of-transfer signal is the contiguous written frontier
 			// reaching chunkCount, computed by the writer goroutine
 			// itself. Closes chunkCh (never before now): the writer
@@ -4695,7 +4695,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// below: Go's os.File doesn't buffer Writes, THIS chunk's
 			// content (the frontier's last one) is already visible to a
 			// concurrent read even before this same result was sent on
-			// chunkResultCh — see the comment on startIncomingChunkWriter.
+			// chunkResultCh, see the comment on startIncomingChunkWriter.
 			close(it.chunkCh)
 			cmds = append(cmds, m.finalizeIncomingTransfer(it))
 			delete(m.incomingTransfers, msg.transferID)
@@ -4710,7 +4710,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Generation superseded (see roomErrMsg.gen): a ping or a
 			// read started on the previous connection can fail AFTER a
 			// reconnect (automatic or manual) has already replaced
-			// tab.ctx/tab.pingGen — such a late failure no longer
+			// tab.ctx/tab.pingGen, such a late failure no longer
 			// concerns the current attempt and must be ignored,
 			// otherwise it would reset tab.reconnecting while a more
 			// recent reconnect is still in progress, or would restart
@@ -4723,10 +4723,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			// Slot occupied by another one of OUR OWN devices in this
-			// room — "one device per identity per room". Unlike every
+			// room, "one device per identity per room". Unlike every
 			// other failure handled below, this one resolves ONLY when
 			// the other device disconnects, never a network issue a
-			// growing backoff would help overcome — retries at a fixed
+			// growing backoff would help overcome, retries at a fixed
 			// interval, indefinitely, never a final error.
 			if errors.Is(msg.err, client.ErrAlreadyConnectedElsewhere) {
 				tab.reconnecting = true
@@ -4749,7 +4749,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// blindly, only when the host is found online): the host
 			// ALWAYS replies to an incoming rel_init with its CURRENT key,
 			// regardless of its own RelInitConfirmedByPeer (see
-			// applyRelInit) — a single round trip is enough to realign,
+			// applyRelInit), a single round trip is enough to realign,
 			// with no manual action (rotation, re-invite) needed from the user.
 			if tab.hostKey != "" && errors.Is(msg.err, client.ErrInvalidServerSig) {
 				if hc := m.resolveContactByPub(memberKeyPub(tab.hostKey)); hc != nil {
@@ -4764,7 +4764,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			// First disconnection: start a silent automatic reconnect
-			// (unless the server already notified its own shutdown) —
+			// (unless the server already notified its own shutdown),
 			// BOTH remote AND loopback: the reconnect itself
 			// (reconnectTab/Client.Connect) is already transport-
 			// independent, so the trigger condition must not exclude
@@ -4833,14 +4833,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case remoteNukeExecutedMsg:
 		// The best-effort sequence (danger_broadcast + ack) has ended,
-		// success or timeout — same scheme as cmdNukeX: the actual
+		// success or timeout, same scheme as cmdNukeX: the actual
 		// deletion happens after exiting the TUI, in main().
 		m.nukeOnExit = true
 		return m, tea.Quit
 
 	case deviceSyncNukeDoneMsg:
 		// cmdNukeX's (or armDuressWipe's) device-sync fan-out has ended,
-		// success or timeout — only now does the actual overwrite/swap
+		// success or timeout, only now does the actual overwrite/swap
 		// happen, after exiting the TUI, in main().
 		if msg.duress {
 			m.duressWipeOnExit = true
@@ -4875,7 +4875,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmd = m.applyRelInit(k)
 		case "rel_identity_rotate", "rel_identity_rotate_ack", "rel_content_rotate", "rel_content_rotate_ack":
 			// Same scheme as rel_init/rel_init_ack above, applied to the
-			// rotation of a single relationship key — see applyRelRotate.
+			// rotation of a single relationship key, see applyRelRotate.
 			cmd = m.applyRelRotate(k)
 		case "probe_ping":
 			cmd = m.applyProbePing(k)
@@ -4885,7 +4885,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// torIn already set on handler entry; no further action
 		case "wake":
 			// A peer has seen us as "down" and is inviting us to retry the
-			// connection — only the network side of /grp-reconnect, no UI
+			// connection, only the network side of /grp-reconnect, no UI
 			// effect (see reconnectTab). Per-groupID cooldown on the
 			// receiving side: several members can detect the same
 			// downtime and send the wake in parallel, or a buggy/
@@ -4896,7 +4896,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						continue
 					}
 					// Same guard as the self-detection trigger above: no
-					// t.cli.IsRemote() check here either — a member
+					// t.cli.IsRemote() check here either, a member
 					// (including the host itself in loopback) remains
 					// reconnectable via wake regardless of transport.
 					if t.reconnecting || t.serverShutdown {
@@ -4911,7 +4911,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case "invite_declined":
-			// An invitee pressed Esc on the popup (see declineInvite) — the
+			// An invitee pressed Esc on the popup (see declineInvite), the
 			// host learns of it here, instead of from a silent timeout
 			// (indistinguishable from "hasn't seen the invite yet").
 			// Looks up its own host tab by GroupID, exactly
@@ -4952,14 +4952,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "remote_nuke_ack":
 			cmd = m.handleRemoteNukeAck(k)
 		case "root_rotate":
-			// Announcement of a root IdentityKey rotation from a contact —
+			// Announcement of a root IdentityKey rotation from a contact,
 			// see applyRootRotate.
 			cmd = m.applyRootRotate(k)
 		case "root_rotate_ack":
 			cmd = m.applyRootRotateAck(k)
 		case "device_sync":
 			// Own-device-to-own-device channel (root rotation propagation
-			// or remote address-book sync) — see applyDeviceSync.
+			// or remote address-book sync), see applyDeviceSync.
 			cmd = m.applyDeviceSync(k)
 		case "device_sync_ack":
 			cmd = m.applyDeviceSyncAck(k)
@@ -4976,7 +4976,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "danger_end_ack":
 			cmd = m.handleDangerEndAck(k)
 		case "rel_revoke":
-			// Announcement of a relationship key revocation — see applyRelRevoke.
+			// Announcement of a relationship key revocation, see applyRelRevoke.
 			cmd = m.applyRelRevoke(k)
 		case "rel_revoke_ack":
 			cmd = m.applyRelRevokeAck(k)
@@ -4995,7 +4995,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.pendingKnocks = append(m.pendingKnocks, pendingKnock{KnockPayload: k, At: time.Now()})
 			if k.GroupID != "" {
 				// Real group invite: queued modal popup (Enter = Accept,
-				// Esc = Ignore) — see showNextInviteModal.
+				// Esc = Ignore), see showNextInviteModal.
 				m.showNextInviteModal()
 			}
 			// k.GroupID == "" here can't happen from any live sender: every
@@ -5005,7 +5005,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		// As soon as both the IN and OUT circuits are confirmed (not just
 		// out, which alone isn't enough), don't wait for the next
-		// active_interval tick — up to a minute would otherwise be lost,
+		// active_interval tick, up to a minute would otherwise be lost,
 		// right in the window when contacts want to know we're back
 		// online. "In" gets confirmed here, on receiving any knock at all
 		// (including the self-knock triggered by probeSelfKnock).
@@ -5119,7 +5119,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Same round: takes advantage of the connection being known-
 		// healthy to notice whether any group member has looked "down"
-		// for a while and send it a lightweight wake-up packet — it
+		// for a while and send it a lightweight wake-up packet, it
 		// might be alive but with a stuck connection. Cadence
 		// wakeScanInterval, UNCHANGED: the outer tick always runs at
 		// this speed, regardless of when the actual ping probe below
@@ -5140,14 +5140,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// The outer tick always stays at wakeScanInterval, whether a
-		// probe was attempted or not — rescheduling doesn't depend on
+		// probe was attempted or not, rescheduling doesn't depend on
 		// either pingProbeOKMsg or pingProbeFailedMsg (see their comments).
 		reschedule := tea.Tick(wakeScanInterval, func(time.Time) tea.Msg {
 			return pingWatchdogTickMsg{idx: idx, gen: gen}
 		})
 
 		// Round trip recently confirmed by another source (any frame
-		// received on the tab, or the probe itself not yet due) — an
+		// received on the tab, or the probe itself not yet due), an
 		// explicit ping would share c.writeFrameMu with any concurrent
 		// data writes anyway, risking a false positive. Skips this round's probe.
 		if time.Since(tab.lastActivityAt) < pingWatchdogInterval {
@@ -5206,7 +5206,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.lockUnlockBuf, m.lockUnlockErr = "", ""
 		}
 		// "time" nuke trigger: the interface has been LOCKED (not just
-		// inactive) for longer than timeNukeTimeout — same immediate,
+		// inactive) for longer than timeNukeTimeout, same immediate,
 		// no-confirmation erasure as /nukex.
 		if m.interfaceLocked && m.timeNukeTimeout > 0 && !m.lockedSinceAt.IsZero() && time.Since(m.lockedSinceAt) >= m.timeNukeTimeout {
 			return m, m.cmdNukeX()
@@ -5236,7 +5236,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			// seenByPeer/seenByPeerAt never get reset just because online
-			// turns false in this cycle — see the comment on the field:
+			// turns false in this cycle, see the comment on the field:
 			// losing reachability says nothing about whether they can
 			// reach us. The only transition that happens
 			// here is nil→false, when the online streak (never an ack/
@@ -5262,7 +5262,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						// generatedRelKeys: the probe goroutine (outside
 						// Update(), no safe access to m.contacts) had to
 						// generate our missing relationship keys toward
-						// this contact on the fly — see probeContacts.
+						// this contact on the fly, see probeContacts.
 						// Applied here in memory (immediately unblocks the
 						// next /grp-invite) and persisted to disk in the
 						// background, same scheme already used by
@@ -5306,7 +5306,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				text := styleErr.Render(fmt.Sprintf(i18n.T("tui.probe_result_offline"), strings.Join(offlineNames, ", ")))
 				appendResult(text)
 				// not a real error (routine state, recurs on every probe
-				// cycle) — no error badge, otherwise it would light up constantly.
+				// cycle), no error badge, otherwise it would light up constantly.
 				m.appendToConsole(text, false)
 			}
 			if len(onlineNames) == 0 && len(offlineNames) == 0 {
@@ -5314,7 +5314,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.refreshViewport()
 		} else {
-			// silent timer: no write to Console — the badges in the
+			// silent timer: no write to Console, the badges in the
 			// Contacts tab already show the status; the text note would
 			// only generate unwanted badges.
 			m.refreshViewport()
@@ -5328,14 +5328,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		// batched flush: a single Save() per probe cycle, not one per
-		// event (Save() re-derives the key with Argon2id on every call —
+		// event (Save() re-derives the key with Argon2id on every call,
 		// see FlushContactsActivity).
 		pendingCmd = m.flushActivityCmd(seenNow)
 
-		// Sweep of expired queued invites — same principle as the
+		// Sweep of expired queued invites, same principle as the
 		// timeout for a file offer never accepted: no infinite wait.
 		// Done here (periodic probe cycle, main thread), not by a
-		// dedicated ticker — reuses the same inviteTimeout already used
+		// dedicated ticker, reuses the same inviteTimeout already used
 		// for the invite knock.
 		if len(m.pendingInvites) > 0 {
 			expNow := time.Now()
@@ -5355,7 +5355,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Sweep of INCOMING invites accepted but still queued (see
-		// model.pendingJoins/joinKnock) — same principle and same
+		// model.pendingJoins/joinKnock), same principle and same
 		// timeout as the pendingInvites sweep above.
 		if len(m.pendingJoins) > 0 {
 			expNow := time.Now()
@@ -5404,7 +5404,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case fileAcceptRetryMsg:
 		it, ok := m.incomingTransfers[msg.transferID]
 		if !ok || it.written > 0 {
-			break // completed, rejected, or already incoming — no further send needed
+			break // completed, rejected, or already incoming, no further send needed
 		}
 		if time.Now().After(it.acceptRetryDeadline) {
 			client.Dbg("file_accept retry: transfer=%s expired without receiving any chunk, giving up", msg.transferID)
@@ -5445,7 +5445,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		it.progress.mu.Unlock()
 		// The dedicated writer only starts now: it needs chunkCount (the
 		// total chunk count declared by the sender) to know when the
-		// contiguous written frontier covers the entire file — see
+		// contiguous written frontier covers the entire file, see
 		// startIncomingChunkWriter and the "file_offer" case above.
 		startIncomingChunkWriter(it.transferID, it.chunkCount, it.chunkCh, it.abortCh, it.chunkResultCh)
 		m.pendingFileOffers = append(m.pendingFileOffers, it.transferID)
@@ -5454,7 +5454,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case fileReadyToSaveMsg:
 		// Contact card received through the file mechanism (marked by
-		// the sentinel prefix on the plaintext) — skips the "save to
+		// the sentinel prefix on the plaintext), skips the "save to
 		// disk" prompt, populates
 		// pendingCard as for a direct invite.
 		if bytes.HasPrefix(msg.data, []byte(contactCardPrefix)) {
@@ -5540,7 +5540,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		announceEnvelopes := msg.announceEnvelopes
 		sigTS := msg.sigTS
 		consoleIdx := m.consoleIdx
-		// Sends the ANNOUNCE (hash+signature), not yet the real offer —
+		// Sends the ANNOUNCE (hash+signature), not yet the real offer,
 		// that only goes out to each recipient after its
 		// file_announce_ack (case below). The 90s timeout covers the
 		// entire announce→ack→offer→accept round trip as a single
@@ -5554,7 +5554,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// fileOfferBatchWindow starts HERE (from sending the offer),
 			// not from the first accept: it must stay a fixed collection
 			// window anchored to the invite itself, not a window that
-			// reopens from scratch every time someone replies late —
+			// reopens from scratch every time someone replies late,
 			// otherwise a group that's slow to respond (no one within
 			// the first 10s) would never get to gather into a single
 			// multicast front, forcing an individual send to each. If
@@ -5582,7 +5582,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// (fileOfferBatchWindow, not at the very first accept), if
 		// ft is still here after the offer's general timeout it may be
 		// that someone already accepted but the (shorter, still running)
-		// collection window hasn't expired yet — this only happens with
+		// collection window hasn't expired yet, this only happens with
 		// a fileOfferBatchWindow configured close to or beyond
 		// fileTransferOfferTimeout, which should stay well below it. In
 		// that case it proceeds anyway with whoever already accepted,
@@ -5622,7 +5622,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil // send already started or offer already canceled in the meantime
 		}
 		if len(ft.accepted) == 0 {
-			// Nobody has accepted yet within this fixed window — this
+			// Nobody has accepted yet within this fixed window, this
 			// isn't "nobody wants the file" (that's only the general 90s
 			// deadline, case fileOfferTimeoutMsg): it simply keeps waiting,
 			// without attempting a send to zero recipients. If EVERYONE
@@ -5665,7 +5665,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			tab := m.tabs[msg.tabIdx]
 			m.appendToConsole(msg.displayText, false)
 			// isTabPeer: the just-added contact is really this room's
-			// peer (not a third party introduced via a contact card) —
+			// peer (not a third party introduced via a contact card),
 			// only in that case does it make sense to update the room's
 			// safety bar.
 			if msg.isTabPeer && len(msg.identityPub) == 32 && len(m.myIdentityPub) == 32 {
@@ -5676,7 +5676,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.refreshViewport()
 		}
-		// Relationship key exchange — once per relationship, right after
+		// Relationship key exchange, once per relationship, right after
 		// adding the contact (not on every room invite). Fire-and-
 		// forget: if the contact isn't reachable yet, the next probe
 		// cycle (probeContacts) retries it until PeerRelIdentityPub is
@@ -5690,7 +5690,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case rootRotationAdoptedMsg:
-		// Refreshes the public keys/address kept in memory — otherwise
+		// Refreshes the public keys/address kept in memory, otherwise
 		// stale for the process's entire lifetime (no other point in the
 		// code reassigns them after startup). Rooms already open before
 		// this moment stay on the old identity until reconnected, the
@@ -5725,7 +5725,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			// Fan-out: a new, independent key for EVERY device the
 			// rotation was started for, an independent rel_*_rotate knock
-			// for each one — never a single, arbitrarily-chosen device.
+			// for each one, never a single, arbitrarily-chosen device.
 			var cmds []tea.Cmd
 			for devKeyStr, newKey := range msg.newKeys {
 				dev, ok := c.Devices[devKeyStr]
@@ -5740,7 +5740,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// No explicit refresh needed here: the new key is
 					// already in keystore.Contact (ks.StartRelIdentityRotationByPub
 					// wrote it BEFORE dispatching relRotationStartedMsg,
-					// see cmdStartRelRotation) — any memberSecret already
+					// see cmdStartRelRotation), any memberSecret already
 					// registered for a room open with this contact
 					// resolves it on its own at the next handshake
 					// (RoomRegistry resolver), never a cached copy to
@@ -5768,7 +5768,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					certifyingMLDSASeed = dev.RelIdentityMLDSAPriv
 				}
 				if len(certifyingPriv) != ed25519.PrivateKeySize {
-					continue // sibling not yet stable for this device — shouldn't happen for a relationship that already completed rel_init
+					continue // sibling not yet stable for this device, shouldn't happen for a relationship that already completed rel_init
 				}
 				ts := shared.NowTS()
 				payload := shared.RelRotatePayload{
@@ -5807,12 +5807,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		// An earlier (non-final) handleQRDecoded call in this same loop
-		// may have set qrChooseMode=true — meant for the single-scan
+		// may have set qrChooseMode=true, meant for the single-scan
 		// flow, where that WAS the last thing known at the time. Here
 		// every selected file has now been fed in, so the only thing
 		// that still matters is whether the whole set is complete:
 		// qrMultiTotal==0 means it is (either reassembled just now, or
-		// every text was already a complete single-frame URI) — force
+		// every text was already a complete single-frame URI), force
 		// qrChooseMode back off in that case so no stale re-prompt
 		// follows a successful read. Left untouched (true) when a
 		// multi-part session is still genuinely incomplete.
@@ -5830,14 +5830,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case qrCameraFrameMsg:
 		if !m.qrCameraPreviewMode {
-			return m, nil // canceled in the meantime (Esc) — late frame, ignored
+			return m, nil // canceled in the meantime (Esc), late frame, ignored
 		}
 		m.qrCameraPreviewContent = msg.frame
 		return m, m.waitForQRCameraFrame()
 
 	case qrCameraDoneMsg:
 		if !m.qrCameraPreviewMode {
-			return m, nil // already canceled with Esc — late final message, ignored
+			return m, nil // already canceled with Esc, late final message, ignored
 		}
 		m.qrCameraPreviewMode = false
 		m.qrCameraPreviewContent = ""
@@ -5904,7 +5904,7 @@ func (m model) View() string {
 			torStr := styleMeta.Render(tab.name+":") + " " + outDot + " out  " + inDot + " in"
 			var hsStr string
 			if m.myAddr != "" {
-				// Label always neutral, like "Tor:" above — only the
+				// Label always neutral, like "Tor:" above, only the
 				// status symbol changes color, not the whole string.
 				label := styleMeta.Render(i18n.T("tui.hs_label"))
 				switch {
@@ -6217,7 +6217,7 @@ func (m model) View() string {
 		}
 		prompt := prompts[m.pwdMode] + stars + "▌"
 		// Strength indicator only while typing a NEW password (not the
-		// current one nor a confirmation) — purely informational, blocks
+		// current one nor a confirmation), purely informational, blocks
 		// nothing: the real defense against offline brute-force remains Argon2id.
 		if (m.pwdMode == 2 || m.pwdMode == 5) && m.pwdBuf != "" {
 			prompt += "  [" + styleMeta.Render(shared.PasswordStrength(m.pwdBuf).Label()) + "]"
@@ -6362,7 +6362,7 @@ func (m model) View() string {
 	}
 	if m.active < len(m.tabs) && m.tabs[m.active].isFiles {
 		// No text-input area here: the Files tab is view-only, not a
-		// chat — no box, no border, no separator. Must go AFTER all the
+		// chat, no box, no border, no separator. Must go AFTER all the
 		// popup-mode checks above: otherwise a popup open while this tab
 		// is active (e.g. the interface lock) would never get drawn.
 		return fmt.Sprintf("%s\n%s", tabBar, m.renderFileProgressView())
@@ -6371,7 +6371,7 @@ func (m model) View() string {
 }
 
 // renderReplyIndicator shows the explicit reply reference set (/msg N)
-// for the next send in the active tab — "" if none (no line added).
+// for the next send in the active tab, "" if none (no line added).
 // Persistent until consumed (replySentMsg) or overwritten by a new
 // /msg: unlike a Console message, which would scroll away, the user
 // must see it for as long as it stays active.
@@ -6461,7 +6461,7 @@ func (m model) renderTabLabel(i int, styleWarnDot lipgloss.Style) string {
 // renderTabBar shows the open tabs in a scrolling window centered on the
 // active tab, instead of a single ever-growing line: on a narrow
 // terminal (e.g. Android/Termux, far fewer columns than a desktop) with
-// more than a handful of tabs the full line never fits — without a
+// more than a handful of tabs the full line never fits, without a
 // window the terminal breaks it mid-ANSI-sequence on its own, and the
 // active tab can end up off-screen with no clue where it is. ‹/›
 // markers at the edges indicate tabs hidden beyond the cutoff, changing
@@ -6469,11 +6469,11 @@ func (m model) renderTabLabel(i int, styleWarnDot lipgloss.Style) string {
 //
 // identityPrefix: a "fake tab" carrying the active identity
 // ("<username>:"), ALWAYS the first element of the line, never inside
-// labels/widths — unlike real tabs it never scrolls out of view and is
+// labels/widths, unlike real tabs it never scrolls out of view and is
 // never navigable (no index in m.tabs corresponds to it). Rationale:
 // the terminal window title ("Neutrino - <user>", set in Init() via
 // tea.SetWindowTitle) depends on the terminal/multiplexer to actually
-// be shown — on some setups it never appears. This prefix is text
+// be shown, on some setups it never appears. This prefix is text
 // inside the TUI's own content, so it's always visible regardless of
 // the terminal. tea.SetWindowTitle is still set regardless: harmless,
 // a bonus for terminals that do show it.
@@ -6559,7 +6559,7 @@ func (m model) renderTabBar() string {
 // splitCmd separates the first word of a text input (the command, if
 // any, e.g. "/grp-ping") from the rest of the line, already trimmed of
 // spaces. hasArg indicates whether there was a space after the first
-// word, distinguishing "/x" from "/x ..." — needed because some
+// word, distinguishing "/x" from "/x ...", needed because some
 // commands behave differently depending on whether an argument was given.
 func splitCmd(text string) (head, arg string, hasArg bool) {
 	head, rest, hasArg := strings.Cut(text, " ")
@@ -6567,12 +6567,12 @@ func splitCmd(text string) (head, arg string, hasArg bool) {
 }
 
 // openPicker opens the contact/group picker for cmd, with typed already
-// set as the initial filter — used both when a command arrives with no
+// set as the initial filter, used both when a command arrives with no
 // argument, and when the typed argument doesn't resolve to a valid
 // recipient (instead of a flat error: the user finds it already
 // filtered in the list, ready to pick the right one). Typing the
 // parameter bypasses the picker ONLY when it actually resolves to
-// something — that's the one case where the picker doesn't appear.
+// something, that's the one case where the picker doesn't appear.
 func (m *model) openPicker(cmd client.CmdID, typed string) tea.Cmd {
 	m.contactPickerMode = true
 	m.contactPickerCmd = cmd
@@ -6582,7 +6582,7 @@ func (m *model) openPicker(cmd client.CmdID, typed string) tea.Cmd {
 }
 
 // errCommandNoArgs reports in Console that command id takes no
-// arguments — a mistyped command is never sent to the room as a message.
+// arguments, a mistyped command is never sent to the room as a message.
 func (m *model) errCommandNoArgs(id client.CmdID) tea.Cmd {
 	return consoleErrTab(m.consoleIdx, styleErr.Render(fmt.Sprintf(i18n.T("tui.err_command_no_args"), i18n.CommandName(id))))
 }
@@ -7021,12 +7021,12 @@ func (m *model) handleInput(text string) tea.Cmd {
 // refreshFileTransferPeer updates incomingFileTransfer.fromUserID and
 // announces (file_resume, idempotent) which byte to resume from, for
 // every incoming transfer still open on this tab whose sender has just
-// become resolvable to a user_id again — either our own (after an
+// become resolvable to a user_id again, either our own (after an
 // "init", reconnection of THIS client) or the sender's (after a
 // "user_joined", reconnection of the OTHER side while this client stays
 // connected). Without this, after the SENDER reconnects, the
 // recipient's acks would keep pointing at its old user_id, silently
-// dropped by the relay (Hub.Send returns nil on a target not found) —
+// dropped by the relay (Hub.Send returns nil on a target not found),
 // the chunks would look "never confirmed". Only transfers STILL present
 // in m.incomingTransfers count: completed/rejected ones are already
 // removed from the map elsewhere.
@@ -7054,7 +7054,7 @@ func (m *model) refreshFileTransferPeer(tabIdx int) []tea.Cmd {
 // ── room message handler ──────────────────────────────────────────────────────
 
 // roomMsgSeq numbers each call to handleRoomMsg in EXECUTION order (not
-// socket-read order) — the two sequences can diverge because every
+// socket-read order), the two sequences can diverge because every
 // roomServerMsg passes through bubbletea's internal queue before
 // arriving here. Only used for the WS channel trace below.
 var roomMsgSeq atomic.Uint64
@@ -7132,7 +7132,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		}
 		// HandleAck updates the reliable delivery queue (pending.go)
 		// regardless of pendingAckLines below (that's only the ackers
-		// view for the user, /grp-msg-acks) — always called, even if the
+		// view for the user, /grp-msg-acks), always called, even if the
 		// line is no longer tracked for the UI.
 		if tab.cli != nil && tab.cli.HandleAck(fromUserID, msgID) {
 			cli, ctx := tab.cli, tab.ctx
@@ -7147,7 +7147,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		}
 		if loc.tabIdx < len(m.tabs) && loc.lineIdx < len(m.tabs[loc.tabIdx].lines) {
 			// Resolved via tab.cli (the same connection this msg_ack
-			// arrived on), not a global lookup — from_user_id is
+			// arrived on), not a global lookup, from_user_id is
 			// authenticated server-side (internal/server/ws.go:
 			// FromUserID is populated from the WS session, never a
 			// client-declared field), so it's reliable.
@@ -7170,7 +7170,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		uname := m.memberName(tab, key)
 		tab.addOnline(key)
 		delete(tab.departures, key) // reconnected: reset previous state
-		// A reconnected peer has a new session user_id — the previous
+		// A reconnected peer has a new session user_id, the previous
 		// "send succeeded" outcome (for the old user_id) no longer
 		// proves anything about the current channel, must be redone
 		// (same principle as departures above).
@@ -7203,7 +7203,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		if fromUserID != "" && payload != "" {
 			err := tab.cli.StorePeerSenderKey(fromUserID, payload)
 			m.appendToDebug(fmt.Sprintf(i18n.T("tui.sender_key_debug"), client.ShortUID(fromUserID)))
-			// Ack only on successful registration — the sender_key
+			// Ack only on successful registration, the sender_key
 			// travels on the same reliable channel as chat messages
 			// (Client.sendSenderKeyTo): without confirmation the sender
 			// retransmits it (RetryDue), exactly like a normal message.
@@ -7272,7 +7272,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		uid, _ := raw["user_id"].(string)
 		key := tab.cli.LookupMemberKey(uid)
 		// Removes uid from known members and from any pending delivery
-		// queue waiting on it (pending.go) — after reading key above,
+		// queue waiting on it (pending.go), after reading key above,
 		// not before, since resolving the member still needs it.
 		tab.cli.UnregisterUser(uid)
 		if key == "" {
@@ -7292,7 +7292,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		case "lost":
 			userLeftKey = "tui.user_left_room_lost"
 		case "overloaded":
-			// Kick for a saturated delivery queue (roomDelivery) — not a
+			// Kick for a saturated delivery queue (roomDelivery), not a
 			// ban: no secret revocation, free reconnection. Treated like
 			// memberCrashed below (same color/automatic reconnection as
 			// "lost"), only the Console text is specific.
@@ -7363,7 +7363,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		}
 
 	case "file_announce":
-		// Cryptographic verification phase BEFORE any real data — only
+		// Cryptographic verification phase BEFORE any real data, only
 		// hash+signature, no meta_blob/name/size. Verified immediately:
 		// immediate ack. Failed: self-heal (instead of dropping),
 		// re-verified when applyRelInit resyncs the device
@@ -7411,7 +7411,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 			break
 		}
 		// Self-heal (same core mechanism already used for the
-		// ContentKey mismatch on messages, case sigFailed above) — with
+		// ContentKey mismatch on messages, case sigFailed above), with
 		// one difference: here it triggers an immediate probe round
 		// right away instead of waiting for the next periodic cycle, to
 		// make the best use of the fileTransferOfferTimeout window
@@ -7455,7 +7455,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		}
 		fromUser := m.memberName(tab, fromKey)
 		// The hash was already verified during the announce phase (case
-		// "file_announce" above) — without an entry here, the sender
+		// "file_announce" above), without an entry here, the sender
 		// sent an offer without our ack, which shouldn't ever happen by
 		// construction: dropped as defense in depth.
 		hash, hashKnown := m.verifiedFileHashes[transferID]
@@ -7467,7 +7467,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		if m.incomingTransfers == nil {
 			m.incomingTransfers = make(map[string]*incomingFileTransfer)
 		}
-		// Name and size are encrypted (meta_blob) — not yet known at
+		// Name and size are encrypted (meta_blob), not yet known at
 		// this point, populated by fileOfferMetaDecryptedMsg when the
 		// background decryption completes.
 		progress := &fileTransferProgress{
@@ -7496,7 +7496,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		cmds = append(cmds, m.tickFileProgress(), decryptFileOfferMeta(myContentKey, transferID, metaBlobB64))
 
 	case "file_announce_ack":
-		// Sender side: that recipient has verified the announce — only
+		// Sender side: that recipient has verified the announce, only
 		// NOW do we send them the real offer (meta_blob), never before.
 		fromUserID, _ := raw["from_user_id"].(string)
 		transferID, _ := raw["transfer_id"].(string)
@@ -7532,7 +7532,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		// acceptance arriving later must be readmitted into the window
 		// already in progress instead of being silently dropped.
 		if sending, ok := m.outgoingTransfersSending[transferID]; ok {
-			client.Dbg("file_accept: transfer=%s fromUserID=%s… resolved=%q — readmitted into the window already in progress", transferID, client.ShortUID(fromUserID), fromUser)
+			client.Dbg("file_accept: transfer=%s fromUserID=%s… resolved=%q, readmitted into the window already in progress", transferID, client.ShortUID(fromUserID), fromUser)
 			m.appendToConsole(styleMeta.Render(fmt.Sprintf(i18n.T("tui.send_file_accepted_by"), fromUser, sending.fileName)), false)
 			if sending.resumeCh != nil {
 				select {
@@ -7571,7 +7571,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		}
 		// No further action here: the collection window
 		// (fileOfferBatchWindow) is already armed from sending the
-		// offer (case fileEncryptedMsg), not from the first accept —
+		// offer (case fileEncryptedMsg), not from the first accept,
 		// this acceptance just queues onto ft.accepted above, waiting
 		// for either the timer to expire (case fileOfferBatchWindowMsg)
 		// or for everyone to respond first (len(ft.pending)==0 branch above).
@@ -7604,7 +7604,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 			// can be the last missing response while someone else
 			// already accepted shortly before, within the same window.
 			// Only if ft.accepted is also empty is it really the
-			// "everyone explicitly rejected" case — otherwise it
+			// "everyone explicitly rejected" case, otherwise it
 			// proceeds anyway with whoever accepted, exactly as the
 			// collection window's natural expiry would.
 			if len(ft.accepted) > 0 {
@@ -7626,7 +7626,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 
 	case "file_chunk":
 		// Only base64 decoding (CPU, not I/O) and non-blocking delivery
-		// to the dedicated writer goroutine — NEVER disk I/O here, see
+		// to the dedicated writer goroutine, NEVER disk I/O here, see
 		// the comment on incomingFileTransfer for why. Updating
 		// written/progress, sending the ack, and any finalization all
 		// move to case incomingChunkWrittenMsg, once the writer
@@ -7649,7 +7649,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		case it.chunkCh <- incomingChunkJob{seq: seq, chunk: chunk}:
 		default:
 			// Full queue (32, see case "file_offer"): the writer is
-			// slower than the network for this chunk — dropped, the
+			// slower than the network for this chunk, dropped, the
 			// sender will retransmit it at the ack timeout (same
 			// mechanism as a chunk lost on the network, not a new case
 			// to handle here).
@@ -7662,7 +7662,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		seqF, _ := raw["seq"].(float64)
 		// outgoingTransfersSending, NOT outgoingTransfers: the latter
 		// has already been deleted at the exact moment the real send
-		// started (see the comment on the field) — looking there would
+		// started (see the comment on the field), looking there would
 		// mean no ack ever reaches the sending goroutine, which would
 		// then isolate every recipient at the first timeout.
 		ft := m.outgoingTransfersSending[transferID]
@@ -7693,7 +7693,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 		fromByteF, _ := raw["from_byte"].(float64)
 		ft := m.outgoingTransfersSending[transferID]
 		if ft == nil || ft.resumeCh == nil {
-			break // transfer already concluded (or never existed) — announcement ignored
+			break // transfer already concluded (or never existed), announcement ignored
 		}
 		resumeKey := tab.cli.LookupMemberKey(fromUserID)
 		select {
@@ -7705,7 +7705,7 @@ func (m *model) handleRoomMsg(tabIdx int, raw map[string]any) []tea.Cmd {
 }
 
 // parseMsgID reads msg_id from the frame decoded into map[string]any.
-// On the wire it's a decimal string, not a JSON number — see the
+// On the wire it's a decimal string, not a JSON number, see the
 // comment on wsIncoming.MsgID in internal/server/ws.go: a random
 // full-width uint64 almost always gets corrupted going through
 // map[string]any (JSON numbers always become float64, exact only up to
@@ -7717,14 +7717,14 @@ func parseMsgID(v any) uint64 {
 }
 
 // maxBufferedPerKey limits how many out-of-sequence messages can pile
-// up waiting for a single keyID — protects memory, not against a real
+// up waiting for a single keyID, protects memory, not against a real
 // loss (which shouldn't ever happen with the sender's reliable delivery
 // queue, pending.go): an idx absurdly far from the expected one (buggy
 // or malicious peer) must not be able to grow the buffer without limit.
 const maxBufferedPerKey = 1000
 
 // bufferMsg holds onto mm (the complete raw frame) waiting for idx to
-// become the next one expected for keyID — no-op beyond maxBufferedPerKey.
+// become the next one expected for keyID, no-op beyond maxBufferedPerKey.
 func bufferMsg(tab *roomTab, keyID string, idx uint64, mm map[string]any) {
 	if tab.msgBuffer == nil {
 		tab.msgBuffer = make(map[string]map[uint64]map[string]any)
@@ -7768,7 +7768,7 @@ func (m *model) appendRoomLines(tab *roomTab, tabIdx int, lines []*chatLine) {
 
 // drainMsgBuffer processes, for every keyID now known, the buffered
 // frame at its expected idx (handleIncomingMessage then cascades to the
-// following ones) — called right after a sender_key is registered, so
+// following ones), called right after a sender_key is registered, so
 // messages that overtook their own key don't wait for the server's
 // retransmission.
 func (m *model) drainMsgBuffer(tab *roomTab, tabIdx int) ([]*chatLine, []tea.Cmd) {
@@ -7798,7 +7798,7 @@ func (m *model) drainMsgBuffer(tab *roomTab, tabIdx int) ([]*chatLine, []tea.Cmd
 // handleIncomingMessage routes a "message" frame through the per-keyID
 // reordering buffer (roomTab.msgBuffer, bufferMsg/takeBufferedMsg):
 // an out-of-sequence arrival (idx > expected, from Client.ExpectedIdx)
-// is held without being decrypted or acknowledged — never fast-forwarded
+// is held without being decrypted or acknowledged, never fast-forwarded
 // (see the comment on Client.DecryptMsg). An
 // arrival in the right order is processed (parseMessage) and cascades
 // to unblock every already-buffered successor, up to the first
@@ -7807,7 +7807,7 @@ func (m *model) drainMsgBuffer(tab *roomTab, tabIdx int) ([]*chatLine, []tea.Cmd
 // could have been the ORIGINAL ack that got lost, not the message. A
 // key not yet known (Client.ExpectedIdx: known=false) is buffered like
 // any out-of-sequence arrival, waiting for StorePeerSenderKey to
-// register it — drainMsgBuffer resumes it as soon as the key arrives.
+// register it, drainMsgBuffer resumes it as soon as the key arrives.
 func (m *model) handleIncomingMessage(tab *roomTab, tabIdx int, mm map[string]any) ([]*chatLine, []tea.Cmd) {
 	keyID, _ := mm["kid"].(string)
 	idxF, _ := mm["idx"].(float64)
@@ -7822,7 +7822,7 @@ func (m *model) handleIncomingMessage(tab *roomTab, tabIdx int, mm map[string]an
 	// parseMessage). Must be recognized AND processed BEFORE the gate
 	// below: ExpectedIdx/msgBuffer only track a PEER's chain-ratchet
 	// (StorePeerSenderKey/DecryptMsg), they never know our own
-	// senderKeyID — routing a self-echo through there would buffer it
+	// senderKeyID, routing a self-echo through there would buffer it
 	// forever, with no condition ever unblocking it.
 	if msgID := parseMsgID(mm["msg_id"]); msgID != 0 && tab.cli.HasSentText(msgID) {
 		line, cmd := m.parseMessage(tab, tabIdx, mm)
@@ -7883,7 +7883,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 	idx := uint64(idxF)
 	mseqF, _ := mm["mseq"].(float64) // same convention as idx: a small, monotonic counter, never a random full-width value (see msg_id)
 	mseq := uint64(mseqF)
-	gseqF, _ := mm["gseq"].(float64) // room-wide global sequence number (roomDelivery) — used by the explicit reply reference
+	gseqF, _ := mm["gseq"].(float64) // room-wide global sequence number (roomDelivery), used by the explicit reply reference
 	gseq := uint64(gseqF)
 	tsRaw, _ := mm["timestamp"].(string)
 	deviceSigB64, _ := mm["device_sig"].(string)
@@ -7899,7 +7899,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 	// Server self-echo (the broadcast always includes the sender too):
 	// if msgID matches one of our recent sends, reuses the already-
 	// known text instead of running the message through the generic
-	// receive ratchet. Necessary with ratchetDH — the dhr field we
+	// receive ratchet. Necessary with ratchetDH, the dhr field we
 	// publish when sending identifies a key of the PEER's, never one of
 	// our own; decrypting our own self-echo as if it were "another
 	// peer" would look up that EphID in our own outEphRing (which only
@@ -7933,7 +7933,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 	}
 
 	// The sender is the member behind the server-authenticated
-	// from_user_id, identified by its key — never the name sealed in the
+	// from_user_id, identified by its key, never the name sealed in the
 	// payload, which is self-declared and only a fallback label for a
 	// session not yet registered.
 	fromKey := tab.cli.LookupMemberKey(fromUserID)
@@ -7972,13 +7972,13 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 		return line, tea.Batch(deliveryAcks(tab, msgID, gseq, fromUserID, selfEcho, isOwn)...)
 	}
 
-	// Content signature (per-relationship ContentKey) — looks among
+	// Content signature (per-relationship ContentKey), looks among
 	// content_sigs for the entry addressed to US (For == our member key),
 	// then verifies it with the SENDER's ContentKey toward us
 	// (Contact.PeerRelContentPub for a real contact,
 	// ephemeralRel.peerContent for an unknown "introduced" one). The
 	// key is already in local memory as soon as the ephemeral bootstrap
-	// or rel_init has completed — no network bootstrap to wait for,
+	// or rel_init has completed, no network bootstrap to wait for,
 	// verification is always synchronous, a single attempt.
 	status := sigNone
 	var contentKeyTag string
@@ -8014,7 +8014,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 				contentKeyEphemeral = matched.ephemeral
 			default:
 				status = sigFailed
-				// Self-heal — same mechanism already used for the
+				// Self-heal, same mechanism already used for the
 				// per-relationship IdentityKey mismatch (see the case
 				// client.ErrInvalidServerSig further above), here applied
 				// to the ContentKey mismatch that signs MESSAGES.
@@ -8022,15 +8022,15 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 				// our rel_init from the next probe cycle; the peer ALWAYS
 				// replies with a rel_init_ack carrying its CURRENT
 				// bootstrap (identity+content together, see applyRelInit)
-				// — a single round trip is enough to resync
+				// a single round trip is enough to resync
 				// PeerRelContentPub, with no manual action (forced
 				// rotation) needed from the user. Guarded on
 				// RelInitConfirmedByPeer to avoid repeating the reset
 				// (and the disk Save it triggers) on every single message
-				// while the probe cycle is already in flight — the same
+				// while the probe cycle is already in flight, the same
 				// pattern already used for the identity case above. With
 				// dp resolved to an exact device, the reset targets ONLY
-				// that device — never a guessed choice on a multi-device
+				// that device, never a guessed choice on a multi-device
 				// contact; without dp it falls
 				// back to ALL ready devices, each one independently
 				// resending its own rel_init anyway.
@@ -8064,7 +8064,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 		}
 	}
 
-	// Device tag verification — fully self-
+	// Device tag verification, fully self-
 	// contained within this same message (dp arrives already decrypted
 	// from unseal, no network bootstrap): no async, no verifySig call.
 	// Never a rejection: if device_sig doesn't verify against dp at
@@ -8074,7 +8074,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 	if isOwn {
 		// For our own message dp is already the device public key we
 		// signed with when sending (m.myDevicePub, line above in the
-		// self-echo case) — no cryptographic verification needed, same
+		// self-echo case), no cryptographic verification needed, same
 		// reasoning already applied to the PQC tag below. Never a
 		// deviceTagNew: it makes no sense to compare our own device
 		// against a contact's "known device". The value helps whoever
@@ -8111,13 +8111,13 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 		}
 	}
 
-	// PQC tag status (hybrid network identity — optional per-room ML-DSA-65
-	// signature), always shown (green/red, never omitted — see
+	// PQC tag status (hybrid network identity, optional per-room ML-DSA-65
+	// signature), always shown (green/red, never omitted, see
 	// chatLine.pqcActive). For our own message it's enough that pqc_sig
 	// was in the frame at send time (no verification needed, it's
 	// ours); for someone else's message, self-contained like deviceTag
 	// (no bootstrap/keyserver) but with the public key coming from
-	// Contact.MLDSAPub, not from the message itself — a contact not yet
+	// Contact.MLDSAPub, not from the message itself, a contact not yet
 	// known or without MLDSAPub can never verify, so it shows red even
 	// if the sender really did sign.
 	pqcSigB64, _ := mm["pqc_sig"].(string)
@@ -8162,7 +8162,7 @@ func (m *model) parseMessage(tab *roomTab, tabIdx int, mm map[string]any) (*chat
 
 // deliveryAcks confirms a processed broadcast message: a msg_ack to its
 // sender for someone else's message. For our own self-echo (a cache hit
-// on TakeSentText, never just "isOwn" — a sibling device of our own
+// on TakeSentText, never just "isOwn", a sibling device of our own
 // identity decrypted via DecryptMsg would have isOwn=true without being
 // our own send) it is the server's pickup
 // (roomDelivery.Dispatch), never a separate frame: frees client-side
@@ -8191,7 +8191,7 @@ func deliveryAcks(tab *roomTab, msgID, gseq uint64, fromUserID string, selfEcho,
 // applyGroupMemberAdded validates and applies a "\x00GM\x00" announcement (see
 // groupMemberAddedPrefix): accepted only if the sender authenticated at the WS
 // session level (LookupMemberKey(fromUserID), not the self-declared "from" field
-// in the encrypted payload) is tab.hostKey — any other sender is silently
+// in the encrypted payload) is tab.hostKey, any other sender is silently
 // dropped, because only the host can change the group's trusted composition.
 // Idempotent: if the member is already in tab.groupMembers (redelivery/reconnection),
 // does nothing. Returns nil when there's nothing to show in chat.
@@ -8225,7 +8225,7 @@ func (m *model) applyGroupMemberAdded(tab *roomTab, fromUserID, ts, payloadJSON 
 
 // applyPQCToggleAnnounce interprets a "\x00PQ\x00" announcement (see
 // pqcToggleAnnouncePrefix): a system line visible to all members, no
-// state action beyond display — each message's PQC status is already
+// state action beyond display, each message's PQC status is already
 // readable from its own per-message chatLine.pqcActive, this
 // announcement only notifies of the CHANGE at the moment it happens.
 func applyPQCToggleAnnounce(from, ts, payloadJSON string) *chatLine {
@@ -8244,7 +8244,7 @@ func applyPQCToggleAnnounce(from, ts, payloadJSON string) *chatLine {
 // ── commands ───────────────────────────────────────────────────────────────────
 
 // postWithRetry sends an HTTP POST with up to 3 attempts and backoff.
-// The delays are needed because Tor takes 30–90s to build a new circuit
+// The delays are needed because Tor takes 30-90s to build a new circuit
 // toward an .onion after the previous one has expired. Separate from
 // postKnockWithRetry so standalone functions (e.g. sendDangerAckMsg)
 // running as detached goroutines with no access to the model can use it.
@@ -8272,7 +8272,7 @@ func postWithRetry(ctx context.Context, httpCli *http.Client, url, payload strin
 // postKnockWithRetry sends an HTTP knock over the active transport (Tor
 // or I2P) with up to 3 attempts and backoff. The delays are needed
 // because building a new circuit/tunnel toward the contact's network
-// address after the previous one expired can take time (on Tor, typically 30–90s).
+// address after the previous one expired can take time (on Tor, typically 30-90s).
 func (m model) postKnockWithRetry(ctx context.Context, httpCli *http.Client, url, payload string) (*http.Response, error) {
 	return postWithRetry(ctx, httpCli, url, payload, m.knockRetryDelay)
 }
@@ -8312,7 +8312,7 @@ func dialWithRetry(ctx context.Context, dial func(context.Context, string, strin
 
 // relKeysResolver builds the resolver to pass to m.addRoom/
 // m.replaceRoomSecret (RoomRegistry): called on every handshake
-// verification, never cached — always reads the current state of
+// verification, never cached, always reads the current state of
 // identityPub/devicePub (TUIParams.ResolveRelKeysForDevice, in practice
 // keystore.Keystore.RelKeysForDevice), never a snapshot taken at invite
 // time. identityPub/devicePub are copied by value: they stay stable
@@ -8329,7 +8329,7 @@ func (m *model) relKeysResolver(identityPub, devicePub []byte) func() (shared.Re
 	}
 }
 
-// selfRelKeysResolver builds a resolver with a FIXED value — used for
+// selfRelKeysResolver builds a resolver with a FIXED value, used for
 // the host's self-registration toward itself (an ephemeral pair
 // generated once for the room's lifetime, never a relationship with a
 // contact: no state to resolve again).
@@ -8364,10 +8364,10 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 			continue
 		}
 		// Relationship key exchange not yet complete (contact added
-		// recently, or never reached due to unreachability) — better a
+		// recently, or never reached due to unreachability), better a
 		// clear error here than proceeding with a handshake doomed to
 		// fail. ReadyDevices(): a contact is invitable if it has AT
-		// LEAST one ready device — the invite then extends to all known
+		// LEAST one ready device, the invite then extends to all known
 		// ones (fan-out), not just the first.
 		if len(c.ReadyDevices()) == 0 {
 			pending = append(pending, c.IdentityPub)
@@ -8402,7 +8402,7 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 		return consoleErrTab(m.consoleIdx, styleErr.Render(i18n.T("tui.err_secret_gen")))
 	}
 
-	// The host's connection to its OWN local server (loopback) — no real
+	// The host's connection to its OWN local server (loopback), no real
 	// contact involved, pure self-authentication: an ad-hoc ephemeral
 	// pair, never persisted, used both to sign ClientHello.Sig
 	// (mySigningKey in client.New) and to verify it (peerKey in addRoom).
@@ -8419,21 +8419,21 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 
 	// ratchetDH (Diffie-Hellman mix on every message, PCS beyond mere
 	// forward secrecy) activates only for rooms with exactly two
-	// members — host + one invitee. For N>2 it stays pure SenderKey:
+	// members, host + one invitee. For N>2 it stays pure SenderKey:
 	// pairwise DH makes no sense beyond 2 parties.
 	cli := client.New(m.localHost, m.localPort, m.myUsername, hostSecret, len(members) == 2, m.myDevicePub, m.signDeviceSig, m.signPQCSig, selfKey, shared.RelPeerKey{Pub: ed25519.PublicKey(selfPub), MLDSAPub: selfMLDSAPub})
 	cli.SetPendingLimits(m.pendingSlotLimit, m.messageRetryDelay, m.pendingEscalationAge, m.messageTTL)
 	client.Dbg("cmdInvite: client New() done at %s", shared.Now())
 
 	// List of recipients to invite (excluding myself), with an
-	// individual secret for EACH device of each contact — never shared
+	// individual secret for EACH device of each contact, never shared
 	// between different devices (fan-out): whoever invites doesn't pick
 	// a specific device, the invite extends to all ready ones
 	// (ReadyDevices()). Each secret must be registered right away on
 	// our own server (m.addRoom), not just sent in the knock, otherwise
 	// that device could never authenticate. netAddr is the address
 	// declared by the device itself (dev.Address), not the contact's
-	// root address — an additional device never listens on the latter.
+	// root address, an additional device never listens on the latter.
 	type target struct {
 		netAddr     string
 		identityPub ed25519.PublicKey
@@ -8446,7 +8446,7 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 	for _, c := range invited {
 		devs := c.ReadyDevices()
 		if len(devs) == 0 {
-			continue // already excluded above (pending) — defense in depth
+			continue // already excluded above (pending), defense in depth
 		}
 		perDevice := make(map[string][]byte, len(devs))
 		for devKey, dev := range devs {
@@ -8457,7 +8457,7 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 			// peerKey = the per-relationship IdentityKey this device
 			// declared toward us (verifies ClientHello.Sig when it
 			// connects); mySigningKey = OUR own toward it (signs
-			// ServerHello.Sig) — both already established by the
+			// ServerHello.Sig), both already established by the
 			// rel_init/rel_init_ack cycle, never exchanged here.
 			m.addRoom(groupID, tSecret, c.Username, c.IdentityPub, []byte(devKey), m.relKeysResolver(c.IdentityPub, []byte(devKey)))
 			perDevice[devKey] = tSecret
@@ -8508,18 +8508,18 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 	inviteTO := m.inviteTimeout
 
 	// connectCmd ONLY does the local cli.Connect(ctx) and immediately
-	// returns roomConnectedMsg — which starts waitForRoom, THIS
+	// returns roomConnectedMsg, which starts waitForRoom, THIS
 	// connection's read loop. Sending knocks to the invitees (knocksCmd
 	// below) is deliberately a SEPARATE tea.Cmd, run in parallel via
 	// tea.Batch, not chained before the return: the websocket library
 	// (coder/websocket, conn.go: Ping's doc) is explicit: "Ping must be
 	// called concurrently with Reader [...] it [...] waits for a Reader
-	// call to read the pong" — the server's periodic ping toward THIS
+	// call to read the pong", the server's periodic ping toward THIS
 	// same connection (ws.go, every pingInterval=30s, timeout
 	// pingInterval/2=15s) never gets a response until someone calls
 	// Read client-side; the server cancels the connection's context at
 	// expiry and (conn.go: setupReadTimeout/context.AfterFunc) closes
-	// the socket — the host's connection would die BEFORE
+	// the socket, the host's connection would die BEFORE
 	// roomConnectedMsg/waitForRoom even start, for a reason that has
 	// nothing to do with failed knocks or network issues: simply nobody
 	// was reading it yet.
@@ -8563,7 +8563,7 @@ func (m *model) cmdInvite(args string) tea.Cmd {
 		return nil
 	}
 	// groupNoJoinTimeout: if by then no invitee has joined yet, prompts
-	// the host — see groupNoJoinTimeoutMsg/queueGroupNoJoinPrompt.
+	// the host, see groupNoJoinTimeoutMsg/queueGroupNoJoinPrompt.
 	return tea.Batch(connectCmd, knocksCmd, tea.Tick(groupNoJoinTimeout, func(time.Time) tea.Msg {
 		return groupNoJoinTimeoutMsg{idx: idx, groupID: gid}
 	}))
@@ -8605,7 +8605,7 @@ func (m *model) cmdRecall(nameOrID string) tea.Cmd {
 		}
 	}
 	if len(missing) > 0 {
-		// Same logic as cmdInvite — queues instead of failing outright.
+		// Same logic as cmdInvite, queues instead of failing outright.
 		origNameOrID := nameOrID
 		return m.queuePendingInvite(i18n.CommandName(client.CmdRecall), missing, func(m *model) tea.Cmd { return m.cmdRecall(origNameOrID) })
 	}
@@ -8621,10 +8621,10 @@ func (m *model) cmdRecall(nameOrID string) tea.Cmd {
 	m.addRoom(gid, hostSecret, m.myUsername, m.myIdentityPub, m.myDevicePub, selfRelKeysResolver(ed25519.PublicKey(selfPub), selfMLDSAPub, selfKey))
 
 	// A new secret for each DEVICE of each saved member, never shared
-	// (fan-out, like cmdInvite) — whoever stayed connected with an old
+	// (fan-out, like cmdInvite), whoever stayed connected with an old
 	// secret (from a previous, not-yet-ended session) still stays on
 	// the same roomID, hence the same hub. richTarget carries the
-	// DEVICE's address (dev.Address), not the contact's root one — see
+	// DEVICE's address (dev.Address), not the contact's root one, see
 	// cmdInvite for why.
 	type richTarget struct {
 		netAddr     string
@@ -8642,7 +8642,7 @@ func (m *model) cmdRecall(nameOrID string) tea.Cmd {
 		c := m.resolveContactByPub(mb.IdentityPub)
 		devs := c.ReadyDevices()
 		if len(devs) == 0 {
-			continue // already excluded above (missing) — defense in depth
+			continue // already excluded above (missing), defense in depth
 		}
 		perDevice := make(map[string][]byte, len(devs))
 		for devKey, dev := range devs {
@@ -8657,7 +8657,7 @@ func (m *model) cmdRecall(nameOrID string) tea.Cmd {
 		secretsByMember[memberKey(mb)] = perDevice
 	}
 
-	// ratchetDH: see note in cmdInvite — active only for saved groups with exactly two members.
+	// ratchetDH: see note in cmdInvite, active only for saved groups with exactly two members.
 	cli := client.New(m.localHost, m.localPort, m.myUsername, hostSecret, len(members) == 2, m.myDevicePub, m.signDeviceSig, m.signPQCSig, selfKey, shared.RelPeerKey{Pub: ed25519.PublicKey(selfPub), MLDSAPub: selfMLDSAPub})
 	cli.SetPendingLimits(m.pendingSlotLimit, m.messageRetryDelay, m.pendingEscalationAge, m.messageTTL)
 
@@ -8701,11 +8701,11 @@ func (m *model) cmdRecall(nameOrID string) tea.Cmd {
 	inviteTO2 := m.inviteTimeout
 
 	// connectCmd/knocksCmd separate: see the extended note in cmdInvite
-	// — combining them into one function (with roomConnectedMsg
+	// combining them into one function (with roomConnectedMsg
 	// returned only after sending ALL knocks) would leave the host's
 	// read loop stalled long enough for the server to kill it over an
 	// unanswered ping, before it had ever started reading. knocksCmd
-	// sends in parallel (same scheme as cmdInvite) — a slow/unreachable
+	// sends in parallel (same scheme as cmdInvite), a slow/unreachable
 	// device must not delay the fan-out's other knocks.
 	connectCmd := func() tea.Msg {
 		if err := cli.Connect(ctx); err != nil {
@@ -8774,11 +8774,11 @@ func (m *model) cmdJoin(groupID string) tea.Cmd {
 
 // hostReadyForJoin reports the relationship keys toward the contact with
 // identity key hostPub (the host of an incoming invite) if they're already enough to build the
-// connection — a WEAKER condition than ReadyDevices() (the one used by
+// connection, a WEAKER condition than ReadyDevices() (the one used by
 // cmdInvite for the opposite direction): here OUR OWN RelIdentityPriv
 // (generated right away by AddContact) and THEIR PeerRelIdentityPub,
 // known as soon as even a single rel_init/rel_init_ack arrives, are
-// enough — regardless of RelIdentityConfirmedByPeer, which only says
+// enough, regardless of RelIdentityConfirmedByPeer, which only says
 // whether THEY already have ours, irrelevant to our ability to connect.
 func (m *model) hostReadyForJoin(hostPub []byte) (*keystore.DeviceRelation, bool) {
 	c := m.resolveContactByPub(hostPub)
@@ -8813,7 +8813,7 @@ func (m *model) hostReadyForJoin(hostPub []byte) (*keystore.DeviceRelation, bool
 }
 
 // joinKnock builds the connection toward the room described by knock,
-// if hostReadyForJoin already allows it — otherwise queues the
+// if hostReadyForJoin already allows it, otherwise queues the
 // acceptance in m.pendingJoins (queuePendingJoin), exactly like
 // queuePendingInvite does for the opposite direction in cmdInvite.
 func (m *model) joinKnock(knock pendingKnock) tea.Cmd {
@@ -8841,11 +8841,11 @@ func (m *model) joinKnock(knock pendingKnock) tea.Cmd {
 
 	mySigningKey := shared.RelSigningKey{Priv: hostDev.RelIdentityPriv, MLKEMSeed: hostDev.RelIdentityMLKEMPriv, MLDSASeed: hostDev.RelIdentityMLDSAPriv}
 	hostKey := shared.RelPeerKey{Pub: ed25519.PublicKey(hostDev.PeerRelIdentityPub), MLDSAPub: hostDev.PeerRelIdentityMLDSAPub}
-	// ratchetDH: see note in cmdInvite — active only if the invite is for exactly two members.
+	// ratchetDH: see note in cmdInvite, active only if the invite is for exactly two members.
 	cli := client.New(knock.FromAddr, 80, m.myUsername, knock.RoomSecret, len(members) == 2, m.myDevicePub, m.signDeviceSig, m.signPQCSig, mySigningKey, hostKey)
 	cli.SetPendingLimits(m.pendingSlotLimit, m.messageRetryDelay, m.pendingEscalationAge, m.messageTTL)
 	// ctx/cancel created here because isolatedDialer needs a ctx for
-	// its own construction — see TUIParams.IsolatedDialer.
+	// its own construction, see TUIParams.IsolatedDialer.
 	ctx, cancel := context.WithCancel(context.Background())
 	dialFn := m.dialTor
 	if m.isolatedDialer != nil {
@@ -8873,7 +8873,7 @@ func (m *model) joinKnock(knock pendingKnock) tea.Cmd {
 	m.refreshViewport()
 
 	// The first connection over Tor/I2P can take several seconds (I2P
-	// especially) — an "in progress" popup prevents the TUI from
+	// especially), an "in progress" popup prevents the TUI from
 	// looking stuck right after pressing Enter. Closes itself on
 	// roomConnectedMsg/roomErrMsg (see awaitingJoin); any key dismisses
 	// it earlier too, but the connection still continues in the background.
@@ -8889,7 +8889,7 @@ func (m *model) joinKnock(knock pendingKnock) tea.Cmd {
 }
 
 // queuePendingJoin queues a received invite that isn't yet acceptable
-// (see joinKnock) — same scheme as queuePendingInvite: announces the
+// (see joinKnock), same scheme as queuePendingInvite: announces the
 // wait in Console, immediately triggers a probe cycle (never a blind
 // wait until the next tick), and leaves it to retryPendingJoins to
 // retry as soon as hostReadyForJoin(knock.FromIdentityPub) turns true.
@@ -8901,7 +8901,7 @@ func (m *model) queuePendingJoin(knock pendingKnock) tea.Cmd {
 
 // retryPendingJoins checks whether the contact with identity key
 // hostPub (the host of one or more queued invites) is now ready
-// (hostReadyForJoin) and, for each one, retries joinKnock — called from
+// (hostReadyForJoin) and, for each one, retries joinKnock, called from
 // applyRelInit, like retryPendingInvites for the opposite direction.
 func (m *model) retryPendingJoins(hostPub []byte) tea.Cmd {
 	if len(m.pendingJoins) == 0 {
@@ -8928,7 +8928,7 @@ func (m *model) retryPendingJoins(hostPub []byte) tea.Cmd {
 }
 
 // blockingModalActive reports true if any exclusive mode occupying the
-// keyboard is currently active — the same list of `if m.xMode {...}`
+// keyboard is currently active, the same list of `if m.xMode {...}`
 // flags checked at the top of Update()'s tea.KeyMsg case. Used only by
 // showNextInviteModal to avoid stealing subsequent keys from an
 // operation already in progress (e.g. entering a password, a safety
@@ -8951,9 +8951,9 @@ func (m *model) blockingModalActive() bool {
 }
 
 // showNextInviteModal promotes the first still-queued group invite
-// (m.pendingKnocks, GroupID != "" — knocks with GroupID=="" don't get
+// (m.pendingKnocks, GroupID != "", knocks with GroupID=="" don't get
 // a popup, they stay just an informational log in Console) to
-// a modal popup, if no other popup is already open — see
+// a modal popup, if no other popup is already open, see
 // blockingModalActive. Must be called both when a new invite arrives
 // (case knockMsg) and on every KeyMsg as long as nothing is blocking
 // (the "self-healing" gate at the top of the tea.KeyMsg case): that way
@@ -8977,7 +8977,7 @@ func (m *model) showNextInviteModal() {
 
 // showNextFileOfferModal promotes the first queued file_offer
 // (m.pendingFileOffers) to a popup, if no other popup is already open
-// — same pattern as showNextInviteModal above, same reason: never write
+// same pattern as showNextInviteModal above, same reason: never write
 // the fileOffer* fields directly from fileOfferMetaDecryptedMsg, always
 // and only from here. Called both when new metadata finishes decrypting
 // (case fileOfferMetaDecryptedMsg) and on every tea.Msg as long as
@@ -8994,7 +8994,7 @@ func (m *model) showNextFileOfferModal() {
 		m.pendingFileOffers = m.pendingFileOffers[1:]
 		it := m.incomingTransfers[transferID]
 		if it == nil {
-			continue // expired/removed in the meantime (e.g. timeout) — skip to the next one
+			continue // expired/removed in the meantime (e.g. timeout), skip to the next one
 		}
 		m.fileOfferMode = true
 		m.fileOfferTransferID = it.transferID
@@ -9018,7 +9018,7 @@ func (m *model) ignoreInvite(groupID string) {
 	}
 }
 
-// declineInvite notifies the host that the invite was rejected — fire-
+// declineInvite notifies the host that the invite was rejected, fire-
 // and-forget via /knock (same scheme as sendProbeAck
 // below), encrypted toward the host's identity key already known from
 // the received knock (k.FromIdentityPub/k.FromAddr). Without this, an
@@ -9061,7 +9061,7 @@ func (m *model) declineInvite(k *pendingKnock) tea.Cmd {
 }
 
 // queueGroupNoJoinPrompt queues (deduplicated) tab idx for the "nobody
-// has accepted the invite yet, close the room?" popup — called both
+// has accepted the invite yet, close the room?" popup, called both
 // from a groupNoJoinTimeoutMsg and from an explicit decline that
 // exhausts all invitees (case "invite_declined"). No effect if someone
 // has already joined in the meantime (len(tab.online) > 1, including
@@ -9086,7 +9086,7 @@ func (m *model) queueGroupNoJoinPrompt(idx int) {
 
 // showNextGroupNoJoinModal promotes the first queued tab
 // (m.pendingNoJoinPrompts) to a confirmation popup, if no other popup
-// is already open — same pattern as showNextInviteModal/
+// is already open, same pattern as showNextInviteModal/
 // showNextFileOfferModal. Called from the "self-healing" gate in the
 // tea.KeyMsg case until the queue empties.
 func (m *model) showNextGroupNoJoinModal() {
@@ -9153,8 +9153,8 @@ func (m *model) cmdReinvite(name string) tea.Cmd {
 	inviteTO := m.inviteTimeout
 
 	// ReadyDevices(): re-invites ALL of this member's ready devices, a
-	// new secret for each one — never just one. The previous secret
-	// stops authenticating — if the member had been invited before and
+	// new secret for each one, never just one. The previous secret
+	// stops authenticating, if the member had been invited before and
 	// never connected, the old secret becomes unusable from that moment on.
 	targetContact := m.resolveContactByPub(target.IdentityPub)
 	var devs map[string]*keystore.DeviceRelation
@@ -9162,7 +9162,7 @@ func (m *model) cmdReinvite(name string) tea.Cmd {
 		devs = targetContact.ReadyDevices()
 	}
 	if targetContact == nil || len(devs) == 0 {
-		// Same logic as cmdInvite — queues instead of failing flat. The
+		// Same logic as cmdInvite, queues instead of failing flat. The
 		// retry must rerun cmdReinvite on the SAME originating room
 		// (tabIdx), not on m.active at retry time (the user may have
 		// switched tabs in the meantime).
@@ -9253,7 +9253,7 @@ func (m *model) cmdReinvite(name string) tea.Cmd {
 // RoomRegistry.RemoveSecret + KickMember, both in-process and
 // synchronous: the same process as the host's server, no network call
 // here, unlike cmdReinvite above). Stays in the room's roster, like a
-// member who left/declined (memberBanned, gray) — doesn't disappear: a
+// member who left/declined (memberBanned, gray), doesn't disappear: a
 // ban is an event other members must be able to see happened, not a
 // silent erasure.
 func (m *model) cmdBan(name string) tea.Cmd {
@@ -9297,7 +9297,7 @@ func (m *model) cmdBan(name string) tea.Cmd {
 
 // revokeMemberSecrets revokes ALL secrets registered for the member
 // with key memberKey in room tabIdx (one per device) and kicks its
-// connected session — the core shared by /grp-ban (interactive, above)
+// connected session, the core shared by /grp-ban (interactive, above)
 // and the silent revocation triggered by /cnt-del (a contact deletion
 // implies a ban from all chats). No effect if that member has no active
 // secrets in that room (secretsByMember only lives in the host tab, so a
@@ -9333,7 +9333,7 @@ func (m *model) revokeMemberSecrets(tabIdx int, memberKey string) (removed bool,
 // list, and broadcast-notifies (normal SenderKey channel, not the
 // contactCard file pipeline) all already-connected members to update
 // their own tab.groupMembers.
-// Available only to the host (tab connected locally, not remotely —
+// Available only to the host (tab connected locally, not remotely,
 // same constraint as cmdReinvite) and only on groups born with 3+
 // members (ratchetDH == false): a two-member chat stays two forever, no
 // ratchet→SenderKey downgrade.
@@ -9364,7 +9364,7 @@ func (m *model) cmdAddMember(name string) tea.Cmd {
 	}
 	devs := c.ReadyDevices()
 	if len(devs) == 0 {
-		// Same logic as cmdInvite — queues instead of failing flat. Same
+		// Same logic as cmdInvite, queues instead of failing flat. Same
 		// constraint as cmdReinvite: the retry must rerun on tabIdx, not
 		// on m.active at retry time.
 		origArg := contactPickerKey(*c)
@@ -9526,14 +9526,14 @@ func (m *model) cmdAddContact(args string) tea.Cmd {
 	}
 
 	// If the whole argument is the path of an existing file, reads it
-	// and uses its (trimmed) content as the URI — the same text file
+	// and uses its (trimmed) content as the URI, the same text file
 	// written by "neutrino show-qr" (dedicated save, see
 	// printAndSaveQR): lets identity be exchanged as an attachment
 	// (Telegram, email...) instead of having to retype the URI by hand.
 	// Checked against the WHOLE argument, not the first field: the
 	// manual format "<username> <pubkeyB64> [localname]" always has an
 	// internal space, which already makes it an almost-impossible path
-	// to find by accident on the filesystem — a nonexistent path simply
+	// to find by accident on the filesystem, a nonexistent path simply
 	// falls through to the normal parsing below, never a "file not
 	// found" error for something that was actually text/URI.
 	if info, err := os.Stat(args); err == nil && !info.IsDir() {
@@ -9556,7 +9556,7 @@ func (m *model) cmdAddContact(args string) tea.Cmd {
 			return consoleErrTab(m.consoleIdx, styleErr.Render(err.Error()))
 		}
 	} else {
-		// manual format: username pubkeyB64 [localname] — no ML-KEM
+		// manual format: username pubkeyB64 [localname], no ML-KEM
 		// segment possible in this format: the contact stays on
 		// classic knocks until the QR is re-exchanged.
 		fields := strings.Fields(args)
@@ -9576,7 +9576,7 @@ func (m *model) cmdAddContact(args string) tea.Cmd {
 
 // nuURIKeyB64Len/nuURIMLKEMB64Len/nuURIMLDSAB64Len are the fixed
 // standard-base64 lengths of the three known-length segments of the
-// nu:// format — 32-byte Ed25519, 1184-byte ML-KEM-768 (encapsulation
+// nu:// format, 32-byte Ed25519, 1184-byte ML-KEM-768 (encapsulation
 // key), and 1952-byte ML-DSA-65 (signing key, packed), respectively.
 // Shared by parseNuURI and whoever builds the URI (identityQRContent).
 const (
@@ -9586,17 +9586,17 @@ const (
 )
 
 // parseNuURI parses a URI nu://username/ed25519B64[/mlkemB64][/mldsaB64]
-// — the identity QR format (identityQRContent/cmdShowQR) — into
+// the identity QR format (identityQRContent/cmdShowQR), into
 // (username, 32-byte Ed25519 pubBytes, optional 1184-byte ML-KEM-768
 // mlkemPubBytes, optional 1952-byte ML-DSA-65 mldsaPubBytes). Shared by
 // cmdAddContact and startAddContactFromURI ("read QR code" flow, which
 // always and only produces this format, never the manual "username
 // pubkey" one). The keys are always
-// fixed-length in standard base64 and can contain "/" — so the URI
+// fixed-length in standard base64 and can contain "/", so the URI
 // can't be naively split on "/".
 //
 // The ML-KEM/ML-DSA segments are optional: when absent they return
-// nil, not an error — the caller
+// nil, not an error, the caller
 // (startAddContact→keystore.Contact.MLKEMPub/MLDSAPub empty) falls back
 // operations toward that contact to the classic form until the QR is
 // re-exchanged. A fourth segment isn't tolerated: any data beyond the
@@ -9645,7 +9645,7 @@ func parseNuURI(uri string) (username string, pubBytes []byte, mlkemPubBytes []b
 
 // startAddContact validates (not already present) and opens a summary
 // of the data read (username/key) with a yes/no confirmation
-// (addContactConfirmMode) — only after a yes does it move on to the
+// (addContactConfirmMode), only after a yes does it move on to the
 // local-name prompt (addContactMode/addContactBuf, keys handled in
 // Update). The last leg common to every source of a new contact (pasted
 // URI, manual form, decoded QR).
@@ -9686,7 +9686,7 @@ func (m *model) handleQRDecoded(text string) tea.Cmd {
 	// A total different from the one already in progress is a different
 	// session (e.g. the user restarted /cnt-read-qrcode from scratch, or
 	// is scanning a different contact's identity partway through the
-	// first) — restarts from zero instead of mixing two sessions
+	// first), restarts from zero instead of mixing two sessions
 	// (AssembleQRMulti would reject it later anyway, but this avoids
 	// accumulating uselessly until then).
 	if m.qrMultiTotal != 0 && m.qrMultiTotal != total {
@@ -9739,11 +9739,11 @@ func (m *model) cmdDelContact(name string) tea.Cmd {
 	removed := *contact
 
 	// Deleting a contact from the address book must not leave them with
-	// access to an already-open room where they were a member — the
+	// access to an already-open room where they were a member, the
 	// deletion implies a ban from all chats first, silently, with no
 	// separate confirmation, and only then is the contact actually
 	// deleted. Iterates every group tab we host and revokes this
-	// contact's secrets before removing it from the address book — same
+	// contact's secrets before removing it from the address book, same
 	// core as /grp-ban.
 	var cmds []tea.Cmd
 	for i, tab := range m.tabs {
@@ -9832,7 +9832,7 @@ func (m *model) cmdEdit(name string) tea.Cmd {
 	return nil
 }
 
-// myIdentityURI builds this identity's self-description nu:// URI — the
+// myIdentityURI builds this identity's self-description nu:// URI, the
 // canonical builder shared by cmdInfo("self") and cmdShowQR, so the two
 // never drift out of sync on which key segments they include
 // (same format as cmd/main.go's identityQRContent: pub, then MLKEM if
@@ -9912,7 +9912,7 @@ func (m *model) cmdInfo(name string) tea.Cmd {
 	} else {
 		lines = append(lines, fmt.Sprintf(i18n.T("tui.info_last_seen_today"), formatLocalTimestamp(c.LastSeenAt)))
 	}
-	// "sees me" — independent of "I see" (dot1/dot2 in the Contacts tab, see
+	// "sees me", independent of "I see" (dot1/dot2 in the Contacts tab, see
 	// contactState.seenByPeer): shows WHEN the last confirmation
 	// arrived instead of a static dot that never decays, and NEVER
 	// assumes a specific cause for the absence of confirmation (see the
@@ -9938,7 +9938,7 @@ func (m *model) cmdInfo(name string) tea.Cmd {
 
 // copyPopupURIToClipboard copies m.textPopupCopyURI to the clipboard
 // ("c" key in the /cnt-info popup, see Update) and appends a
-// confirmation or error line to the content already shown — the popup
+// confirmation or error line to the content already shown, the popup
 // stays open; clears textPopupCopyURI only on success, so a transient
 // failure remains retryable with another press of "c".
 func (m *model) copyPopupURIToClipboard() {
@@ -9951,14 +9951,14 @@ func (m *model) copyPopupURIToClipboard() {
 }
 
 // qrShowFrameDelay is the interval between one frame and the next in
-// the animated /show-qr popup — same value as qrOpticalFrameDelay
+// the animated /show-qr popup, same value as qrOpticalFrameDelay
 // (cmd/main.go, "qr send"), duplicated here because it's a different package.
 const qrShowFrameDelay = 350 * time.Millisecond
 
 // cmdShowQRSaveImage is /show-qr's "save as image" choice (idx 0,
-// default) — writes the same multi-part PNG + plain .txt as `neutrino
+// default), writes the same multi-part PNG + plain .txt as `neutrino
 // show-qr`'s own "image" choice, via the SaveIdentityQR closure
-// (cmd/main.go does the actual file I/O — see TUIParams.SaveIdentityQR's
+// (cmd/main.go does the actual file I/O, see TUIParams.SaveIdentityQR's
 // doc comment for why). Reports the saved paths in a text popup instead
 // of printing them straight to the terminal.
 func (m *model) cmdShowQRSaveImage() tea.Cmd {
@@ -9979,7 +9979,7 @@ func (m *model) cmdShowQRSaveImage() tea.Cmd {
 	return nil
 }
 
-// cmdShowQR shows the QR code of one's own identity in a popup —
+// cmdShowQR shows the QR code of one's own identity in a popup,
 // TUI equivalent of `neutrino show-qr` (cmd/main.go), reachable without
 // leaving the session. Same nu://username/base64pubkey[/mlkempub]
 // URI already shown in text form by cmdInfo "self".
@@ -9992,7 +9992,7 @@ func (m *model) cmdShowQRSaveImage() tea.Cmd {
 // terminal cell is ~2 times taller than wide: compressing horizontally
 // too breaks the compensation ToSmallString applies on purpose). A
 // fountain frame (120-byte payload, DefaultBlockSize) instead produces
-// a small QR by construction, always readable with normal rendering —
+// a small QR by construction, always readable with normal rendering,
 // no password (identity isn't a secret, unlike "qr send").
 func (m *model) cmdShowQR() tea.Cmd {
 	uri := m.myIdentityURI()
@@ -10004,7 +10004,7 @@ func (m *model) cmdShowQR() tea.Cmd {
 
 	sender, err := qroptical.NewSender([]byte(uri), 0)
 	if err != nil {
-		// Fallback: no drawable QR, just the text already in qrShowInfo —
+		// Fallback: no drawable QR, just the text already in qrShowInfo,
 		// same handling as an error in printAndSaveQR (cmd/main.go).
 		m.textPopupContent = m.qrShowInfo
 		m.textPopupMode = true
@@ -10018,7 +10018,7 @@ func (m *model) cmdShowQR() tea.Cmd {
 }
 
 // qrShowNextFrame advances the Sender by one frame and renders it as
-// ASCII — ToSmallString (not the quadrants): a fountain frame is
+// ASCII, ToSmallString (not the quadrants): a fountain frame is
 // already small (~180 characters of text, moderate QR version), no
 // need to compress further, and ToSmallString stays correctly square on screen.
 func (m *model) qrShowNextFrame() {
@@ -10033,14 +10033,14 @@ func (m *model) qrShowNextFrame() {
 	m.qrShowFrame = strings.TrimRight(q.ToSmallString(false), "\n")
 }
 
-// qrShowTick schedules the next frame — gen is the current one at
+// qrShowTick schedules the next frame, gen is the current one at
 // scheduling time, compared in Update (case qrShowTickMsg) against
 // model.qrShowGen to discard ticks from an already-closed session.
 func (m *model) qrShowTick(gen int) tea.Cmd {
 	return tea.Tick(qrShowFrameDelay, func(time.Time) tea.Msg { return qrShowTickMsg{gen: gen} })
 }
 
-// cmdInfoApp (/info-app) shows only the version number — meant to
+// cmdInfoApp (/info-app) shows only the version number, meant to
 // distinguish at a glance whether this binary is really the latest
 // build compiled or an earlier one.
 func (m *model) cmdInfoApp() tea.Cmd {
@@ -10050,7 +10050,7 @@ func (m *model) cmdInfoApp() tea.Cmd {
 }
 
 // cmdReadQR (/cnt-read-qrcode) opens the source choice (file or
-// camera) — the real action starts from qrChooseMode/qrFileMode
+// camera), the real action starts from qrChooseMode/qrFileMode
 // (handled in Update) and from cmdReadQRFiles/cmdReadQRCamera below.
 func (m *model) cmdReadQR() tea.Cmd {
 	m.qrChooseMode = true
@@ -10062,16 +10062,16 @@ func (m *model) cmdReadQR() tea.Cmd {
 // hit along the way. Decoding is pure file I/O (no model access), so it
 // runs in the background inside cmdReadQRFiles; handleQRDecoded (which
 // needs *model to accumulate multi-part chunks) then runs once per text
-// from Update — see case qrFilesDecodedMsg.
+// from Update, see case qrFilesDecodedMsg.
 type qrFilesDecodedMsg struct {
 	texts []string
 	err   error
 }
 
 // cmdReadQRFiles decodes every file chosen in qrFileMode (a single file,
-// or several at once via Space — an identity QR is often split across
+// or several at once via Space, an identity QR is often split across
 // several numbered PNGs) and reports them for handleQRDecoded to process
-// in the same order — see qrFilesDecodedMsg.
+// in the same order, see qrFilesDecodedMsg.
 func (m *model) cmdReadQRFiles(paths []string) tea.Cmd {
 	return func() tea.Msg {
 		texts := make([]string, 0, len(paths))
@@ -10087,18 +10087,18 @@ func (m *model) cmdReadQRFiles(paths []string) tea.Cmd {
 }
 
 // qrCameraFrameMsg carries the last frame already rendered as ANSI art
-// (see renderCameraPreview) — a discarded frame (not yet consumed when
+// (see renderCameraPreview), a discarded frame (not yet consumed when
 // a new one arrives) never blocks capture, see cmdReadQRCamera.
 type qrCameraFrameMsg struct{ frame string }
 
 // qrCameraDoneMsg carries the FINAL scan message (qrDecodedMsg on
-// success, localDisplayMsg on error/timeout/cancellation) — wrapped
+// success, localDisplayMsg on error/timeout/cancellation), wrapped
 // instead of being the direct type so waitForQRCameraFrame can
 // distinguish "new frame, keep waiting" from "scan finished, stop
 // waiting" with a single select.
 type qrCameraDoneMsg struct{ msg tea.Msg }
 
-// cmdReadQRCamera reads a QR from the webcam via qrscan.ScanCamera —
+// cmdReadQRCamera reads a QR from the webcam via qrscan.ScanCamera,
 // direct V4L2, pure Go (github.com/blackjack/webcam), no external
 // process (no system zbar/zbarcam binary).
 //
@@ -10109,7 +10109,7 @@ type qrCameraDoneMsg struct{ msg tea.Msg }
 // couldn't). cmdReadQRCamera reads from the webcam both a normal
 // single-frame QR (direct URI or NTR3 chunk) and an
 // animated fountain-coded stream (internal/qroptical, same protocol as
-// "qr send"/cmdShowQR) — auto-recognized by checking whether the FIRST
+// "qr send"/cmdShowQR), auto-recognized by checking whether the FIRST
 // decoded frame starts a fountain transfer (Receiver.Started()): if
 // not, it's a normal QR and a single frame is enough; if so, the scan
 // continues until Receiver.Done() is true. Both cases go through the
@@ -10134,7 +10134,7 @@ func (m *model) cmdReadQRCamera() tea.Cmd {
 			case previewCh <- frame:
 			default:
 				// The previous frame hasn't been consumed by the Update
-				// loop yet — discards and replaces it, NEVER blocks
+				// loop yet, discards and replaces it, NEVER blocks
 				// capture (channel buffered to 1, the most recent always wins).
 				select {
 				case <-previewCh:
@@ -10156,7 +10156,7 @@ func (m *model) cmdReadQRCamera() tea.Cmd {
 		}, func(text string) bool {
 			recv.AddFrameText(text)
 			if !recv.Started() {
-				// Not a fountain frame — normal QR, a single frame is enough.
+				// Not a fountain frame, normal QR, a single frame is enough.
 				done = true
 				doneURI = text
 				return true
@@ -10211,7 +10211,7 @@ func (m model) waitForQRCameraFrame() tea.Cmd {
 // recomputed on every frame: resizing the terminal mid-scan leaves the
 // preview at the size it started with, an acceptable minor limitation).
 // rows*2 is the actual number of vertical samples extracted from the
-// image — see the Unicode "▀" character trick in renderCameraPreview,
+// image, see the Unicode "▀" character trick in renderCameraPreview,
 // which encodes TWO pixels per character (upper/lower half) instead of just one.
 func qrCameraPreviewSize(termW, termH int) (cols, rows int) {
 	if termW <= 0 {
@@ -10238,7 +10238,7 @@ func qrCameraPreviewSize(termW, termH int) (cols, rows int) {
 }
 
 // renderCameraPreview reduces img to a small grid and draws it as
-// grayscale ANSI art — a "▀" character (upper half block) per pair of
+// grayscale ANSI art, a "▀" character (upper half block) per pair of
 // vertical pixels, foreground color = top pixel, background color =
 // bottom pixel (truecolor, "\x1b[38;2;r;g;bm"/"\x1b[48;2;r;g;bm"):
 // standard technique to double the vertical resolution available in a
@@ -10328,7 +10328,7 @@ func (m *model) cmdRoomInfo() tea.Cmd {
 		}
 		// Fixed convention for the whole line: status tag in brackets
 		// (color per status), any actionable hint right after in
-		// parentheses — never mixed in the same pair. An established
+		// parentheses, never mixed in the same pair. An established
 		// ContentKey relationship (relOK, below) doesn't replace this
 		// line: it only proves you're talking to whoever holds that
 		// key, not that it's really the expected person (a saved,
@@ -10347,10 +10347,10 @@ func (m *model) cmdRoomInfo() tea.Cmd {
 		lines = append(lines, line)
 
 		// Identity detail: information only (ContentKey tag/code), no
-		// hints — those all live on the line above, never here. The
+		// hints, those all live on the line above, never here. The
 		// ContentKey relationship is either established with the right
 		// keys (contentRelEstablished/relOK) or not established at all
-		// — there's no intermediate state to distinguish.
+		// there's no intermediate state to distinguish.
 		var detail string
 		switch {
 		case relOK:
@@ -10374,12 +10374,12 @@ func (m *model) cmdRoomInfo() tea.Cmd {
 }
 
 // contactExists reports whether a contact with this exact IdentityPub
-// already exists in the address book — a TRUE duplicate, not a mere
+// already exists in the address book, a TRUE duplicate, not a mere
 // homonym: two contacts can legitimately share the same self-declared
 // username (e.g. one of them ran a nuke and reappeared with a new
 // identity under the same chosen name), the real identity is the key,
 // not the name. Used before adding a contact to avoid silently
-// overwriting an already-saved identity — a different key could mean a
+// overwriting an already-saved identity, a different key could mean a
 // legitimate device change, but also an impersonation attempt.
 func (m *model) contactExists(pub []byte) bool {
 	for i := range m.contacts {
@@ -10401,7 +10401,7 @@ func (m model) computeAddress(pub ed25519.PublicKey) string {
 	return m.addressFromPub(pub)
 }
 
-// resolveContactByPub looks up a contact by its real IdentityPub — the
+// resolveContactByPub looks up a contact by its real IdentityPub, the
 // contact's only identifier: never ambiguous, unlike LocalName/Username,
 // which are self-declared and can be shared by several contacts (see
 // keystore.Keystore.AddContact).
@@ -10418,10 +10418,10 @@ func (m *model) resolveContactByPub(pub []byte) *ContactInfo {
 }
 
 // pickerContactKeyPrefix marks a picker key that directly encodes a
-// contact's IdentityPub, instead of its Username/LocalName — a leading
+// contact's IdentityPub, instead of its Username/LocalName, a leading
 // NUL byte isn't typeable from a terminal, so it never collides with a
 // hand-typed argument. Disambiguates two contacts with the
-// same Username (same name, different IdentityPub — e.g. after one of
+// same Username (same name, different IdentityPub, e.g. after one of
 // them ran /nukex and reappeared with a new identity under the same
 // name).
 const pickerContactKeyPrefix = "\x00pub:"
@@ -10443,8 +10443,8 @@ func decodePickerContactKey(key string) ([]byte, bool) {
 
 // resolveNameOrPickerKey resolves a command's argument, which can come
 // from two different sources: (1) a picker key (contactPickerKey above)
-// — resolves by IdentityPub, never ambiguous; (2) a hand-typed name
-// (LocalName, then Username) — resolved only when it matches exactly
+// resolves by IdentityPub, never ambiguous; (2) a hand-typed name
+// (LocalName, then Username), resolved only when it matches exactly
 // one contact. nil when nothing or more than one contact matches: the
 // caller opens the picker, where homonyms are listed by key.
 func (m *model) resolveNameOrPickerKey(name string) *ContactInfo {
@@ -10458,7 +10458,7 @@ func (m *model) resolveNameOrPickerKey(name string) *ContactInfo {
 // resolveContactArg resolves a command argument to a contact: a picker
 // key (contactPickerKey) by identity key; a typed name by LocalName,
 // then by Username. Returns the number of contacts the typed name
-// matches — more than one means it is ambiguous and the contact
+// matches, more than one means it is ambiguous and the contact
 // returned is nil: the caller must let the user pick by key.
 func (m *model) resolveContactArg(arg string) (*ContactInfo, int) {
 	if pub, ok := decodePickerContactKey(arg); ok {
@@ -10496,7 +10496,7 @@ func (m *model) resolveContactArg(arg string) (*ContactInfo, int) {
 // group open in tab, among those accepted by keep: a picker key by
 // identity key; a typed name by the contact's LocalName, then by the
 // displayed name, case-insensitively. Returns the number of members
-// the typed name matches — more than one means it is ambiguous.
+// the typed name matches, more than one means it is ambiguous.
 func (m *model) resolveMemberArg(tab *roomTab, arg string, keep func(GroupMember) bool) (GroupMember, int) {
 	candidates := make([]GroupMember, 0, len(tab.groupMembers))
 	for _, gm := range tab.groupMembers {
@@ -10539,7 +10539,7 @@ func (m *model) resolveMemberArg(tab *roomTab, arg string, keep func(GroupMember
 	return GroupMember{}, 0
 }
 
-// memberPickerKey is the picker key of a group member — the same
+// memberPickerKey is the picker key of a group member, the same
 // encoding as contactPickerKey, decoded by decodePickerContactKey.
 func memberPickerKey(gm GroupMember) string {
 	return pickerContactKeyPrefix + base64.RawURLEncoding.EncodeToString(gm.IdentityPub)
@@ -10572,13 +10572,13 @@ func (t *roomTab) setGroupLabels() {
 }
 
 // contactPickerDisplay builds the text shown for a contact in the
-// picker — same rule already established by renderInvitePicker
+// picker, same rule already established by renderInvitePicker
 // (placeholder `"…"` in quotes if LocalName isn't set, never a silent
 // fallback to Username), a natural-width variant (truncName, not
 // padName) because a picker can appear on a narrow terminal. Necessary
 // (not just cosmetic): with a unique key per IdentityPub, two homonym
 // contacts must show as DISTINCT rows even when LocalName is empty for
-// both — never a Username lookup that collapses them onto the same row.
+// both, never a Username lookup that collapses them onto the same row.
 func contactPickerDisplay(c ContactInfo) string {
 	localPart := `"…"`
 	if c.LocalName != "" {
@@ -10670,7 +10670,7 @@ func (m model) sendWakeKnock(groupID string, mem GroupMember) tea.Cmd {
 }
 
 // probeTorSelf checks whether Tor has active circuits.
-// Uses the control port (via checkCircuits) if available — response in < 1 ms.
+// Uses the control port (via checkCircuits) if available, response in < 1 ms.
 // Fallback: TCP connection to our own .onion (requires intro circuits already ready).
 func (m model) probeTorSelf() tea.Cmd {
 	if m.checkCircuits != nil {
@@ -10743,7 +10743,7 @@ func (m model) cmdWarmupCircuits() tea.Cmd {
 }
 
 // cmdRotateSenderKeys rotates the senderKey on every active connected tab.
-// Silent: produces no TUI output. Errors ignored — the next rotation will retry.
+// Silent: produces no TUI output. Errors ignored, the next rotation will retry.
 func (m model) cmdRotateSenderKeys() tea.Cmd {
 	var cmds []tea.Cmd
 	for tabIdx, tab := range m.tabs {
@@ -10765,7 +10765,7 @@ func (m model) cmdRotateSenderKeys() tea.Cmd {
 
 // cmdRetryPending retries delivery of pending messages on every
 // connected tab (Client.RetryDue) and shows a soft Console warning when
-// the oldest unconfirmed one exceeds pendingEscalationAge — one single
+// the oldest unconfirmed one exceeds pendingEscalationAge, one single
 // warning per stall (see roomTab.pendingEscalated), never repeated every round.
 func (m *model) cmdRetryPending() tea.Cmd {
 	var cmds []tea.Cmd
@@ -10799,7 +10799,7 @@ func (m *model) cmdRetryPending() tea.Cmd {
 }
 
 // cmdRetryEphemeralRelBootstraps retries sending the ephemeral
-// rel_bootstrap toward every not-yet-confirmed room member —
+// rel_bootstrap toward every not-yet-confirmed room member,
 // SendRelBootstrap (client.go) is a one-shot frame with no
 // retransmission of its own (requires peerSessionPubs/peerMLKEMPubs
 // already populated at the exact instant of the first call, from init/
@@ -10807,10 +10807,10 @@ func (m *model) cmdRetryPending() tea.Cmd {
 // it would otherwise be lost for the entire room session, no second
 // chance. The gate is rel.peerAcked (rel_bootstrap_ack received from
 // the peer), NEVER rel.established (that only says whether WE received
-// THEIR bootstrap — an independent signal, in the opposite direction):
+// THEIR bootstrap, an independent signal, in the opposite direction):
 // stopping there could interrupt the retry even when OUR OWN send
 // never arrived. maybeSendRelBootstrap is already idempotent (reuses
-// the same ephemeral keys) — same interval as cmdRetryPending above (5s).
+// the same ephemeral keys), same interval as cmdRetryPending above (5s).
 func (m *model) cmdRetryEphemeralRelBootstraps() tea.Cmd {
 	var cmds []tea.Cmd
 	for tabIdx, tab := range m.tabs {
@@ -10837,7 +10837,7 @@ func (m *model) cmdRetryEphemeralRelBootstraps() tea.Cmd {
 }
 
 // cmdRetrySenderKeyDistribution retries SendSenderKeyReliable toward
-// every room member for which the first send never succeeded — see the
+// every room member for which the first send never succeeded, see the
 // comment on roomTab.keySentTo for the full explanation (same class
 // of issue as cmdRetryEphemeralRelBootstraps above, more serious: what's
 // at stake here is the peer's ability to decrypt ANY of our messages,
@@ -10874,8 +10874,8 @@ func (m *model) cmdRetrySenderKeyDistribution() tea.Cmd {
 
 // cmdActive probes all known contacts in parallel over the active
 // transport (Tor or I2P, TCP attempt on :80). For contacts found
-// online, automatically sends a "probe_ping" knock — the dedicated
-// reachability ping ("sees me") — to which the receiver replies with
+// online, automatically sends a "probe_ping" knock, the dedicated
+// reachability ping ("sees me"), to which the receiver replies with
 // probe_ack.
 func (m model) cmdActive() tea.Cmd {
 	n := len(m.contacts)
@@ -10908,7 +10908,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 		}
 		// Every caller sets m.probing=true BEFORE knowing whether
 		// there'll be anything to probe (typically no contact added yet
-		// on the first periodic tick) — a nil here, never followed by a
+		// on the first periodic tick), a nil here, never followed by a
 		// probeResultMsg, would leave m.probing=true stuck for the rest
 		// of the session: every subsequent tickActiveMsg would find it
 		// already "in progress" and just reschedule itself, never
@@ -10927,7 +10927,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 	myAddr := m.myAddr
 	dhTagFn := m.dhTagFn
 	dhTagFnOld := m.dhTagFnOld
-	// rootPendingSet — contacts who haven't confirmed the latest root
+	// rootPendingSet, contacts who haven't confirmed the latest root
 	// IdentityKey rotation yet (Keystore.RootRotationPendingContacts).
 	rootPendingContacts, _ := m.rootRotationPendingNow()
 	rootPendingSet := make(map[string]bool, len(rootPendingContacts))
@@ -10954,14 +10954,14 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 		return dhTagFn
 	}
 	// fromPubFor picks the per-recipient IdentityPub declared in the
-	// knock envelope (KnockPayload.FromIdentityPub) — same reason as
+	// knock envelope (KnockPayload.FromIdentityPub), same reason as
 	// tagFnFor: handleKnock's "defense in depth" filter (on the
 	// recipient's server side) verifies that FromIdentityPub EXACTLY
-	// matches the pubkey whose tag matched — for a contact still in
+	// matches the pubkey whose tag matched, for a contact still in
 	// rootPendingSet that match happens on the OLD pubkey (tagFnFor
 	// above picks dhTagFnOld for them), so FromIdentityPub must also
 	// stay the old one, not the current one, or the knock would be
-	// dropped there (silently, identical 202 response) — for ANY knock
+	// dropped there (silently, identical 202 response), for ANY knock
 	// type, not just root_rotate.
 	fromPubFor := func(pub []byte) ed25519.PublicKey {
 		if rootPendingSet[string(pub)] && len(oldIdentityPub) == ed25519.PublicKeySize {
@@ -10971,7 +10971,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 	}
 	// dangerBroadcastPendingByPub/dangerEndPendingByPub: same
 	// principle as pendingSet above, but for danger_broadcast/danger_end
-	// (remote_nuke) — a contact can appear in more than one entry if
+	// (remote_nuke), a contact can appear in more than one entry if
 	// several target devices are queued at once (rare, but not
 	// prevented), so the value is a list of TargetDeviceID, not a
 	// simple bool.
@@ -11015,7 +11015,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 				if online {
 					conn.Close()
 					// probe_ping: the dedicated, deliberate reachability
-					// ping ("sees me") — sent ALWAYS, to every online
+					// ping ("sees me"), sent ALWAYS, to every online
 					// contact, on every cycle, regardless of any
 					// rotation. See sendProbePing/applyProbePing.
 					if len(c.IdentityPub) == 32 {
@@ -11023,21 +11023,21 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 					}
 					// rel_init: resent until the peer confirms having OUR
 					// OWN keys (RelInitConfirmedByPeer, not
-					// PeerRelIdentityPub — see applyRelInit). Same
+					// PeerRelIdentityPub, see applyRelInit). Same
 					// principle as probe_ping above: only when the TCP
 					// check just confirmed the contact is reachable right
 					// now, never blindly.
 					// generatedRelKeys: if OUR OWN relationship keys
 					// toward this contact don't exist yet, generate them
-					// HERE — needed for contacts whose RelIdentityPriv/
+					// HERE, needed for contacts whose RelIdentityPriv/
 					// RelContentPriv are empty. applyRelInit already generates ITS OWN
-					// missing keys, but ONLY upon RECEIVING a rel_init —
+					// missing keys, but ONLY upon RECEIVING a rel_init,
 					// if BOTH sides of such a pair have an empty
 					// RelIdentityPriv, that branch never fires because
 					// neither side ever sends a first rel_init: a
 					// permanent mutual stall. Generated here, not there,
 					// for the same reason the send is already
-					// conditioned on "online in this very cycle" — never blindly.
+					// conditioned on "online in this very cycle", never blindly.
 					dev, devOK := c.SoleDeviceOrPlaceholder()
 					if devOK && (!dev.RelIdentityConfirmedByPeer || !dev.RelContentConfirmedByPeer) && (len(dev.RelIdentityPriv) == 0 || len(dev.RelContentPriv) == 0) {
 						identKey, err1 := shared.GenerateRelSigningKey()
@@ -11090,7 +11090,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 					// rel_identity_rotate/rel_content_rotate: resent until
 					// the contact confirms receiving OUR new key
 					// (IdentityKeyPending/ContentKeyPending, cleared only
-					// by a real _ack — see applyRelRotate). Same
+					// by a real _ack, see applyRelRotate). Same
 					// principle as rel_init above, never both pending
 					// keys at once (mutual exclusion guaranteed by Start*Rotation).
 					if devOK && dev.IdentityKeyPending && len(dev.RelIdentityPriv) == ed25519.PrivateKeySize && len(dev.RelContentPriv) == ed25519.PrivateKeySize {
@@ -11126,12 +11126,12 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 						}
 					}
 					// root_rotate: announcement of a root IdentityKey
-					// rotation toward this contact — resent until they
+					// rotation toward this contact, resent until they
 					// confirm (RootRotationPendingContacts/root_rotate_ack).
 					// Mutual guard: if the relationship with this device
 					// has a Rel-key rotation STILL in progress
 					// (IdentityKeyPending/ContentKeyPending), the
-					// announcement stays queued until that one closes —
+					// announcement stays queued until that one closes,
 					// never two concurrent transitions on the same
 					// relationship. Sent toward SoleDevice() like this
 					// function's other sends; starting a rotation covers
@@ -11161,7 +11161,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 					// Sibling retry queue for rel_revoke: for every
 					// not-yet-acked self-revocation certificate held on
 					// behalf of ANY sibling device (this one included,
-					// SoleDevice()'s backstop role from either side —
+					// SoleDevice()'s backstop role from either side,
 					// see keystore.Contact.SiblingRevocations), resend
 					// once that sibling is known nuked (isNukedFn,
 					// backed by Keystore.NukedDevicePubs; nil disables
@@ -11221,7 +11221,7 @@ func (m model) probeContacts(tabIdx int, silent bool) tea.Cmd {
 
 // decodeMLKEMPubField extracts and decodes the "mlkem_pub" field
 // (base64, produced by json.Marshal of a []byte server-side) from a raw
-// userInfo/wsUserJoined entry — see HandshakeResult.PeerMLKEMPub.
+// userInfo/wsUserJoined entry, see HandshakeResult.PeerMLKEMPub.
 // Returns nil if absent (Client.RegisterMLKEMPub ignores it anyway, but
 // this avoids a spurious base64.DecodeString on an empty string).
 func decodeMLKEMPubField(raw map[string]any) []byte {
@@ -11238,15 +11238,15 @@ func decodeMLKEMPubField(raw map[string]any) []byte {
 
 // ephemeralRel holds the EPHEMERAL relationship (point-to-point
 // bootstrap, rel_bootstrap channel) with a room member with no
-// preexisting direct contact ("introduced") — never persisted,
+// preexisting direct contact ("introduced"), never persisted,
 // discarded when the room closes along with the rest of roomTab.
 type ephemeralRel struct {
 	myIdentity   shared.RelSigningKey // our ephemeral per-relationship IdentityKey toward this peer, this room
-	peerIdentity shared.RelPeerKey    // theirs, received via rel_bootstrap — zero value until it arrives
-	// peerIdentityMLKEMPub/peerContentMLKEMPub — the ML-KEM-768
+	peerIdentity shared.RelPeerKey    // theirs, received via rel_bootstrap, zero value until it arrives
+	// peerIdentityMLKEMPub/peerContentMLKEMPub, the ML-KEM-768
 	// companion of the two keys above, received in the same
 	// rel_bootstrap but not carried by RelPeerKey (which only serves to
-	// verify Sig, never to encrypt) — kept separately only so it isn't
+	// verify Sig, never to encrypt), kept separately only so it isn't
 	// lost on promotion (finalizePromotion), where it flows into
 	// Contact.PeerRel*MLKEMPub. Never used for anything else here.
 	peerIdentityMLKEMPub []byte
@@ -11254,18 +11254,18 @@ type ephemeralRel struct {
 	peerContent          shared.RelPeerKey    // theirs
 	peerContentMLKEMPub  []byte
 	established          bool // true = we also received THEIR rel_bootstrap (bidirectional relationship ready)
-	// peerAcked — true = the peer confirmed (rel_bootstrap_ack)
-	// receiving AND applying OUR OWN rel_bootstrap — a signal
+	// peerAcked, true = the peer confirmed (rel_bootstrap_ack)
+	// receiving AND applying OUR OWN rel_bootstrap, a signal
 	// independent from established above (that one only says whether
 	// WE received THEIRS, nothing about the opposite direction).
 	// SendRelBootstrap is a one-shot frame with no ack of its own from
-	// the underlying WS/HTTP protocol — without this field,
+	// the underlying WS/HTTP protocol, without this field,
 	// cmdRetryEphemeralRelBootstraps would never know when to stop
 	// retrying, or worse would stop as soon as established becomes true
 	// even if OUR OWN send never arrived.
 	peerAcked bool
 
-	// peerTransport* — the peer's transport address, received ONLY if
+	// peerTransport*, the peer's transport address, received ONLY if
 	// they sent a rel_promote (see shared.RelPromotePayload/
 	// applyRelPromote): they intend to become a real contact.
 	peerTransportPub      ed25519.PublicKey
@@ -11273,31 +11273,31 @@ type ephemeralRel struct {
 	peerTransportMLDSAPub []byte
 	peerPromoted          bool
 
-	// myPromoteSent — true after the user has run /grp-promote on this
+	// myPromoteSent, true after the user has run /grp-promote on this
 	// member (we sent OUR OWN rel_promote). Together with peerPromoted
 	// it decides if and when to finalize the promotion into a real
-	// keystore.Contact (finalizePromotion) — never automatically from
+	// keystore.Contact (finalizePromotion), never automatically from
 	// just receiving THEIR rel_promote, which alone expresses ONLY
 	// THEIR intent, never ours: explicit human action required on both sides.
 	myPromoteSent bool
-	// peerPromoteAcked — true if the peer confirmed (rel_promote_ack)
-	// receiving AND applying OUR OWN rel_promote — same principle as
+	// peerPromoteAcked, true if the peer confirmed (rel_promote_ack)
+	// receiving AND applying OUR OWN rel_promote, same principle as
 	// peerAcked above for rel_bootstrap: myPromoteSent only says
 	// whether WE sent ours, nothing about whether it ever arrived. No
 	// automatic retry here (unlike rel_bootstrap/sender_key): /grp-promote
-	// is an explicit human action, manually repeatable by the user —
+	// is an explicit human action, manually repeatable by the user,
 	// this field only provides visibility (log), it doesn't drive a periodic cycle.
 	peerPromoteAcked bool
 }
 
 // hasPersistentContentRel reports whether a persistent, USABLE
 // ContentKey relationship already exists with the member whose key is
-// memberKey — not "is a known contact" (mere presence in the address book),
+// memberKey, not "is a known contact" (mere presence in the address book),
 // but "the contact really has relationship keys exchanged" (at least
 // one device with OUR RelContentPriv and at least one device with
 // THEIR PeerRelContentPub, not revoked). A contact saved from a URI/QR
 // without ever completing a real rel_init handshake is "known" but
-// doesn't have this — using address-book presence alone as the gate to skip
+// doesn't have this, using address-book presence alone as the gate to skip
 // the ephemeral bootstrap would leave that case stuck forever on both
 // sides (neither path available).
 func (m *model) hasPersistentContentRel(memberKey string) bool {
@@ -11325,12 +11325,12 @@ func (m *model) hasPersistentContentRel(memberKey string) bool {
 
 // maybeSendRelBootstrap generates (if not already done for this peer in
 // this room) our ephemeral relationship key pair and sends it to
-// toUserID, the session of the member with key memberKey — only if a persistent, USABLE relationship doesn't already
+// toUserID, the session of the member with key memberKey, only if a persistent, USABLE relationship doesn't already
 // exist (hasPersistentContentRel, not mere presence in the address
 // book): a direct contact with keys already exchanged needs no
 // bootstrap at all, but one only "known by name" does. Idempotent:
 // called on every init/user_joined (like SendSenderKey), regenerates
-// the keys only the first time, then just resends the same ones —
+// the keys only the first time, then just resends the same ones,
 // harmless, same treatment already used for sender_key.
 func (m *model) maybeSendRelBootstrap(tabIdx int, toUserID, memberKey string) tea.Cmd {
 	if tabIdx < 0 || tabIdx >= len(m.tabs) {
@@ -11387,18 +11387,18 @@ func (m *model) maybeSendRelBootstrap(tabIdx int, toUserID, memberKey string) te
 }
 
 // applyRelBootstrap decrypts and registers an incoming rel_bootstrap
-// from an "introduced" member — the counterpart of maybeSendRelBootstrap
+// from an "introduced" member, the counterpart of maybeSendRelBootstrap
 // above. Also generates our own half if not already done (can arrive
 // before this client has processed the peer's entry in init/user_joined).
 // Returns a tea.Cmd that sends rel_bootstrap_ack to the sender ONLY when
-// applying it succeeds all the way through — the sender needs it to
+// applying it succeeds all the way through, the sender needs it to
 // know THEIR send arrived and to stop retrying (see SendRelBootstrapAck).
 func (m *model) applyRelBootstrap(tabIdx int, fromUserID, payloadB64 string) tea.Cmd {
 	if tabIdx < 0 || tabIdx >= len(m.tabs) {
 		return nil
 	}
 	tab := m.tabs[tabIdx]
-	// See the comment in maybeSendRelBootstrap — same case, receiving
+	// See the comment in maybeSendRelBootstrap, same case, receiving
 	// side. An unknown from_user_id here typically indicates a
 	// rel_bootstrap that arrived before this client processed the
 	// sender's user_joined/init (RegisterUser not yet called).
@@ -11449,14 +11449,14 @@ func (m *model) applyRelBootstrap(tabIdx int, fromUserID, payloadB64 string) tea
 	}
 }
 
-// applyRelPromote decrypts and registers an incoming rel_promote — the
+// applyRelPromote decrypts and registers an incoming rel_promote, the
 // peer intends to become a real contact, and sends us their transport
 // address to make it possible. Requires an already-established
-// ephemeral relationship (rel_bootstrap completed in both directions) —
+// ephemeral relationship (rel_bootstrap completed in both directions),
 // a rel_promote with no prior bootstrap is ignored. If WE have ALSO
 // already sent our own rel_promote for this peer (myPromoteSent,
 // explicit human action via /grp-promote, never triggered from here),
-// immediately finalizes the promotion into a real keystore.Contact — if
+// immediately finalizes the promotion into a real keystore.Contact, if
 // instead we're the first to arrive, we just record the received
 // intent, waiting for the user to run /grp-promote themselves.
 func (m *model) applyRelPromote(tabIdx int, fromUserID, payloadB64 string) tea.Cmd {
@@ -11480,14 +11480,14 @@ func (m *model) applyRelPromote(tabIdx int, fromUserID, payloadB64 string) tea.C
 		return nil
 	}
 	// The transport identity offered must be the member's own identity
-	// key — the one it is known by in this room.
+	// key, the one it is known by in this room.
 	if !bytes.Equal(p.TransportPub, memberKeyPub(key)) {
 		client.Dbg("rel_promote: %s offers an identity different from its own member key, discarded", m.memberName(tab, key))
 		return nil
 	}
 	// Signature required against the sender's ephemeral per-relationship
 	// IdentityKey, already known from rel.established (see the comment
-	// on RelPromotePayload.Ts/Sig/SigMLDSA) — without it, a malicious
+	// on RelPromotePayload.Ts/Sig/SigMLDSA), without it, a malicious
 	// server could inject a fabricated transport address.
 	if !shared.VerifyRelPromote(rel.peerIdentity.Pub, p.TransportPub, p.TransportMLKEMPub, p.TransportMLDSAPub, username, p.Ts, p.Sig) {
 		client.Dbg("rel_promote: %s invalid signature, discarded", username)
@@ -11521,7 +11521,7 @@ func (m *model) applyRelPromote(tabIdx int, fromUserID, payloadB64 string) tea.C
 
 // cmdPromote (behind /grp-promote) promotes an EPHEMERAL member of the
 // current room (no preexisting direct contact, point-to-point bootstrap
-// already completed) to a real contact — explicit human action, never
+// already completed) to a real contact, explicit human action, never
 // automatic, required on BOTH sides (the other member must run the
 // same command on us). Reuses the four relationship keys already
 // exchanged in the ephemeral bootstrap (no new generation): only sends
@@ -11588,12 +11588,12 @@ func (m *model) cmdPromote(name string) tea.Cmd {
 }
 
 // finalizePromotion turns the ephemeral relationship with the member
-// whose key is memberKey (already established, with myPromoteSent && peerPromoted — a
+// whose key is memberKey (already established, with myPromoteSent && peerPromoted, a
 // condition checked by its only two callers, cmdPromote and
 // applyRelPromote) into a real keystore.Contact: reuses the four
 // relationship keys already exchanged in the ephemeral bootstrap, adds
 // only the transport address received via rel_promote. From here on
-// the relationship is a contact like any other — RelInitConfirmedByPeer
+// the relationship is a contact like any other, RelInitConfirmedByPeer
 // starts false, confirmed by the usual rel_init/rel_init_ack cycle
 // triggered right below (same treatment as a contact added from a QR,
 // see case contactAddedMsg).
@@ -11613,7 +11613,7 @@ func (m *model) finalizePromotion(tabIdx int, memberKey string) tea.Cmd {
 		username = m.memberName(tab, memberKey)
 	}
 	if c := m.resolveContactByPub(rel.peerTransportPub); c != nil {
-		// Already promoted via another path (concurrent re-entry) — cleanup only.
+		// Already promoted via another path (concurrent re-entry), cleanup only.
 		client.Dbg("finalizePromotion: %s already a contact (devices=%d %v), discarding and clearing ephRels", username, len(c.Devices), deviceKeyList(c.Devices))
 		delete(tab.ephRels, memberKey)
 		return nil
@@ -11645,7 +11645,7 @@ func (m *model) finalizePromotion(tabIdx int, memberKey string) tea.Cmd {
 			MLKEMPub:    transportMLKEM,
 			MLDSAPub:    transportMLDSA,
 			// No DevicePub exchange in this flow (ephemeral in-room
-			// bootstrap) — placeholder "" entry, promoted by the first
+			// bootstrap), placeholder "" entry, promoted by the first
 			// real rel_init/rel_init_ack (same treatment as AddContact).
 			Devices: map[string]*keystore.DeviceRelation{
 				"": {
@@ -11683,7 +11683,7 @@ func (m *model) finalizePromotion(tabIdx int, memberKey string) tea.Cmd {
 // cmdRotateKey starts a rotation WITH CONTINUITY of the root
 // IdentityKey (network address). A rare, wide-reaching operation:
 // changes the address every contact and every one of our own sibling
-// devices reaches us at. No picker, no modal popup — explicit text
+// devices reaches us at. No picker, no modal popup, explicit text
 // confirmation (typing "ROTATE"), same principle already used for
 // /nuke ("NUKE"): less UI machinery to maintain for such a rare action.
 func (m *model) cmdRotateKey(arg string) tea.Cmd {
@@ -11791,7 +11791,7 @@ func (m *model) cmdStartRelRotation(name string, which string) tea.Cmd {
 	// Opposite guard to probeContacts's (rootPendingSet blocks
 	// root_rotate announcements while a Rel-rotation toward that
 	// contact is in progress): here it blocks starting a NEW
-	// Rel-rotation if a root rotation is still pending toward them —
+	// Rel-rotation if a root rotation is still pending toward them,
 	// never two concurrent transitions on the same relationship.
 	rootPendingContacts, _ := m.rootRotationPendingNow()
 	for _, p := range rootPendingContacts {
@@ -11822,7 +11822,7 @@ func (m *model) cmdStartRelRotation(name string, which string) tea.Cmd {
 
 // encryptKnockTagged encrypts a KnockPayload (shared.EncryptKnock) and
 // attaches the static-static DH tag (shared.KnockDHTag, via dhTagFn)
-// required by the server-side pre-decryption filter — see
+// required by the server-side pre-decryption filter, see
 // TUIParams.DHTagFn. dhTagFn must never be nil in production (set by
 // cmd/main.go); a knock sent without a valid tag would
 // be silently dropped by the server anyway (mandatory mutuality), so
@@ -11831,12 +11831,12 @@ func (m *model) cmdStartRelRotation(name string, which string) tea.Cmd {
 //
 // recipientMLKEMPubBytes is the recipient's durable ML-KEM-768
 // encapsulation key (1184 bytes, from Contact.MLKEMPub/
-// pendingContact.mlkemPub) — nil or empty for a contact with no
+// pendingContact.mlkemPub), nil or empty for a contact with no
 // known key: the knock stays encrypted in
 // classic form, permanently, not just as a transitional state (see
 // shared.EncryptKnock). A present but malformed value is silently
 // ignored (falls back to the classic form) instead of failing the
-// entire send — a contact with corrupted data in the address book must
+// entire send, a contact with corrupted data in the address book must
 // not block otherwise valid knocks.
 func encryptKnockTagged(dhTagFn func(ed25519.PublicKey) ([]byte, error), recipientPub ed25519.PublicKey, recipientMLKEMPubBytes []byte, kp shared.KnockPayload) (string, error) {
 	if dhTagFn == nil {
@@ -11857,7 +11857,7 @@ func encryptKnockTagged(dhTagFn func(ed25519.PublicKey) ([]byte, error), recipie
 
 // mlkemPubForContact looks in m.contacts for a contact with IdentityPub
 // equal to pub and returns its raw MLKEMPub (nil if the contact is
-// unknown or doesn't have a known ML-KEM key yet) — helper for
+// unknown or doesn't have a known ML-KEM key yet), helper for
 // encryptKnockTagged callers that only have an Ed25519 pubkey on hand,
 // not already the whole ContactInfo.
 func (m *model) mlkemPubForContact(pub ed25519.PublicKey) []byte {
@@ -11870,17 +11870,17 @@ func (m *model) mlkemPubForContact(pub ed25519.PublicKey) []byte {
 }
 
 // sendRelInitCmd builds (if possible) the tea.Cmd that sends c our
-// public relationship keys — one knock per entry of knockTypes, sent in
+// public relationship keys, one knock per entry of knockTypes, sent in
 // order: "rel_init" for the first send (right after AddContact),
 // "rel_init_ack" for the symmetric reply (applyRelInit), possibly
 // followed by our own "rel_init". Returns nil if prerequisites are missing (own keys
-// not yet generated, transport not active) — never a blocking error,
+// not yet generated, transport not active), never a blocking error,
 // fire-and-forget: the periodic probe cycle will retry.
 // sendRelInitCmd sends a rel_init/rel_init_ack toward ONE specific
-// device of the contact (dev, already resolved by the caller — never
+// device of the contact (dev, already resolved by the caller, never
 // internally via SoleDevice(), which would fail as soon as the contact
-// has 2+ known devices). netAddr is dev.Address — the address declared
-// by THAT device — falling back to c.NetAddr (root) only if still
+// has 2+ known devices). netAddr is dev.Address, the address declared
+// by THAT device, falling back to c.NetAddr (root) only if still
 // empty: the only legitimate case is the very first rel_init ever sent
 // to a freshly-added contact, where nothing has been received yet from
 // any of its devices (the only address known at that point is the root
@@ -11928,7 +11928,7 @@ func (m *model) sendRelInitCmd(c ContactInfo, dev *keystore.DeviceRelation, knoc
 	knockTO := m.knockHttpTimeout
 	targetUsername := c.Username
 	return func() tea.Msg {
-		// The outcome is always visible in debug here — same scheme
+		// The outcome is always visible in debug here, same scheme
 		// already used by probeContacts for the periodic retry
 		// (client.Dbg("probe: rel_init → ... FAILED")): without this,
 		// the very first send (right after AddContact, or the
@@ -11948,8 +11948,8 @@ func (m *model) sendRelInitCmd(c ContactInfo, dev *keystore.DeviceRelation, knoc
 }
 
 // sendRelInitAndReport is sendRelInit with the outcome visible to the
-// caller — a failure here (encryptKnockTagged, or the HTTP POST itself
-// — e.g. a Tor circuit that fails to build despite the immediately
+// caller, a failure here (encryptKnockTagged, or the HTTP POST itself
+// e.g. a Tor circuit that fails to build despite the immediately
 // preceding TCP check having succeeded) is otherwise indistinguishable
 // from a success, for any caller.
 func sendRelInitAndReport(dial func(context.Context, string, string) (net.Conn, error),
@@ -11964,10 +11964,10 @@ func sendRelInitAndReport(dial func(context.Context, string, string) (net.Conn, 
 	// Authenticated against the sender's root IdentityKey (the only
 	// anchor already known to the recipient at this point in the
 	// exchange, see the comment on RelBootstrapPayload.Ts/Sig/SigMLDSA
-	// in relbootstrap.go) — never for the ephemeral in-room bootstrap
+	// in relbootstrap.go), never for the ephemeral in-room bootstrap
 	// (EncryptRelBootstrap, a different channel, never passed through
 	// here). Ts is fresh on every single send/retry, never reused from
-	// a previous call — same principle as RelKeyRotationMsg.
+	// a previous call, same principle as RelKeyRotationMsg.
 	if signRelBootstrapFn != nil {
 		relBootstrap.Ts = shared.NowTS()
 		relBootstrap.Sig = signRelBootstrapFn(relBootstrap.IdentityPub, relBootstrap.ContentPub, relBootstrap.DevicePub, myUsername, relBootstrap.Ts)
@@ -12005,7 +12005,7 @@ func sendRelInitAndReport(dial func(context.Context, string, string) (net.Conn, 
 }
 
 // sendRelRotate sends a "rel_identity_rotate"/"rel_content_rotate"
-// knock (request) or its "_ack" counterpart (confirmation) — same
+// knock (request) or its "_ack" counterpart (confirmation), same
 // scheme as sendRelInit, the payload (already built by the caller: the
 // request carries Sig/SigMLDSA, the ack just echoes NewPub) is the only
 // difference between the two directions. No distinction here between
@@ -12042,7 +12042,7 @@ func sendRelRotate(dial func(context.Context, string, string) (net.Conn, error),
 }
 
 // sendRootRotate sends the "root_rotate" knock (root IdentityKey
-// rotation announcement) toward ONE contact — the exact same scheme as
+// rotation announcement) toward ONE contact, the exact same scheme as
 // sendRelRotate, myPub/dhTagFn have already been picked by the caller
 // based on whether this contact has already applied the latest
 // rotation or not (see fromPubFor/tagFnFor in probeContacts).
@@ -12078,8 +12078,8 @@ func sendRootRotate(dial func(context.Context, string, string) (net.Conn, error)
 
 // sendRelRevoke sends the fire-and-forget "rel_revoke" knock toward one
 // contact, carrying one sibling device's already-prepared self-
-// revocation certificates (relRevoke.DevicePub/IdentitySig/ContentSig —
-// never generated here, see keystore.SiblingRevocation) — the sender
+// revocation certificates (relRevoke.DevicePub/IdentitySig/ContentSig,
+// never generated here, see keystore.SiblingRevocation), the sender
 // may be the device the certificates are FOR, or any sibling acting as
 // a backstop on its behalf (keystore.Contact.SiblingRevocations); the
 // recipient cannot and need not distinguish the two. MLKEMPub/FromAddr
@@ -12116,15 +12116,15 @@ func sendRelRevoke(dial func(context.Context, string, string) (net.Conn, error),
 }
 
 // sendRelRevokeAck sends the fire-and-forget "rel_revoke_ack" knock
-// toward the device that announced a just-verified revocation —
+// toward the device that announced a just-verified revocation,
 // RelRevoke only carries DevicePub (echo, no signature: an ack
 // certifies nothing new, only confirms receipt, same principle as
 // RelRotatePayload in the ack). netAddr is the network address of the
-// ACTUAL SENDER of the knock (KnockPayload.FromAddr) — never an address
+// ACTUAL SENDER of the knock (KnockPayload.FromAddr), never an address
 // derived from the shared root: a sibling revoking on behalf of another
 // device resides at a different address than the revoked device (the
 // network address is per-device, only the root is shared between
-// siblings — see NetworkIdentityPrivKeyFor).
+// siblings, see NetworkIdentityPrivKeyFor).
 func sendRelRevokeAck(dial func(context.Context, string, string) (net.Conn, error),
 	netAddr string, recipientPub ed25519.PublicKey, recipientMLKEMPub []byte,
 	myUsername string, myPub ed25519.PublicKey, devicePub []byte,
@@ -12153,7 +12153,7 @@ func sendRelRevokeAck(dial func(context.Context, string, string) (net.Conn, erro
 }
 
 // sendRootRotateAck sends the fire-and-forget "root_rotate_ack" knock
-// toward the contact who just announced a valid root rotation —
+// toward the contact who just announced a valid root rotation,
 // FromIdentityPub is ALWAYS our stable, current identity (never old: WE
 // are the one replying, not sending our own announcement), the tag is
 // the current one (dhTagFn, not dhTagFnOld: the announcement's sender
@@ -12198,7 +12198,7 @@ func postDeviceSyncKnock(dial func(context.Context, string, string) (net.Conn, e
 
 // rootRotationAdoptedMsg signals that the process just adopted a new
 // root (either started locally or received via device_sync from a
-// sibling) — Update() uses it to refresh the public keys/address kept
+// sibling), Update() uses it to refresh the public keys/address kept
 // in memory (m.myIdentityPub/myMLKEMPub/myMLDSAPub/myAddr), otherwise
 // stale for the process's entire lifetime (no other point in the code
 // reassigns them after startup).
@@ -12234,7 +12234,7 @@ func (m *model) rootRotationPendingNow() ([][]byte, [][]byte) {
 // (derived from the new root and from the old one, via
 // networkIdentityPubFor/oldNetworkIdentityPubFor): until the sibling
 // has adopted it, its hidden service stays published at the address
-// derived from the OLD root — same principle already applied to the
+// derived from the OLD root, same principle already applied to the
 // remote_nuke fan-out. Called from the same probeContacts cycle
 // (cmdActive/cmdActiveSilent), not nested inside it: it's per-device, not per-contact.
 func (m model) propagateRootRotationToDevices() tea.Cmd {
@@ -12372,7 +12372,7 @@ func (m *model) applyDeviceSync(k shared.KnockPayload) tea.Cmd {
 	return nil
 }
 
-// applyDeviceSyncAck handles an incoming "device_sync_ack" knock — one
+// applyDeviceSyncAck handles an incoming "device_sync_ack" knock, one
 // of our own sibling devices confirms adopting the latest root rotation
 // (always, harmless if it wasn't waiting for any) and/or brings back
 // ITS OWN address book (bidirectional exchange of a sync we requested).
@@ -12412,7 +12412,7 @@ func (m *model) applyDeviceSyncAck(k shared.KnockPayload) tea.Cmd {
 // adoptSyncedContacts brings into the in-memory address book what a sync
 // with one of our own devices merged into the keystore: contacts not
 // shown yet are added, and an already-shown contact gets the devices it
-// lacks. Devices already in memory are left as they are — they may hold
+// lacks. Devices already in memory are left as they are, they may hold
 // changes not saved yet. A placeholder device ("") the keystore has
 // already replaced with a real one is dropped.
 func (m *model) adoptSyncedContacts() {
@@ -12489,13 +12489,13 @@ func (m *model) applyContactTombstoneAck(k shared.KnockPayload) tea.Cmd {
 }
 
 // sendRelRotateCmd builds the tea.Cmd that sends (in the background,
-// fire-and-forget) an already-prepared rotation knock — c is the
+// fire-and-forget) an already-prepared rotation knock, c is the
 // recipient contact (for address/transport keys), payload has already
 // been built by the caller (cmdRotateRelIdentity/cmdRotateRelContent
 // for the request, applyRelRotate for the ack, the retry cycle in
 // probeContacts for resending the request).
 // sendRelRotateCmd sends a rotation request/ack toward ONE specific
-// device (dev, already resolved by the caller) — netAddr is
+// device (dev, already resolved by the caller), netAddr is
 // dev.Address, falling back to c.NetAddr (root) only if empty, same
 // principle as sendRelInitCmd above.
 func (m *model) sendRelRotateCmd(c ContactInfo, dev *keystore.DeviceRelation, payload shared.RelRotatePayload, knockType string) tea.Cmd {
@@ -12528,7 +12528,7 @@ func (m *model) sendRelRotateCmd(c ContactInfo, dev *keystore.DeviceRelation, pa
 }
 
 // sendProbePing sends a "probe_ping" knock to the contact over the
-// active transport (Tor or I2P, fire-and-forget) — the dedicated
+// active transport (Tor or I2P, fire-and-forget), the dedicated
 // reachability ping, sent by probeContacts to every online contact on
 // every cycle (~ActiveInterval, configurable) and also by hand via
 // /active. No rotation semantics: the receiver only replies with a
@@ -12562,7 +12562,7 @@ func sendProbePing(dial func(context.Context, string, string) (net.Conn, error),
 }
 
 // deviceKeyList lists Contact.Devices' keys as readable strings
-// (base64, "" rendered as "<placeholder>") — for diagnostics
+// (base64, "" rendered as "<placeholder>"), for diagnostics
 // (client.Dbg) only, never for logic.
 func deviceKeyList(devices map[string]*keystore.DeviceRelation) []string {
 	out := make([]string, 0, len(devices))
@@ -12586,26 +12586,26 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	}
 	contact := m.resolveContactByPub(k.FromIdentityPub)
 	if contact == nil {
-		return nil // should never happen given the tag's mutuality — defense in depth
+		return nil // should never happen given the tag's mutuality, defense in depth
 	}
 	// Per-device model: the sender's DevicePub identifies WHICH of its
-	// devices is speaking — without it, no Contact.Devices entry can be
+	// devices is speaking, without it, no Contact.Devices entry can be
 	// safely resolved.
 	devicePub := k.RelBootstrap.DevicePub
 	if len(devicePub) != ed25519.PublicKeySize {
 		return nil
 	}
-	// Authentication against the sender's root IdentityKey — ONLY for
+	// Authentication against the sender's root IdentityKey, ONLY for
 	// the persistent channel (here, never the ephemeral in-room
 	// bootstrap), see the comment on RelBootstrapPayload.Ts/Sig/SigMLDSA
 	// in internal/shared/relbootstrap.go. No compatibility exception: a
 	// rel_init/rel_init_ack lacking a valid Ed25519 signature against
 	// Contact.IdentityPub (already known, exchanged out-of-band with
-	// the URI) is discarded before touching any field — never applied,
+	// the URI) is discarded before touching any field, never applied,
 	// never placed in Pending (that's for an authenticated proposal
 	// that differs from a known one, not for one that's not
 	// authenticated at all). SigMLDSA verified only if both sides
-	// already have a known root MLDSAPub, never blocking otherwise —
+	// already have a known root MLDSAPub, never blocking otherwise,
 	// same treatment as the project's other hybrid PQC signatures.
 	if !shared.VerifyRelBootstrap(ed25519.PublicKey(contact.IdentityPub), k.RelBootstrap.IdentityPub, k.RelBootstrap.ContentPub, devicePub, k.FromUsername, k.RelBootstrap.Ts, k.RelBootstrap.Sig) {
 		client.Dbg("applyRelInit: %s invalid root signature, knock discarded", k.FromUsername)
@@ -12626,7 +12626,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	promote := false
 	if !exists {
 		if ph, hasPh := contact.Devices[""]; hasPh {
-			// The FIRST device replying to our initial bootstrap — the
+			// The FIRST device replying to our initial bootstrap, the
 			// placeholder entry (OUR OWN keys, already generated by
 			// AddContact/probeContacts) gets promoted to the real
 			// DevicePub, never recreated.
@@ -12636,7 +12636,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 			client.Dbg("applyRelInit: %s promoting placeholder → %s…", k.FromUsername, base64.StdEncoding.EncodeToString(devicePub)[:12])
 		} else {
 			client.Dbg("applyRelInit: %s no placeholder, creating NEW device %s… (devKeys already present: %v)", k.FromUsername, base64.StdEncoding.EncodeToString(devicePub)[:12], deviceKeyList(contact.Devices))
-			// A genuinely NEW device for this contact — never a
+			// A genuinely NEW device for this contact, never a
 			// conflict by construction (no existing entry to
 			// contradict). OUR OWN keys toward it must be generated
 			// now, regardless of the message's Type.
@@ -12665,7 +12665,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	// relationship key (identity OR content, even just one) different
 	// from a value ALREADY KNOWN for this device is not
 	// cryptographically distinguishable from a restore/replacement of
-	// its keys — never applied automatically. Can never fire on a `dev`
+	// its keys, never applied automatically. Can never fire on a `dev`
 	// just created/promoted above (PeerRel* still empty, so
 	// "differs"==false by construction). The proposed keys stay pending
 	// (PendingPeerRel*, on this device's exact entry) until the user
@@ -12675,7 +12675,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	// The guard deliberately does NOT depend on
 	// RelIdentityConfirmedByPeer/RelContentConfirmedByPeer: those flags
 	// are reset by the ErrInvalidServerSig self-heal on a handshake
-	// failure — exactly the symptom a real key change produces, which
+	// failure, exactly the symptom a real key change produces, which
 	// would let the guard be found already disabled and apply new keys
 	// without ever passing through TrustDanger, indistinguishable from
 	// a real attack at this level. identityDiffers/contentDiffers alone
@@ -12744,7 +12744,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 		PeerRelContentMLKEMPub:  k.RelBootstrap.ContentMLKEMPub,
 		PeerRelContentMLDSAPub:  k.RelBootstrap.ContentMLDSAPub,
 	}
-	// RelInitConfirmedByPeer turns on ONLY on a real rel_init_ack —
+	// RelInitConfirmedByPeer turns on ONLY on a real rel_init_ack,
 	// never on a spontaneous rel_init from the peer, which is a
 	// request, not a confirmation that THEY received OUR OWN keys.
 	// Distinct from "I have their keys" (upd.PeerRel* above, populated
@@ -12755,7 +12755,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 		upd.RelIdentityConfirmedByPeer = true
 		upd.RelContentConfirmedByPeer = true
 	}
-	// Immediately updates the local mirror (synchronous) — cmdInvite
+	// Immediately updates the local mirror (synchronous), cmdInvite
 	// and similar read m.contacts, they must not wait for the
 	// persistence I/O round trip below (asynchronous).
 	dev.PeerRelIdentityPub = upd.PeerRelIdentityPub
@@ -12775,20 +12775,20 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	}
 	// The Contacts tab shows [REL:...] by reading m.contacts at render
 	// time, but that render lives in m.vp's buffer (SetContent),
-	// populated only by refreshViewport() — never recomputed on its own
+	// populated only by refreshViewport(), never recomputed on its own
 	// on every Update(). Without this call, a rel_init_ack arriving
 	// while the Contacts tab is already active would leave the buffer
 	// with the previous state (no REL) until something else forces it
-	// (e.g. switching tabs and back) — refreshViewport() itself is
+	// (e.g. switching tabs and back), refreshViewport() itself is
 	// already a safe no-op if the active tab isn't Contacts.
 	m.refreshViewport()
-	// This device's PeerRelContentPub may have just changed — re-
+	// This device's PeerRelContentPub may have just changed, re-
 	// verifies every file_announce held pending for this contact/device
 	// by the self-heal (case "file_announce", Update()), before even
 	// persisting/replying below.
 	retryCmd := m.retryPendingFileAnnounces(contact.IdentityPub, devicePub)
 	// A rel_init_ack may have just made this contact ready
-	// (ReadyDevices() no longer empty) — starts on its own any invite
+	// (ReadyDevices() no longer empty), starts on its own any invite
 	// queued with queuePendingInvite that was waiting on it. No-op if
 	// the contact still isn't ready or there are no queued invites for it.
 	inviteRetryCmd := m.retryPendingInvites(contact.IdentityPub)
@@ -12796,10 +12796,10 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	// direction: an invite received FROM this contact (cmdJoin/
 	// joinKnock) and accepted before its keys were known (host just
 	// restarted, rel_init still in transit) stays queued in
-	// m.pendingJoins instead of being lost — see joinKnock/queuePendingJoin.
+	// m.pendingJoins instead of being lost, see joinKnock/queuePendingJoin.
 	joinRetryCmd := m.retryPendingJoins(contact.IdentityPub)
 	// A rel_init/rel_init_ack can update PeerRelIdentityPub even AFTER
-	// a room has already been registered as host with this contact —
+	// a room has already been registered as host with this contact,
 	// not just on the first bootstrap: a real case is the peer
 	// restoring from backup (root IdentityPub preserved from the
 	// BIP-39 seed, but RelIdentityPriv/RelContentPriv NOT recoverable,
@@ -12808,7 +12808,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 	// IdentityPub. No explicit refresh needed here: the RoomRegistry
 	// resolves the live key pair through
 	// keystore.Keystore.RelKeysForDevice on every handshake, never a
-	// cached copy — as soon as persistCmd below writes the new key to
+	// cached copy, as soon as persistCmd below writes the new key to
 	// keystore.Contact (asynchronous, an instant later), the next
 	// verification already sees it with no additional action here.
 
@@ -12821,7 +12821,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 		return nil
 	}
 	// We ALWAYS reply to an incoming rel_init (never to a rel_init_ack,
-	// which is terminal) — regardless of whether our keys already
+	// which is terminal), regardless of whether our keys already
 	// existed: if OUR OWN previous reply were lost, the peer would keep
 	// resending rel_init indefinitely, and we must keep replying until
 	// they too confirm us in turn (their own RelInitConfirmedByPeer
@@ -12843,7 +12843,7 @@ func (m *model) applyRelInit(k shared.KnockPayload) tea.Cmd {
 
 // retryPendingFileAnnounces re-verifies every file_announce held
 // pending (self-heal, case "file_announce", Update()) for the specific
-// device of the contact with identity key contactPub just resynced by a rel_init_ack — see
+// device of the contact with identity key contactPub just resynced by a rel_init_ack, see
 // model.pendingFileAnnounces and pendingFileAnnounce. Called from
 // applyRelInit right after that device's PeerRelContentPub was updated.
 // An announcement whose deadline has already expired is silently
@@ -12925,7 +12925,7 @@ func (m *model) queuePendingInvite(label string, pendingPubs [][]byte, retry fun
 
 // retryPendingInvites checks whether the contact with identity key pub
 // is now ready (ReadyDevices() not empty) and, for every queued invite
-// that was waiting on it, removes it from its own pending set — an
+// that was waiting on it, removes it from its own pending set, an
 // invite whose set becomes empty is run immediately (retry) and removed
 // from the queue. Called from applyRelInit right after a rel_init_ack
 // made both flags of one of the contact's devices true.
@@ -12959,7 +12959,7 @@ func (m *model) retryPendingInvites(pub []byte) tea.Cmd {
 // "rel_content_rotate" knock (request) or its "_ack" counterpart
 // (confirmation). Same reliability principle as rel_init/rel_init_ack
 // (applyRelInit): ALWAYS replies to a request, never to an ack
-// (terminal), regardless of any local state — if OUR OWN previous
+// (terminal), regardless of any local state, if OUR OWN previous
 // reply were lost, the peer would keep resending the request and we
 // must keep replying.
 func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
@@ -12970,11 +12970,11 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 	}
 	contact := m.resolveContactByPub(k.FromIdentityPub)
 	if contact == nil {
-		return nil // should never happen given the tag's mutuality — defense in depth
+		return nil // should never happen given the tag's mutuality, defense in depth
 	}
 	// Resolves the exact device via RelRotatePayload.DevicePub (same
 	// principle already used for RelBootstrapPayload.DevicePub in
-	// applyRelInit) — falls back to SoleDevice() only if the peer
+	// applyRelInit), falls back to SoleDevice() only if the peer
 	// doesn't send it or it doesn't match.
 	dev, devOK := contact.DeviceByPub(k.RelRotate.DevicePub)
 	if !devOK {
@@ -12984,7 +12984,7 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 		return nil
 	}
 	// devKeyBytes: the exact key (the PEER's DevicePub) under which
-	// `dev` lives in contact.Devices — found by pointer identity, never
+	// `dev` lives in contact.Devices, found by pointer identity, never
 	// blindly trusting k.RelRotate.DevicePub (which could be missing or
 	// not match any entry).
 	var devKeyBytes []byte
@@ -12997,7 +12997,7 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 
 	if isAck {
 		// Confirmation: NewPub must match the key CURRENTLY rotating
-		// for this contact — a late ack referring to a rotation already
+		// for this contact, a late ack referring to a rotation already
 		// forced/closed (key now different) is silently discarded,
 		// never reapplied to a subsequent rotation (see RelRotatePayload).
 		var currentPriv []byte
@@ -13035,7 +13035,7 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 	}
 
 	// Incoming request: verifies with the PEER's stable SIBLING key
-	// (never our own) — never with the old version of the same key
+	// (never our own), never with the old version of the same key
 	// that's rotating.
 	var certifyingPub ed25519.PublicKey
 	var certifyingMLDSAPub []byte
@@ -13047,13 +13047,13 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 	if !shared.VerifyRelKeyRotation(certifyingPub, k.RelRotate.NewPub, k.FromUsername, k.RelRotate.Ts, k.RelRotate.Sig) {
 		return nil
 	}
-	// Freshness: without this, an old captured rotation message — whose
+	// Freshness: without this, an old captured rotation message, whose
 	// signature stays valid as long as the signing sibling key doesn't
-	// change — could be replayed later to force a silent rollback to a
+	// change, could be replayed later to force a silent rollback to a
 	// previous version of the rotating key. Verified AFTER the
 	// signature (which includes ts in the signed message), never
 	// before: an expired ts with an otherwise invalid signature must
-	// stay "discarded for signature", not "discarded for freshness" —
+	// stay "discarded for signature", not "discarded for freshness",
 	// same order already used for every other check in this function.
 	if !shared.TsFresh(k.RelRotate.Ts) {
 		return nil
@@ -13073,7 +13073,7 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 		dev.PeerRelIdentityMLKEMPub = upd.PeerRelIdentityMLKEMPub
 		dev.PeerRelIdentityMLDSAPub = upd.PeerRelIdentityMLDSAPub
 		// The PEER's key for any room open as host with this contact
-		// has just changed — no explicit refresh needed here: the
+		// has just changed, no explicit refresh needed here: the
 		// RoomRegistry reads it live from keystore.Contact on every
 		// ClientHello.Sig, as soon as it's persisted below.
 	} else {
@@ -13100,7 +13100,7 @@ func (m *model) applyRelRotate(k shared.KnockPayload) tea.Cmd {
 	return tea.Batch(persistCmd, m.sendRelRotateCmd(*contact, dev, ackPayload, ackType))
 }
 
-// applyRootRotate handles an incoming "root_rotate" knock — a
+// applyRootRotate handles an incoming "root_rotate" knock, a
 // contact's root IdentityKey rotation announcement. Mirrors
 // applyRelRotate: continuity is verified with the sender's per-contact
 // RelIdentityKey (dev.PeerRelIdentityPub), never with their old root.
@@ -13110,7 +13110,7 @@ func (m *model) applyRootRotate(k shared.KnockPayload) tea.Cmd {
 	}
 	contact := m.resolveContactByPub(k.FromIdentityPub)
 	if contact == nil {
-		return nil // should never happen given the tag's mutuality — defense in depth
+		return nil // should never happen given the tag's mutuality, defense in depth
 	}
 	dev, devOK := contact.DeviceByPub(k.RootRotate.DevicePub)
 	if !devOK {
@@ -13123,7 +13123,7 @@ func (m *model) applyRootRotate(k shared.KnockPayload) tea.Cmd {
 		return nil
 	}
 	// Freshness (same reason/order as applyRelRotate): verified AFTER
-	// the signature, never before — an expired ts with an otherwise
+	// the signature, never before, an expired ts with an otherwise
 	// invalid signature stays "discarded for signature", not
 	// "discarded for freshness".
 	if !shared.TsFresh(k.RootRotate.Ts) {
@@ -13136,7 +13136,7 @@ func (m *model) applyRootRotate(k shared.KnockPayload) tea.Cmd {
 	}
 	// No RoomRegistry refresh here, unlike applyRelRotate: rooms
 	// authenticate only with relationship keys (Rel*Key), never with
-	// the root — a root rotation touches nothing there.
+	// the root, a root rotation touches nothing there.
 
 	newIdentityPub := append(ed25519.PublicKey(nil), k.RootRotate.NewIdentityPub...)
 	newMLKEMPub := k.RootRotate.NewMLKEMPub
@@ -13182,7 +13182,7 @@ func (m *model) applyRootRotate(k shared.KnockPayload) tea.Cmd {
 	}
 }
 
-// applyRootRotateAck handles an incoming "root_rotate_ack" knock — a
+// applyRootRotateAck handles an incoming "root_rotate_ack" knock, a
 // contact confirms applying OUR OWN latest root rotation. Fire-and-
 // forget, no signature to verify (the knock's mutuality tag is already
 // proof they hold the current key).
@@ -13204,11 +13204,11 @@ func (m *model) applyRootRotateAck(k shared.KnockPayload) tea.Cmd {
 	}
 }
 
-// applyRelRevoke handles an incoming "rel_revoke" knock — an
+// applyRelRevoke handles an incoming "rel_revoke" knock, an
 // announcement revoking one or both relationship keys of ONE of the
 // sender's devices. The sender can be either the device itself or a
 // sibling acting as a backstop on its behalf
-// (keystore.Contact.SiblingRevocations) — indistinguishable here: the
+// (keystore.Contact.SiblingRevocations), indistinguishable here: the
 // knock's mutuality is already guaranteed by the shared root, the
 // revocation signature always verifies against the already-known
 // relationship key, never against the identity of whoever materially
@@ -13220,7 +13220,7 @@ func (m *model) applyRelRevoke(k shared.KnockPayload) tea.Cmd {
 	}
 	contact := m.resolveContactByPub(k.FromIdentityPub)
 	if contact == nil {
-		return nil // should never happen given the tag's mutuality — defense in depth
+		return nil // should never happen given the tag's mutuality, defense in depth
 	}
 	dev, devOK := contact.DeviceByPub(k.RelRevoke.DevicePub)
 	if !devOK {
@@ -13289,11 +13289,11 @@ func (m *model) applyRelRevoke(k shared.KnockPayload) tea.Cmd {
 	}
 }
 
-// applyRelRevokeAck handles an incoming "rel_revoke_ack" knock — a
+// applyRelRevokeAck handles an incoming "rel_revoke_ack" knock, a
 // contact (or one of its sibling devices, indistinguishable) confirms
 // applying one of our revocations. Fire-and-forget, no signature to
 // verify (the knock's mutuality tag is already proof they hold a known
-// relationship key) — best-effort, see TUIParams.AckSiblingRevocation.
+// relationship key), best-effort, see TUIParams.AckSiblingRevocation.
 func (m *model) applyRelRevokeAck(k shared.KnockPayload) tea.Cmd {
 	if k.RelRevoke == nil || len(k.RelRevoke.DevicePub) == 0 || len(k.FromIdentityPub) != ed25519.PublicKeySize {
 		return nil
@@ -13315,12 +13315,12 @@ func (m *model) applyRelRevokeAck(k shared.KnockPayload) tea.Cmd {
 
 // probeAckCmdFor sends a probe_ack knock to the sender of an incoming
 // knock, ONLY if the sender is a known contact with matching key and
-// address — the bidirectional reachability signal ("sees me") behind
+// address, the bidirectional reachability signal ("sees me") behind
 // probe_ping (the dedicated ping, see applyProbePing). Guarantee:
-// k.FromAddr must match the expected onion/i2p — never toward unknown addresses.
+// k.FromAddr must match the expected onion/i2p, never toward unknown addresses.
 //
 // The mere arrival of this knock, once the guard above is passed, is
-// ALREADY proof the sender reached us — i.e. that they see us —
+// ALREADY proof the sender reached us, i.e. that they see us,
 // regardless of whether OUR OWN reply (the ack below) manages to reach
 // THEM in turn: the two directions are asymmetric and must be recorded
 // independently (see the comment on contactState.seenByPeer). That's
@@ -13357,17 +13357,17 @@ func (m *model) probeAckCmdFor(k shared.KnockPayload) tea.Cmd {
 	}
 }
 
-// applyProbePing handles an incoming "probe_ping" knock — the
+// applyProbePing handles an incoming "probe_ping" knock, the
 // dedicated, deliberate reachability ping, sent by probeContacts to
 // every online contact on every cycle (~ActiveInterval, configurable)
-// and also by hand via /active — regardless of any rotation. No key/
+// and also by hand via /active, regardless of any rotation. No key/
 // rotation logic here: only replies with probe_ack.
 func (m *model) applyProbePing(k shared.KnockPayload) tea.Cmd {
 	return m.probeAckCmdFor(k)
 }
 
 // daysSince returns the difference in local calendar days between
-// today and t (0 = today, 1 = yesterday, etc. — never elapsed hours: an
+// today and t (0 = today, 1 = yesterday, etc., never elapsed hours: an
 // event from last night stays "yesterday" even if only a few hours have
 // passed, not "today", and conversely an event from early this morning
 // stays "today" even if more than 24 clock hours have passed since
@@ -13428,7 +13428,7 @@ func sendProbeAck(dial func(context.Context, string, string) (net.Conn, error),
 // on the target device (possession = authorization).
 //
 // The danger_broadcast does NOT depend on the target receiving and
-// executing the command — if the stolen device stays off/unreachable
+// executing the command, if the stolen device stays off/unreachable
 // for days or weeks, none of the contacts would ever know it's
 // compromised until (and if) it comes back online. Instead the
 // AUTHORITY sends it, immediately upon confirming /sec-remote-nuke,
@@ -13442,7 +13442,7 @@ func sendProbeAck(dial func(context.Context, string, string) (net.Conn, error),
 // within a session's few retries, it stays queued
 // (Keystore.PendingRemoteNukes) and is automatically retried on every
 // subsequent authority startup (retryPendingRemoteNukes, Init()) until
-// a remote_nuke_ack arrives — even weeks later.
+// a remote_nuke_ack arrives, even weeks later.
 //
 // The same reachability problem exists toward the AUTHORITY's own
 // CONTACTS: a contact might never be online together with the
@@ -13450,18 +13450,18 @@ func sendProbeAck(dial func(context.Context, string, string) (net.Conn, error),
 // therefore registers in Keystore.PendingDangerBroadcasts (identity
 // keys not yet confirmed) and gets resent to any still-queued contact found online
 // during a normal probeContacts cycle (no new dedicated timer), until
-// each one replies with danger_broadcast_ack — see cmdRemoteNuke,
+// each one replies with danger_broadcast_ack, see cmdRemoteNuke,
 // sendDangerBroadcastSingle, handleDangerBroadcastAck.
 
 // remoteNukeExecutedMsg signals that the TARGET's best-effort sequence
 // (danger_broadcast + ack) has ended (success, partial failure, or
-// timeout — always regardless): the case in Update() sets nukeOnExit
+// timeout, always regardless): the case in Update() sets nukeOnExit
 // and exits the TUI, exactly like cmdNukeX.
 type remoteNukeExecutedMsg struct{}
 
 // broadcastDangerMsg sends msgType ("danger_broadcast" or "danger_end"),
 // in parallel and with a SINGLE shared time cap, toward the contacts of
-// ALL the passed sibling identities (identities) — each contact is
+// ALL the passed sibling identities (identities), each contact is
 // contacted with the signature/tag of the identity IT belongs to (a
 // contact of I2 must see a message authenticable as I2, not as I1,
 // otherwise its handleIncomingDangerMsg would discard it as an unknown
@@ -13470,7 +13470,7 @@ type remoteNukeExecutedMsg struct{}
 // deleting itself (executeRemoteNuke, msgType="danger_end") and by the
 // AUTHORITY as an immediate, best-effort complement to its persistent
 // per-identity retry queue (cmdRemoteNukeBroadcast, msgType=
-// "danger_broadcast") — that queue (Keystore.PendingDangerBroadcasts)
+// "danger_broadcast"), that queue (Keystore.PendingDangerBroadcasts)
 // only ever covers the identity active in THIS session; this call
 // reaches every sibling identity's contacts that happen to be online
 // right now, with no retry of its own beyond timeout (a contact offline
@@ -13519,7 +13519,7 @@ func broadcastDangerMsg(msgType string, identities []AllIdentityContactsInfo, di
 
 // sendDangerMsgSingle sends a single "danger_broadcast" (preliminary,
 // queued warning) or "danger_end" (final warning) message to a contact
-// — msgType selects which. Fire-and-forget with no retry of its own:
+// msgType selects which. Fire-and-forget with no retry of its own:
 // retry-over-time is the CALLER's responsibility (probeContacts, which
 // resends on every probe cycle as long as the contact is still in the
 // corresponding Keystore.PendingDangerBroadcasts/PendingDangerEnds queue).
@@ -13549,7 +13549,7 @@ func sendDangerMsgSingle(msgType string, dial func(context.Context, string, stri
 // own Keystore.DeviceID (otherwise the command isn't for this device,
 // discarded with no effect) and NukeSig must verify against any of the
 // keys in authorityPubKeys (every identity in this file, current AND
-// old during an ongoing rotation) — no list of "authorized devices" to
+// old during an ongoing rotation), no list of "authorized devices" to
 // consult, possession of the private key is proof in itself. A second
 // valid command (e.g. from a second address of the same authority
 // fan-out) is a silent no-op: the sequence is already in progress.
@@ -13573,7 +13573,7 @@ func (m *model) handleRemoteNuke(k shared.KnockPayload) tea.Cmd {
 	}
 	// Additional, independent verification against
 	// authorityPubKeysMLDSA if the Ed25519 proof above hasn't already
-	// validated the command — a second, independent chain.
+	// validated the command, a second, independent chain.
 	if !verified && len(k.NukeSigMLDSA) > 0 {
 		for _, pub := range m.authorityPubKeysMLDSA {
 			if shared.VerifyRemoteNukeMLDSA(pub, k.TargetDeviceID, k.NukeTs, k.NukeSigMLDSA) {
@@ -13592,8 +13592,8 @@ func (m *model) handleRemoteNuke(k shared.KnockPayload) tea.Cmd {
 }
 
 // executeRemoteNuke runs the TARGET's best-effort, time-capped sequence
-// (danger_end toward the contacts of every identity in the file — see
-// TUIParams.AllIdentitiesContacts — then ack): never blocking beyond
+// (danger_end toward the contacts of every identity in the file, see
+// TUIParams.AllIdentitiesContacts, then ack): never blocking beyond
 // remoteNukeExecuteTimeout, an unreachable authority or contact must
 // NEVER prevent the destruction, which proceeds regardless once the
 // timeout expires. The primary warning channel remains the AUTHORITY's
@@ -13610,7 +13610,7 @@ func (m *model) executeRemoteNuke(authorityAddr string, authorityPub ed25519.Pub
 	knockTO := m.knockHttpTimeout
 	knockRetryDelay := m.knockRetryDelay
 	allIdentitiesFn := m.allIdentitiesContacts
-	// Fallback if the closure isn't available (test only — in
+	// Fallback if the closure isn't available (test only, in
 	// production AllIdentitiesContacts is always populated by
 	// cmd/main.go): covers at least the identity active in this session.
 	fallbackIdentity := AllIdentityContactsInfo{
@@ -13639,7 +13639,7 @@ func (m *model) executeRemoteNuke(authorityAddr string, authorityPub ed25519.Pub
 }
 
 // sendRemoteNukeAck sends the "about to disappear" confirmation to the
-// authority that issued the command — same scheme as sendProbeAck but
+// authority that issued the command, same scheme as sendProbeAck but
 // signed with the target's DEVICE-level key (signAck),
 // not with an identity: it's the device itself confirming.
 func sendRemoteNukeAck(dial func(context.Context, string, string) (net.Conn, error),
@@ -13679,21 +13679,21 @@ func sendRemoteNukeAck(dial func(context.Context, string, string) (net.Conn, err
 // handleRemoteNukeAck receives the "about to disappear" confirmation
 // from a target device: stops any other fan-out attempt still in
 // progress for the same command (stops at the first genuine ack, no
-// need to keep hammering the other addresses — the target is already
+// need to keep hammering the other addresses, the target is already
 // confirmed reached), removes the command from the persistent queue (no
 // further retry on the next startup), and reports it in Console.
 //
 // Verified with shared.VerifyRemoteNukeAck against the device key known
 // among the known devices (TargetDeviceID can only appear there if the
 // remote_nuke command was issued through the picker on that same list
-// — see cmdRemoteNukeTrigger — so the key is always already available
+// see cmdRemoteNukeTrigger, so the key is always already available
 // by the time a legitimate ack can arrive). An unverified ack (missing/
 // invalid signature, or unknown TargetDeviceID) is discarded with no
-// effect — doesn't stop the fan-out nor touch the persistent queue, the
+// effect, doesn't stop the fan-out nor touch the persistent queue, the
 // retry proceeds normally: a forged ack must never be able to silently
 // bury a command the real target hasn't received yet.
 // The safety of the destruction itself remains whatever the target
-// already applied before sending the ack (handleRemoteNuke) — this
+// already applied before sending the ack (handleRemoteNuke), this
 // check only protects the integrity of the confirm/retry mechanism, it
 // doesn't introduce a second gate on the destruction.
 func (m *model) handleRemoteNukeAck(k shared.KnockPayload) tea.Cmd {
@@ -13712,8 +13712,8 @@ func (m *model) handleRemoteNukeAck(k shared.KnockPayload) tea.Cmd {
 		return nil
 	}
 	// Freshness (same principle already applied to remote_nuke itself
-	// and to rel_key_rotate): without this, an old captured ack —
-	// authentic, from a past remote_nuke cycle — could be replayed to
+	// and to rel_key_rotate): without this, an old captured ack,
+	// authentic, from a past remote_nuke cycle, could be replayed to
 	// silently stop the fan-out of a NEW command genuinely in progress,
 	// and show "device destroyed" when it actually isn't.
 	if !shared.TsFresh(k.NukeTs) {
@@ -13726,7 +13726,7 @@ func (m *model) handleRemoteNukeAck(k shared.KnockPayload) tea.Cmd {
 	}
 	m.appendToConsole(fmt.Sprintf(i18n.T("tui.remote_nuke_ack_received"), k.FromUsername), true)
 	// Safety net: now that the destruction is CONFIRMED, the authority
-	// re-broadcasts danger_end toward its own contacts — whoever was
+	// re-broadcasts danger_end toward its own contacts, whoever was
 	// offline when the target sent its own direct danger_end
 	// (broadcastDangerEnd) still receives it from here, later. Same
 	// persistent queue/retry as every other warning, see cmdRegisterDangerQueue.
@@ -13734,7 +13734,7 @@ func (m *model) handleRemoteNukeAck(k shared.KnockPayload) tea.Cmd {
 }
 
 // handleDangerBroadcast receives the PRELIMINARY "my device is
-// compromised" announcement from a contact — a thin wrapper over
+// compromised" announcement from a contact, a thin wrapper over
 // handleIncomingDangerMsg (isEnd=false).
 func (m *model) handleDangerBroadcast(k shared.KnockPayload) tea.Cmd {
 	return m.handleIncomingDangerMsg(k, false)
@@ -13742,14 +13742,14 @@ func (m *model) handleDangerBroadcast(k shared.KnockPayload) tea.Cmd {
 
 // handleDangerEnd receives the FINAL "my device has been destroyed"
 // announcement from a contact (from the target itself before
-// disappearing, or from the authority as a safety net) — a thin
+// disappearing, or from the authority as a safety net), a thin
 // wrapper over handleIncomingDangerMsg (isEnd=true).
 func (m *model) handleDangerEnd(k shared.KnockPayload) tea.Cmd {
 	return m.handleIncomingDangerMsg(k, true)
 }
 
 // handleIncomingDangerMsg handles both "danger_broadcast" (preliminary)
-// and "danger_end" (final) — only a clearly visible Console
+// and "danger_end" (final), only a clearly visible Console
 // notification, no automatic filtering of future messages per device.
 // Authenticated at the same trust level as any other
 // knock (the encrypted envelope + FromIdentityPub verified against the
@@ -13759,7 +13759,7 @@ func (m *model) handleDangerEnd(k shared.KnockPayload) tea.Cmd {
 // Arrival-order guard: danger_end can arrive BEFORE a danger_broadcast
 // for the same device (a single target→contact hop versus the second
 // message's double authority→target→ack→authority→contact round trip)
-// — a preliminary danger_broadcast arriving AFTER the final one for the
+// a preliminary danger_broadcast arriving AFTER the final one for the
 // same device has already been seen (dangerEndSeen) doesn't generate a
 // second, misleading Console message ("in progress" after "confirmed
 // destroyed"), but the ack still goes out, so the sender's queue closes normally.
@@ -13786,7 +13786,7 @@ func (m *model) handleIncomingDangerMsg(k shared.KnockPayload, isEnd bool) tea.C
 	// types) would keep resending it on every probe cycle even if
 	// already received, indefinitely. If the sender is the target
 	// itself shortly before disappearing, the ack simply finds no one
-	// listening — harmless, the target doesn't keep a queue to close anyway.
+	// listening, harmless, the target doesn't keep a queue to close anyway.
 	dial := m.dialTor
 	dhTagFn := m.dhTagFn
 	if dial == nil || dhTagFn == nil || contact.NetAddr == "" {
@@ -13812,7 +13812,7 @@ func (m *model) handleIncomingDangerMsg(k shared.KnockPayload, isEnd bool) tea.C
 
 // sendDangerAckMsg sends the confirmation of receiving a
 // danger_broadcast (ackType="danger_broadcast_ack") or a danger_end
-// (ackType="danger_end_ack") back to the sender — same scheme as
+// (ackType="danger_end_ack") back to the sender, same scheme as
 // sendRemoteNukeAck (retry+backoff, postWithRetry): a
 // single delivery failure must not leave the sender retrying
 // indefinitely a warning already received successfully.
@@ -13842,22 +13842,22 @@ func sendDangerAckMsg(ackType string, dial func(context.Context, string, string)
 }
 
 // handleDangerBroadcastAck receives confirmation that a contact
-// received our preliminary danger_broadcast — a thin wrapper over
+// received our preliminary danger_broadcast, a thin wrapper over
 // handleIncomingDangerAck (isEnd=false).
 func (m *model) handleDangerBroadcastAck(k shared.KnockPayload) tea.Cmd {
 	return m.handleIncomingDangerAck(k, false)
 }
 
 // handleDangerEndAck receives confirmation that a contact received our
-// final danger_end — a thin wrapper over handleIncomingDangerAck (isEnd=true).
+// final danger_end, a thin wrapper over handleIncomingDangerAck (isEnd=true).
 func (m *model) handleDangerEndAck(k shared.KnockPayload) tea.Cmd {
 	return m.handleIncomingDangerAck(k, true)
 }
 
 // handleIncomingDangerAck removes the sender (by identity key) from the corresponding
-// queue (pendingDangerBroadcasts or pendingDangerEnds — independent
+// queue (pendingDangerBroadcasts or pendingDangerEnds, independent
 // queues) both in memory (consulted by probeContacts on the next cycle)
-// and on disk (confirmDangerBroadcast/confirmDangerEnd) — no further
+// and on disk (confirmDangerBroadcast/confirmDangerEnd), no further
 // retry for this contact/device/message type.
 func (m *model) handleIncomingDangerAck(k shared.KnockPayload, isEnd bool) tea.Cmd {
 	if len(k.TargetDeviceID) == 0 || len(k.FromIdentityPub) != ed25519.PublicKeySize {
@@ -13897,7 +13897,7 @@ func (m *model) handleIncomingDangerAck(k shared.KnockPayload, isEnd bool) tea.C
 // raw CancelFunc isn't comparable in Go (except to nil): the deferred
 // cleanup in cmdRemoteNukeFanOut must be able to tell "am I still the
 // current entry in remoteNukeCancels" from "a more recent retry for the
-// same DeviceID has already replaced me" by comparing pointers — not
+// same DeviceID has already replaced me" by comparing pointers, not
 // possible by comparing two func values.
 type remoteNukeEntry struct {
 	cancel context.CancelFunc
@@ -13905,7 +13905,7 @@ type remoteNukeEntry struct {
 
 // stopRemoteNukeFanOut cancels (if present) the context shared by all
 // goroutines of the remote_nuke fan-out still in progress for
-// targetDeviceID — any retry/attempt still pending on the other
+// targetDeviceID, any retry/attempt still pending on the other
 // addresses stops at the next opportunity (postWithRetry watches ctx.Done()).
 func (m *model) stopRemoteNukeFanOut(targetDeviceID []byte) {
 	key := hex.EncodeToString(targetDeviceID)
@@ -13920,7 +13920,7 @@ func (m *model) stopRemoteNukeFanOut(targetDeviceID []byte) {
 
 // cmdRemoteNuke is invoked on explicit confirmation of
 // /sec-remote-nuke: validates the targets, registers the command in the
-// persistent queue (Keystore.PendingRemoteNukes — retried on every
+// persistent queue (Keystore.PendingRemoteNukes, retried on every
 // startup until an ack arrives, see retryPendingRemoteNukes) and starts
 // in parallel both the AUTHORITY's danger_broadcast (primary channel,
 // immediate, not conditioned on the target being reachable) and the
@@ -13946,7 +13946,7 @@ func (m *model) cmdRemoteNuke(rec DeviceRecordInfo) tea.Cmd {
 }
 
 // countValidRemoteNukeTargets counts rec's sibling identities usable as
-// fan-out targets (valid IdentityPub) — shared by cmdRemoteNuke and
+// fan-out targets (valid IdentityPub), shared by cmdRemoteNuke and
 // retryPendingRemoteNukes to avoid duplicating the check.
 func countValidRemoteNukeTargets(rec DeviceRecordInfo) int {
 	n := 0
@@ -13959,7 +13959,7 @@ func countValidRemoteNukeTargets(rec DeviceRecordInfo) int {
 }
 
 // remoteNukeBroadcastTimeout bounds broadcastDangerBroadcastAllIdentities's
-// immediate, best-effort danger_broadcast fan-out — same ~20s order of
+// immediate, best-effort danger_broadcast fan-out, same ~20s order of
 // magnitude as remoteNukeExecuteTimeout/nukeDeviceSyncTimeout elsewhere
 // in this codebase. Never blocks /sec-remote-nuke beyond this, however
 // many sibling identities/contacts are involved.
@@ -13967,7 +13967,7 @@ const remoteNukeBroadcastTimeout = 20 * time.Second
 
 // cmdRemoteNukeBroadcast registers the AUTHORITY's PRELIMINARY
 // danger_broadcast toward its own address book (cmdRegisterDangerQueue,
-// isEnd=false — persistent retry queue, but covers only the identity
+// isEnd=false, persistent retry queue, but covers only the identity
 // active in THIS session) AND, in the same call, fires an immediate
 // best-effort complement across every sibling identity in the file
 // (broadcastDangerBroadcastAllIdentities): without this second part, a
@@ -13980,7 +13980,7 @@ func (m *model) cmdRemoteNukeBroadcast(targetDeviceID []byte) tea.Cmd {
 }
 
 // broadcastDangerBroadcastAllIdentities is the immediate-fan-out half
-// of cmdRemoteNukeBroadcast — see its doc comment and
+// of cmdRemoteNukeBroadcast, see its doc comment and
 // broadcastDangerMsg's. Never retried beyond remoteNukeBroadcastTimeout:
 // a contact offline right now, on a non-active sibling identity, is
 // not covered by anything.
@@ -13999,13 +13999,13 @@ func (m *model) broadcastDangerBroadcastAllIdentities(targetDeviceID []byte) tea
 }
 
 // cmdRemoteNukeEndBroadcast registers the AUTHORITY's FINAL danger_end
-// toward its own address book — a thin wrapper over
+// toward its own address book, a thin wrapper over
 // cmdRegisterDangerQueue (isEnd=true). A safety net, called upon
 // receiving the remote_nuke_ack (handleRemoteNukeAck): covers only the
 // contacts of identities the authority actually holds (never ones never
 // duplicated/synced), but also reaches whoever was offline when the
 // target sent its own direct danger_end (broadcastDangerEnd,
-// executeRemoteNuke) — a contact receiving it from both sources still
+// executeRemoteNuke), a contact receiving it from both sources still
 // replies with an ack to each, no duplication issue (see
 // handleIncomingDangerMsg).
 func (m *model) cmdRemoteNukeEndBroadcast(targetDeviceID []byte) tea.Cmd {
@@ -14045,17 +14045,17 @@ func (m *model) cmdRegisterDangerQueue(targetDeviceID []byte, isEnd bool) tea.Cm
 }
 
 // cmdRemoteNukeFanOut sends a remote_nuke command (with timestamp and
-// signature ALWAYS fresh, generated here — necessary because every
+// signature ALWAYS fresh, generated here, necessary because every
 // attempt, including a retry days later, must fall within the ±5
 // minute freshness window verified by the target) toward ALL addresses
 // of the sibling identities present on device rec (multi-identity fan-
 // out: the sender doesn't know which one will be reachable at that
-// moment, they're all the same exact target — same keystore file), in
+// moment, they're all the same exact target, same keystore file), in
 // parallel with retry/backoff, with automatic stop at the first
 // remote_nuke_ack received from any of them (see
 // handleRemoteNukeAck/stopRemoteNukeFanOut). Reused both by the first
 // emission (cmdRemoteNuke) and by every subsequent retry
-// (retryPendingRemoteNukes) — no queue registration or danger_broadcast
+// (retryPendingRemoteNukes), no queue registration or danger_broadcast
 // here, already done once by cmdRemoteNuke.
 func (m *model) cmdRemoteNukeFanOut(rec DeviceRecordInfo) tea.Cmd {
 	targets := make([]DeviceIdentityRef, 0, len(rec.SiblingIdentities))
@@ -14104,7 +14104,7 @@ func (m *model) cmdRemoteNukeFanOut(rec DeviceRecordInfo) tea.Cmd {
 			// Compared by pointer, not just "!= nil": if in the
 			// meantime a more recent retry for the same DeviceID has
 			// already replaced this entry, the current entry in the
-			// map is no longer ours — deleting it anyway would
+			// map is no longer ours, deleting it anyway would
 			// silently delete the still-in-progress retry's entry,
 			// leaving it with no way to be stopped by an ack received
 			// later (stopRemoteNukeFanOut would no longer find it).
@@ -14177,7 +14177,7 @@ func (m *model) cmdRemoteNukeFanOut(rec DeviceRecordInfo) tea.Cmd {
 
 // retryPendingRemoteNukes redoes the fan-out (no new danger_broadcast:
 // already sent once by cmdRemoteNuke) for every remote_nuke command
-// still queued (Keystore.PendingRemoteNukes) — called from Init() on
+// still queued (Keystore.PendingRemoteNukes), called from Init() on
 // every startup, with the same initial delay as the circuits warmup. A
 // target whose DeviceID no longer resolves against KnownDevices (should
 // never happen) or with no valid sibling identities is silently
@@ -14205,14 +14205,14 @@ func (m *model) retryPendingRemoteNukes() tea.Cmd {
 // ── indoor sync ─────────────────────────────────────────────────────────
 
 // indoorSyncDoneMsg signals the end of an "indoor" sync window (success
-// or failure/timeout) — see cmdIndoorSync.
+// or failure/timeout), see cmdIndoorSync.
 type indoorSyncDoneMsg struct{ err error }
 
 // cmdIndoorSync starts an "indoor" sync window (LAN) in the
-// background — blocking until the first successful exchange or the
+// background, blocking until the first successful exchange or the
 // window's expiry (~60s, see indoor.SyncWindow), never on Update()'s
 // thread. indoorSyncing prevents two overlapping windows (both would
-// bind the same TCP port, the second would fail the bind anyway — clearer
+// bind the same TCP port, the second would fail the bind anyway, clearer
 // to say so right away than to let it be discovered from a cryptic network error).
 func (m *model) cmdIndoorSync() tea.Cmd {
 	if m.runIndoorSync == nil {
@@ -14227,7 +14227,7 @@ func (m *model) cmdIndoorSync() tea.Cmd {
 	return func() tea.Msg {
 		// Margin beyond indoor.SyncWindow (~60s): the caller must be
 		// able to distinguish "no peer found" (RunIndoorSync's clean
-		// return) from a real network stall — never a ctx shorter than
+		// return) from a real network stall, never a ctx shorter than
 		// the window RunIndoorSync itself already respects internally.
 		ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 		defer cancel()
@@ -14259,11 +14259,11 @@ func (m *model) cmdDevices() tea.Cmd {
 }
 
 // cmdDeviceLabel shows (with no argument) or changes (with an
-// argument) THIS device's name — the only way for another of our own
+// argument) THIS device's name, the only way for another of our own
 // devices to distinguish it in the /sec-remote-nuke picker or the
 // /sec-devices list, instead of just the raw DeviceID. Visible to other
 // devices only at the next /sec-indoor-sync, but the change itself is
-// immediate (persisted right away), not a setting requiring a restart —
+// immediate (persisted right away), not a setting requiring a restart,
 // which is why it stays a TUI slash-command rather than its own CLI subcommand.
 func (m *model) cmdDeviceLabel(arg string) tea.Cmd {
 	if m.setDeviceLabel == nil {
@@ -14284,7 +14284,7 @@ func (m *model) cmdDeviceLabel(arg string) tea.Cmd {
 }
 
 // cmdMsg sets the explicit reply reference for the next send in the
-// active tab — arg is the number (#N, chatLine.gseq) shown in the
+// active tab, arg is the number (#N, chatLine.gseq) shown in the
 // header of a message already visible in THIS tab; a number that
 // doesn't match any currently shown line is rejected (the reference can
 // only point to a message already seen, never a future one or one that
@@ -14371,7 +14371,7 @@ func (m *model) flushActivitySync() {
 	m.dirtyLastAck = make(map[string]time.Time)
 }
 
-// contentSigTS reads content_sig_ts from a message's raw frame — the
+// contentSigTS reads content_sig_ts from a message's raw frame, the
 // same timestamp used to build/verify EVERY entry in content_sigs (one
 // timestamp per message, not one per recipient).
 func contentSigTS(mm map[string]any) string {
@@ -14380,10 +14380,10 @@ func contentSigTS(mm map[string]any) string {
 }
 
 // extractContentSigsFor looks inside content_sigs (see
-// client.contentSigEntry) for ALL entries with For == forKey (a member key) —
+// client.contentSigEntry) for ALL entries with For == forKey (a member key),
 // returns every (sig, sigMLDSA) found: with a multi-device sender
 // (fan-out), the sender signs ONCE for each of the recipient's devices,
-// all with the same For — the verifier (a single local instance, never
+// all with the same For, the verifier (a single local instance, never
 // genuinely "multiple devices" on its own side) tries each one until
 // one matches its own unique known key for the sender. content_sigs
 // arrives as []any of map[string]any after the JSON→map[string]any
@@ -14416,24 +14416,24 @@ func extractContentSigsFor(mm map[string]any, forKey string) []struct{ sig, sigM
 }
 
 // contentPeerCandidateKey is ONE candidate for verifying an incoming
-// message's content signature — see contentPeerPubCandidatesFor.
+// message's content signature, see contentPeerPubCandidatesFor.
 type contentPeerCandidateKey struct {
 	pub      ed25519.PublicKey
 	mldsaPub []byte
 	// ephemeral distinguishes a REL relationship born only from being
 	// introduced in a room (ephemeral bootstrap, no direct contact)
-	// from one with a contact persisted in the address book — used
+	// from one with a contact persisted in the address book, used
 	// only for coloring the REL tag in chat (yellow for ephemeral),
 	// never to decide whether a signature is valid.
 	ephemeral bool
 }
 
 // contentPeerPubCandidatesFor resolves the candidates for verifying a
-// message's content signature from `from` toward US — persistent
+// message's content signature from `from` toward US, persistent
 // (Contact.Devices) for a real contact, ephemeral
 // (ephemeralRel.peerContent) for an unknown "introduced" one with
 // bootstrap already completed. dp is the sender's DevicePub, decoded
-// from the message's sealed payload — if it matches an exact device of
+// from the message's sealed payload, if it matches an exact device of
 // `from`, that ONE is the
 // only candidate (precise resolution, never ambiguous: dp identifies
 // exactly WHICH of `from`'s devices sent this specific message). With
@@ -14445,7 +14445,7 @@ func (m *model) contentPeerPubCandidatesFor(tab *roomTab, from string, dp []byte
 	if c := m.resolveContactByPub(memberKeyPub(from)); c != nil {
 		if dev, ok := c.DeviceByPub(dp); ok {
 			// dp identifies exactly WHICH device sent this message
-			// (never ambiguous, see the doc comment above) — if that
+			// (never ambiguous, see the doc comment above), if that
 			// exact device isn't verifiable (missing or revoked key)
 			// the verdict is final: NEVER fall back and try a
 			// different device, which would silently bypass the
@@ -14457,7 +14457,7 @@ func (m *model) contentPeerPubCandidatesFor(tab *roomTab, from string, dp []byte
 		}
 		// Fallback onto ALL known devices (only for an empty or
 		// unknown dp, never for a known but
-		// rejected device above) — not just ReadyDevices(), which also
+		// rejected device above), not just ReadyDevices(), which also
 		// requires Address/RelIdentityPriv, irrelevant for verifying a
 		// signature: it's enough that PeerRelContentPub is present.
 		// RevokedContent always excludes: a revoked ContentKey must
@@ -14473,11 +14473,11 @@ func (m *model) contentPeerPubCandidatesFor(tab *roomTab, from string, dp []byte
 			return out
 		}
 		// No device of this contact has a valid PeerRelContentPub yet
-		// (contact saved but rel_init handshake never completed) —
+		// (contact saved but rel_init handshake never completed),
 		// falls back to the ephemeral case below instead of returning
 		// "no candidate" forever. Doesn't touch the exact-dp branch
 		// above: a PRECISE device rejected (missing/revoked) stays a
-		// final verdict, never a fallback — only the TOTAL absence of
+		// final verdict, never a fallback, only the TOTAL absence of
 		// valid devices falls through here.
 	}
 	if rel := tab.ephRels[from]; rel != nil && rel.established && len(rel.peerContent.Pub) == ed25519.PublicKeySize {
@@ -14488,15 +14488,15 @@ func (m *model) contentPeerPubCandidatesFor(tab *roomTab, from string, dp []byte
 
 // contentPeerKeysFor resolves the public ContentKey (+ ML-KEM) of ONE
 // of `from`'s devices toward US, for encrypting toward them (hybrid
-// ECIES, see encryptForContentPeer — file transfer/contact card) — also
+// ECIES, see encryptForContentPeer, file transfer/contact card), also
 // used to verify an incoming "file_announce"'s signature; only
 // verifying a chat MESSAGE goes
 // through contentPeerPubCandidatesFor above (multi-candidate, for the
 // indirect signature inside the SenderKey ciphertext). With 2+
 // candidate devices it picks ONE deterministically (ordered by
 // DevicePub, not AnyReadyDevice: here only PeerRelContentPub being
-// present matters, not the "ready for invite" criteria — Address/
-// RelIdentityPriv — which are irrelevant) instead of failing: without a
+// present matters, not the "ready for invite" criteria, Address/
+// RelIdentityPriv, which are irrelevant) instead of failing: without a
 // per-device session userID (one session per identity in a room),
 // there's no way to address more than one device here
 // anyway. RevokedContent always excludes a device from the candidates,
@@ -14515,7 +14515,7 @@ func (m *model) contentPeerKeysFor(tab *roomTab, from string) (pub ed25519.Publi
 			}
 			return ed25519.PublicKey(dev.PeerRelContentPub), dev.PeerRelContentMLDSAPub, dev.PeerRelContentMLKEMPub, k, true
 		}
-		// No valid device — falls back to the ephemeral case below,
+		// No valid device, falls back to the ephemeral case below,
 		// same reason as contentPeerPubCandidatesFor above (contact
 		// saved but rel_init handshake never completed).
 	}
@@ -14526,12 +14526,12 @@ func (m *model) contentPeerKeysFor(tab *roomTab, from string) (pub ed25519.Publi
 }
 
 // myContentPrivFor resolves OUR OWN per-relationship ContentKey toward
-// ONE of the devices of the member with key peerKey — persistent (Contact.Devices) for a
+// ONE of the devices of the member with key peerKey, persistent (Contact.Devices) for a
 // real contact, ephemeral (ephemeralRel.myContent) for an unknown
 // "introduced" one with bootstrap already completed. The same pair
 // used for signing (buildContentSigningKeys) and, here, for DECRYPTING
 // what that member encrypted with our public ContentKey (dual
-// Ed25519/X25519 use) — same limitation as contentPeerKeysFor above
+// Ed25519/X25519 use), same limitation as contentPeerKeysFor above
 // (a single device chosen deterministically, never a true fan-out
 // without a per-device userID).
 func (m *model) myContentPrivFor(tab *roomTab, peerKey string) (shared.RelSigningKey, bool) {
@@ -14548,7 +14548,7 @@ func (m *model) myContentPrivFor(tab *roomTab, peerKey string) (shared.RelSignin
 			}
 			return shared.RelSigningKey{Priv: ed25519.PrivateKey(dev.RelContentPriv), MLKEMSeed: dev.RelContentMLKEMPriv, MLDSASeed: dev.RelContentMLDSAPriv}, true
 		}
-		// No valid device — falls back to the ephemeral case below,
+		// No valid device, falls back to the ephemeral case below,
 		// same reason as contentPeerPubCandidatesFor above (contact
 		// saved but rel_init handshake never completed).
 	}
@@ -14560,7 +14560,7 @@ func (m *model) myContentPrivFor(tab *roomTab, peerKey string) (shared.RelSignin
 
 // encryptForContentPeer/decryptFromContentPeer encrypt an arbitrary
 // blob (a file_offer's meta_blob: {file_name, file_size, file_key})
-// using the per-relationship ContentKey — the same pair used for
+// using the per-relationship ContentKey, the same pair used for
 // signing, dual Ed25519/X25519 use (shared.EncryptForPeer/
 // DecryptFromPeer, classic/hybrid ML-KEM-768 dual-mode already used for
 // knocks). Each recipient gets an envelope encrypted specifically for
@@ -14586,7 +14586,7 @@ func decryptFromContentPeer(myContentKey shared.RelSigningKey, payloadB64 string
 }
 
 // buildContentSigningKeys rebuilds, for each other member of room tab
-// (by member key), OUR OWN per-relationship ContentKey toward them — persistent
+// (by member key), OUR OWN per-relationship ContentKey toward them, persistent
 // (Contact.RelContentPriv) for a real contact, ephemeral
 // (ephemeralRel.myContent) for an unknown "introduced" one with
 // bootstrap already completed (established). Recomputed on every send
@@ -14604,11 +14604,11 @@ func (m *model) buildContentSigningKeys(tab *roomTab) map[string][]shared.RelSig
 		}
 		if c := m.resolveContactByPub(mem.IdentityPub); c != nil {
 			// Fan-out: ONE signature for EVERY known device of mem with
-			// an established content relationship — each has its own
+			// an established content relationship, each has its own
 			// independent key pair with us, never shared between
 			// devices of the same contact. On the wire it stays a
 			// single content_sigs list with multiple "for":
-			// member-key entries — the receiving device (a single
+			// member-key entries, the receiving device (a single
 			// local instance) tries each one against its own unique
 			// known key for us, see contentPeerPubCandidatesFor.
 			for _, dev := range c.Devices {
@@ -14622,13 +14622,13 @@ func (m *model) buildContentSigningKeys(tab *roomTab) map[string][]shared.RelSig
 		// Unlike verification (contentPeerPubCandidatesFor, which
 		// requires established: it needs THEIR half, received only
 		// once bootstrap completes), here it's enough that OUR OWN
-		// half already exists — always true as soon as
+		// half already exists, always true as soon as
 		// maybeSendRelBootstrap has generated rel (fires automatically
 		// on init/user_joined, well before the user types a message):
 		// they'll be able to verify this signature as soon as they
 		// receive OUR OWN rel_bootstrap, independent of whether we've
 		// received theirs. No multi-device concept for an ephemeral
-		// contact — a single candidate.
+		// contact, a single candidate.
 		if rel := tab.ephRels[mk]; rel != nil {
 			keys[mk] = []shared.RelSigningKey{rel.myContent}
 		}
@@ -14636,7 +14636,7 @@ func (m *model) buildContentSigningKeys(tab *roomTab) map[string][]shared.RelSig
 	return keys
 }
 
-// sendMessage sends free text — but only inside a real chat room. In
+// sendMessage sends free text, but only inside a real chat room. In
 // every "standard" tab (Console, Contacts, Groups, Tor, Files), free
 // text is not a valid action: a single popup blocks free text
 // anywhere that isn't a chat, instead of per-tab silent redirects.
@@ -14672,18 +14672,18 @@ func (m *model) sendMessage(text string) tea.Cmd {
 			return sendErrMsg{err}
 		}
 		// Count-based rotation criterion (K messages per generation,
-		// complementary to the rotation timer) — checked after every
+		// complementary to the rotation timer), checked after every
 		// successful send, not on a separate periodic cycle: it's the
 		// only moment MessagesSinceRotation can actually change.
 		//
 		// Unlike RotateSenderKey's other two call sites (init/
 		// rekeyOnNextInit, cmdRotateSenderKeys), this one does NOT
-		// reset tab.keySentTo — this closure already returns
+		// reset tab.keySentTo, this closure already returns
 		// sendErrMsg/replySentMsg/nil depending on the branch, a fourth
 		// message type for a rare event (budget-based rotation, not
 		// every send) would complicate things unnecessarily: the next
 		// periodic round of cmdRotateSenderKeys (at most
-		// senderKeyInterval later) will reset the map anyway — a
+		// senderKeyInterval later) will reset the map anyway, a
 		// time-limited drift, not a permanent gap.
 		if budget > 0 && cli.MessagesSinceRotation() >= uint64(budget) {
 			if err := cli.RotateSenderKey(ctx); err != nil {
@@ -14699,7 +14699,7 @@ func (m *model) sendMessage(text string) tea.Cmd {
 
 // ── console ───────────────────────────────────────────────────────────────────
 
-// appendToConsole writes an event to the permanent console tab — both
+// appendToConsole writes an event to the permanent console tab, both
 // errors/disconnections and informational events (isError distinguishes
 // the two categories on the same channel).
 func (m *model) appendToConsole(text string, isError bool) {
@@ -14852,7 +14852,7 @@ func (m model) pickerItems() []string {
 			continue
 		}
 		// /sec-rotate-rel-identity: a contact whose ContentKey (sibling) is
-		// already rotating is excluded — starting would fail anyway (mutual
+		// already rotating is excluded, starting would fail anyway (mutual
 		// guard, keystore.StartRelIdentityRotationByPub).
 		if dev, ok := c.SoleDevice(); ok {
 			if m.contactPickerCmd == client.CmdRotateRelIdentity && dev.ContentKeyPending {
@@ -14989,7 +14989,7 @@ func (m model) pickerItemDot(key string) string {
 	}
 }
 
-// renderInterfaceLock draws the full-screen interface lock — no other
+// renderInterfaceLock draws the full-screen interface lock, no other
 // content (tabs, messages, queued popups) is visible until it is
 // unlocked, matching the gate in Update() that intercepts every key
 // before any other modal.
@@ -15011,8 +15011,8 @@ func (m model) renderInterfaceLock() string {
 }
 
 // renderHelp draws the scrollable help overlay.
-// renderBoxPopup applies the same style as the /help popup — border,
-// width, and padding — to simple popups (backup, /cnt-info, /grp-info)
+// renderBoxPopup applies the same style as the /help popup, border,
+// width, and padding, to simple popups (backup, /cnt-info, /grp-info)
 // for visual consistency across all popups.
 func (m model) renderBoxPopup(content string) string {
 	termW := m.lastTermW
@@ -15111,7 +15111,7 @@ func (m model) renderHelp() string {
 		start = 0
 	}
 
-	// Two lines per command — command (with its argument, if any) on top,
+	// Two lines per command, command (with its argument, if any) on top,
 	// description on the following line, indented. The page ends where
 	// helpPageEnd says, so the popup never
 	// grows taller than the terminal.
@@ -15130,7 +15130,7 @@ func (m model) renderHelp() string {
 		sb.WriteString(helpDescBlock(c.Desc, innerW) + "\n")
 	}
 
-	nav := fmt.Sprintf("%d–%d / %d", start+1, end, total)
+	nav := fmt.Sprintf("%d-%d / %d", start+1, end, total)
 	if start > 0 {
 		nav = "↑ " + nav
 	}
@@ -15269,7 +15269,7 @@ func (m model) renderPalette() string {
 }
 
 // nukeDeviceSyncTimeout bounds how long cmdNukeX's device-sync fan-out
-// waits before giving up and proceeding to the actual nuke regardless —
+// waits before giving up and proceeding to the actual nuke regardless,
 // same ~20s order of magnitude as remoteNukeExecuteTimeout/podTimeout
 // elsewhere in this codebase. An unreachable sibling must never delay
 // the wipe itself, only the few seconds needed to best-effort notify it.
@@ -15278,7 +15278,7 @@ const nukeDeviceSyncTimeout = 20 * time.Second
 // deviceSyncNukeDoneMsg signals that a device-sync fan-out armed by
 // cmdNukeX OR by a duress secret recognized at the lock screen
 // (armDuressWipe) has ended (every known sibling reached, or the
-// timeout expired — always regardless): the case in Update() sets
+// timeout expired, always regardless): the case in Update() sets
 // nukeOnExit or duressWipeOnExit accordingly (duress field) and exits
 // the TUI, same scheme as remoteNukeExecutedMsg for executeRemoteNuke.
 type deviceSyncNukeDoneMsg struct {
@@ -15288,7 +15288,7 @@ type deviceSyncNukeDoneMsg struct {
 // cmdNukeX triggers immediate secure erasure without confirmation. Marks
 // this device nuked in NukedDevicePubs and fans out a "device_sync" to
 // every known sibling (best-effort, bounded by nukeDeviceSyncTimeout)
-// before exiting the TUI — a sibling that learns of it starts resending
+// before exiting the TUI, a sibling that learns of it starts resending
 // the real rel_revoke to this identity's contacts via its own existing
 // SiblingRevocations retry queue (see MarkOwnDeviceNuked's doc comment,
 // TUIParams). The actual nuke happens after returning from the TUI (via
@@ -15301,7 +15301,7 @@ func (m *model) cmdNukeX() tea.Cmd {
 }
 
 // cmdClearAll is confirmed by the caller (clearAllConfirmMode in
-// Update()) before this ever runs — unlike cmdNukeX, a deliberate
+// Update()) before this ever runs, unlike cmdNukeX, a deliberate
 // uninstall/cleanup action, not a panic trigger: no device-sync fan-out,
 // no swap to duress. The actual wipe happens after exiting the TUI, in
 // main() (see wipeConfigDir).
@@ -15312,7 +15312,7 @@ func (m *model) cmdClearAll() tea.Cmd {
 
 // armDuressWipe is cmdNukeX's counterpart for a duress secret recognized
 // at the interface lock screen (LockCheckDuress or checkDuressPassword,
-// see Update()'s tea.KeyMsg/m.interfaceLocked branch) — same reason,
+// see Update()'s tea.KeyMsg/m.interfaceLocked branch), same reason,
 // same device-sync fan-out, only the exit flag it ultimately sets
 // differs (duressWipeOnExit, not nukeOnExit).
 func (m *model) armDuressWipe() tea.Cmd {
@@ -15324,7 +15324,7 @@ func (m *model) armDuressWipe() tea.Cmd {
 
 // broadcastDeviceSyncNuke sends "device_sync" (carrying NukedDevicePubs,
 // now including this device after MarkOwnDeviceNuked) to every entry in
-// the known devices, in parallel with a single shared time cap — same
+// the known devices, in parallel with a single shared time cap, same
 // fire-and-forget-within-a-deadline pattern as broadcastDangerEnd, never
 // blocking beyond nukeDeviceSyncTimeout regardless of how many siblings
 // are known or reachable. duress is threaded through unchanged into the
@@ -15398,7 +15398,7 @@ func (m *model) cmdDebug(arg string) tea.Cmd {
 }
 
 // cmdCompact enables or disables compaction of repeated lines in the
-// console tab — same structure as cmdDebug above (syntax, restricted to
+// console tab, same structure as cmdDebug above (syntax, restricted to
 // the console tab only), but acts only on the VIEW (refreshViewport),
 // never on tab.lines: no data is ever discarded, only hidden until
 // disabled again.
@@ -15429,11 +15429,11 @@ func (m *model) cmdCompact(arg string) tea.Cmd {
 }
 
 // cmdConsoleExport writes the ENTIRE Console tab's content (every line
-// this session has ever appended — never pruned, see tab.lines — not
+// this session has ever appended, never pruned, see tab.lines, not
 // just what currently fits in the viewport) to a plain-text file, ANSI
 // styling stripped, using the exact same destination-picking flow
 // already used for a received file (filesystem browser for the
-// directory, then an editable proposed name) — see saveRenameMode/
+// directory, then an editable proposed name), see saveRenameMode/
 // saveDirMode. Honors /compact's collapsing of repeated lines if
 // currently on, same as what's shown on screen (m.refreshViewport).
 func (m *model) cmdConsoleExport() tea.Cmd {
@@ -15462,12 +15462,12 @@ func (m *model) cmdConsoleExport() tea.Cmd {
 }
 
 // cmdPQCSign enables/disables the optional ML-DSA-65 signature on messages
-// sent in the active room — hybrid PQC network identity. Only on an actual
+// sent in the active room, hybrid PQC network identity. Only on an actual
 // room (two-member or group, same restriction as cmdReconnect): the toggle
-// lives on that room's *Client (tab.cli.SetPQCSign), not a global setting —
+// lives on that room's *Client (tab.cli.SetPQCSign), not a global setting,
 // different rooms can have different choices. Confirmation is shown inline
 // in the room itself (not an error, a local conversation status), not in
-// Console — consistent with the other non-error status notifications
+// Console, consistent with the other non-error status notifications
 // already shown there.
 // Syntax: /sec-pqc-sign on | /sec-pqc-sign off | /sec-pqc-sign (current status)
 func (m *model) cmdPQCSign(arg string) tea.Cmd {
@@ -15500,7 +15500,7 @@ func (m *model) cmdPQCSign(arg string) tea.Cmd {
 }
 
 // sendPQCToggleAnnounce notifies all room members of the PQC status
-// change (/sec-pqc-sign) — see pqcToggleAnnouncePrefix. Best-effort,
+// change (/sec-pqc-sign), see pqcToggleAnnouncePrefix. Best-effort,
 // fire-and-forget: the local toggle (tab.cli.SetPQCSign, already applied
 // by the caller) does not depend in any way on the outcome of this send.
 func (m *model) sendPQCToggleAnnounce(tab *roomTab, on bool) tea.Cmd {
@@ -15515,7 +15515,7 @@ func (m *model) sendPQCToggleAnnounce(tab *roomTab, on bool) tea.Cmd {
 }
 
 // cmdBackup starts password verification before showing the 24 BIP-39
-// words — the words are recomputed only after verification (case 4,
+// words, the words are recomputed only after verification (case 4,
 // pwdMode), never kept ready in advance.
 func (m *model) cmdBackup() tea.Cmd {
 	if m.getBackupMnemonic == nil {
@@ -15536,10 +15536,10 @@ func (m *model) cmdPasswd() tea.Cmd {
 }
 
 // cmdDuress starts the masked flow to change the decoy identity's own
-// identity password (2 steps: new password → confirm — no verification
+// identity password (2 steps: new password → confirm, no verification
 // of the current one, it is an independent secret, not a replacement).
 // An empty password is rejected: the decoy identity exists structurally
-// and can never be removed — see the pwdMode==5 case in the main Update.
+// and can never be removed, see the pwdMode==5 case in the main Update.
 func (m *model) cmdDuress() tea.Cmd {
 	if m.setDuress == nil {
 		return consoleErrTab(m.consoleIdx, styleErr.Render(i18n.T("tui.duress_unavailable")))
@@ -15562,7 +15562,7 @@ func isDigitsOnly(s string) bool {
 	return true
 }
 
-// cmdLock immediately locks the interface — Tor/I2P, connections, and open
+// cmdLock immediately locks the interface, Tor/I2P, connections, and open
 // rooms remain unchanged. Always available: the identity password (kept in
 // RAM for the session, m.keystorePassword) always unlocks the lock again,
 // whether or not a PIN has also been configured via /sec-lock-pin.
@@ -15574,9 +15574,9 @@ func (m *model) cmdLock() tea.Cmd {
 }
 
 // cmdLockPIN starts the masked flow to set/replace the numeric
-// interface-lock PIN — 3 steps: new PIN → confirm → duress character →
+// interface-lock PIN, 3 steps: new PIN → confirm → duress character →
 // character position (pwdMode 7→8→9→10, see the corresponding case in the
-// main Update). The PIN is an additional, optional unlock path — the
+// main Update). The PIN is an additional, optional unlock path, the
 // identity password always unlocks the lock regardless of whether a PIN is
 // configured (see cmdLock).
 func (m *model) cmdLockPIN() tea.Cmd {
@@ -15588,7 +15588,7 @@ func (m *model) cmdLockPIN() tea.Cmd {
 	return nil
 }
 
-// cmdLockTimeout sets the inactivity threshold for the automatic lock —
+// cmdLockTimeout sets the inactivity threshold for the automatic lock,
 // free-form operator input (e.g. "30s", "1m", "2m"), not a list of preset
 // options; "0" or "0s" disables the automatic lock (the manual /sec-lock
 // command always remains available regardless).
@@ -15616,7 +15616,7 @@ func (m *model) cmdLockTimeout(arg string) tea.Cmd {
 	return localTab(m.consoleIdx, fmt.Sprintf(i18n.T("tui.lock_timeout_set"), d))
 }
 
-// cmdNukeTimeout sets the "time" nuke trigger threshold — how long the
+// cmdNukeTimeout sets the "time" nuke trigger threshold, how long the
 // interface may stay LOCKED before an automatic nukex-equivalent
 // erasure fires. Same free-form input/disable convention as
 // cmdLockTimeout above.
@@ -15660,7 +15660,7 @@ func (m *model) cmdExit() tea.Cmd {
 	return nil
 }
 
-// closeTabAt closes the tab at index i — reusable by groupNoJoinConfirmMode,
+// closeTabAt closes the tab at index i, reusable by groupNoJoinConfirmMode,
 // where the tab to close (the host gave up on a group that got no response)
 // is not necessarily the one currently active on screen.
 func (m *model) closeTabAt(i int) {
@@ -15677,7 +15677,7 @@ func (m *model) closeTabAt(i int) {
 
 	// Incoming transfers still active on THIS tab: without this,
 	// dropIncomingTransfer would never be called for them when the tab
-	// closes — chunkCh would stay open forever, the dedicated writer
+	// closes, chunkCh would stay open forever, the dedicated writer
 	// goroutine (startIncomingChunkWriter) blocked indefinitely waiting for
 	// a chunk that will never arrive (goroutine leak), and the already-open
 	// temporary file never closed or cleaned up. Collected before iterating
@@ -15717,7 +15717,7 @@ func (m *model) closeTabAt(i int) {
 
 // cmdReconnect reconnects the WebSocket transport AND rotates the
 // senderKey (new chain, new generation of ephemeral DH keys) as soon as
-// the next "init" frame confirms who is present in the room — see
+// the next "init" frame confirms who is present in the room, see
 // rekeyOnNextInit. Transport and message encryption are reset together,
 // so the user never has to tell which layer is blocked. /grp-reinvite is
 // a different action (re-inviting a member to the room, host only).
@@ -15771,7 +15771,7 @@ func (m *model) reconnectTab(idx int) tea.Cmd {
 	tab.ctx = newCtx
 	tab.cancel = newCancel
 	// Same reason as the bump in cmdReconnect: new generation at the START
-	// of the attempt, not only on success — a ping or read started on the
+	// of the attempt, not only on success, a ping or read started on the
 	// connection just replaced (e.g. a pingWatchdog probe triggered by this
 	// same error, or a second error from the read loop blocked on the old
 	// ctx) must be recognizable as stale.
@@ -15780,7 +15780,7 @@ func (m *model) reconnectTab(idx int) tea.Cmd {
 	cli := tab.cli
 	tabName := tab.name
 	// Self-heal: cli.hostKey stays frozen to how it was when this *Client
-	// was created — if in the meantime the roomErrMsg case corrected
+	// was created, if in the meantime the roomErrMsg case corrected
 	// PeerRelIdentityPub in the address book (mismatched relationship key,
 	// see ErrInvalidServerSig above), a reconnect reusing that frozen copy
 	// would keep failing forever with the same invalid signature. The
@@ -15803,7 +15803,7 @@ func (m *model) reconnectTab(idx int) tea.Cmd {
 
 // roomSlotBusyRetryInterval is the FIXED interval (not exponential, unlike
 // ConnectWithRetry) between one attempt and the next when
-// client.ErrAlreadyConnectedElsewhere prevents joining a room — the only
+// client.ErrAlreadyConnectedElsewhere prevents joining a room, the only
 // event that resolves this failure is the OTHER device disconnecting,
 // never a network issue: a growing backoff would not help, a fixed and
 // moderate interval avoids hammering the server without needlessly
@@ -15812,12 +15812,12 @@ const roomSlotBusyRetryInterval = 20 * time.Second
 
 // waitAndRetrySlot retries ONE direct connection (never ConnectWithRetry,
 // which would give up after a fixed number of attempts) after
-// roomSlotBusyRetryInterval — used only for
+// roomSlotBusyRetryInterval, used only for
 // client.ErrAlreadyConnectedElsewhere: retries indefinitely until it
 // succeeds or the tab is closed (tab.ctx cancelled), never a final error
 // as happens for every other failure (see the roomErrMsg case). If an
 // attempt fails for a DIFFERENT reason (network, no longer "busy"), it
-// falls back to the generic roomErrMsg — ordinary logic (self-heal,
+// falls back to the generic roomErrMsg, ordinary logic (self-heal,
 // exponential reconnect, final error) resumes from there.
 func (m *model) waitAndRetrySlot(idx int) tea.Cmd {
 	tab := m.tabs[idx]
@@ -15863,7 +15863,7 @@ func (m model) waitForRoom(idx int) tea.Cmd {
 		return nil // tab without a connection (e.g. contacts tab)
 	}
 	// gen stamped NOW (the current generation at the moment THIS read
-	// starts), not re-read later — see the comment on roomErrMsg.gen: if a
+	// starts), not re-read later, see the comment on roomErrMsg.gen: if a
 	// reconnect meanwhile replaces tab.ctx/tab.pingGen, a late error from
 	// this now-superseded read must remain recognizable as such.
 	gen := tab.pingGen
@@ -15959,7 +15959,7 @@ func (m *model) calcVpH() int {
 
 // contentRelEstablished reports whether a ContentKey relationship
 // established in BOTH directions already exists toward username in the
-// given tab — persistent (Contact.RelContentPriv/PeerRelContentPub, a real
+// given tab, persistent (Contact.RelContentPriv/PeerRelContentPub, a real
 // contact) or ephemeral (ephemeralRel.established, an "introduced"
 // stranger with a completed peer-to-peer bootstrap). The guarantee is not
 // a comparison of two declared values but verifiable mutual possession of
@@ -15972,8 +15972,8 @@ func (m *model) contentRelEstablished(tab *roomTab, username string) bool {
 	return ok
 }
 
-// cmdSendContact shares a contact's card — or one's own, via
-// "self"/"me"/one's own username, the picker's first entry — with one or
+// cmdSendContact shares a contact's card, or one's own, via
+// "self"/"me"/one's own username, the picker's first entry, with one or
 // more members of the current room. Reuses the entire /grp-file-send
 // pipeline (same multi-select recipient picker, same per-recipient
 // encryption with the ContentKey-per-relationship, same socket-level
@@ -15992,7 +15992,7 @@ func (m *model) cmdSendContact(arg string) tea.Cmd {
 	argLower := strings.ToLower(arg)
 	// "self"/"me"/one's own username: shares one's OWN card (the same
 	// identity shown by /cnt-info in these cases, cmdInfo above), not an
-	// m.contacts entry — one's own identity is never a ContactInfo in the
+	// m.contacts entry, one's own identity is never a ContactInfo in the
 	// address book. sendContactHintUsername carries "self" as a sentinel
 	// through to finishSendContact, which recognizes it before
 	// searching m.contacts.
@@ -16004,7 +16004,7 @@ func (m *model) cmdSendContact(arg string) tea.Cmd {
 		found, n := m.resolveContactArg(arg)
 		if n == 0 {
 			// Fallback for case-insensitive DisplayName/Username matching
-			// (resolveContactArg is case-sensitive) — only for a manually
+			// (resolveContactArg is case-sensitive), only for a manually
 			// typed argument, never for a picker key; accepted only when
 			// exactly one contact matches.
 			for i := range m.contacts {
@@ -16055,7 +16055,7 @@ func (m *model) finishSendContact(hint string) tea.Cmd {
 	var card contactCard
 	if username == "self" {
 		// One's own card: the same fields (identity pub + PQC companions)
-		// shown by /cnt-info in this same case — no ContactInfo involved,
+		// shown by /cnt-info in this same case, no ContactInfo involved,
 		// never an address-book entry for oneself. No MLDSAPub: the model
 		// does not keep a durable transport ML-DSA public key.
 		card = contactCard{
@@ -16110,7 +16110,7 @@ func (m *model) finishSendContact(hint string) tea.Cmd {
 
 // fileTransferProgress is the only shared state between the chunk
 // send/receive goroutine (which runs outside the main Update loop) and
-// the "File" tab rendering — mutex-protected because it is written and
+// the "File" tab rendering, mutex-protected because it is written and
 // read by different goroutines, unlike the rest of the model which lives
 // only on the main bubbletea loop.
 type fileTransferProgress struct {
@@ -16122,7 +16122,7 @@ type fileTransferProgress struct {
 	done      int64
 	failed    bool
 	complete  bool
-	// chunksDone/chunksPending/chunksTotal — chunk-level detail, shown in
+	// chunksDone/chunksPending/chunksTotal, chunk-level detail, shown in
 	// the File tab next to the byte percentage (renderFileProgressView).
 	// Send side (↑): chunksDone is how many chunks THIS row (a sendGroup)
 	// has already sent, chunksPending always stays 0 (nothing to reorder
@@ -16150,7 +16150,7 @@ func (p *fileTransferProgress) setComplete(failed bool) {
 	p.mu.Unlock()
 }
 
-// setChunks updates the chunk-level detail — see the comment on the
+// setChunks updates the chunk-level detail, see the comment on the
 // chunksDone/chunksPending/chunksTotal fields above.
 func (p *fileTransferProgress) setChunks(done, pending, total int64) {
 	p.mu.Lock()
@@ -16164,7 +16164,7 @@ func (p *fileTransferProgress) snapshot() (label, direction, peer string, total,
 	return p.label, p.direction, p.peer, p.total, p.done, p.failed, p.complete, p.chunksDone, p.chunksPending, p.chunksTotal
 }
 
-// setPeer updates the recipient list shown for this row — used on the
+// setPeer updates the recipient list shown for this row, used on the
 // send side when a group's composition (sendGroup, see
 // startSendingChunks) changes: a new member joins, or one leaves.
 func (p *fileTransferProgress) setPeer(peer string) {
@@ -16175,7 +16175,7 @@ func (p *fileTransferProgress) setPeer(peer string) {
 
 // fileProgressRegistry keeps the insertion-ordered list of transfers shown
 // in the "File" tab. Entries remain visible even after completion (marked
-// complete/failed) until a new one starts — no automatic cleanup.
+// complete/failed) until a new one starts, no automatic cleanup.
 type fileProgressRegistry struct {
 	mu      sync.Mutex
 	order   []string
@@ -16201,7 +16201,7 @@ func (r *fileProgressRegistry) get(id string) *fileTransferProgress {
 	return r.entries[id]
 }
 
-// remove drops a row from the list — used on the send side when a
+// remove drops a row from the list, used on the send side when a
 // dedicated group (a sendGroup with its own row, see startSendingChunks)
 // merges back into another: the separate row disappears instead of
 // lingering forever as a ghost "100%".
@@ -16253,11 +16253,11 @@ func (r *fileProgressRegistry) hasActive() bool {
 // when fileOfferBatchWindow expires after the offer is sent (case
 // fileOfferBatchWindowMsg), or immediately if ALL selected recipients have
 // already responded even before that (the "all responded" branch in case
-// "file_accept"/handleRoomMsg) — sending never waits until
+// "file_accept"/handleRoomMsg), sending never waits until
 // fileTransferOfferTimeout to start; that remains only the fallback
 // deadline for "nobody ever responded". Anyone who accepts after sending
 // has already started is readmitted into the ongoing window through the
-// same resumeCh mechanism already used for reconnections (fromByte: 0 —
+// same resumeCh mechanism already used for reconnections (fromByte: 0,
 // everything already sent to the others so far is resent to them), see
 // the dedicated ("readmitted") branch in case "file_accept"/handleRoomMsg.
 type outgoingFileTransfer struct {
@@ -16265,9 +16265,9 @@ type outgoingFileTransfer struct {
 	tabIdx     int
 	fileName   string
 	ciphertext []byte
-	// envelopes — meta_blob envelope per recipient (user_id), already
+	// envelopes, meta_blob envelope per recipient (user_id), already
 	// prepared at encryption time but sent (SendFileOffer) ONLY when that
-	// recipient's file_announce_ack arrives — case "file_announce_ack", Update().
+	// recipient's file_announce_ack arrives, case "file_announce_ack", Update().
 	envelopes map[string]shared.FileOfferEnvelope
 	preset    string          // "slow" or "warp"
 	pending   map[string]bool // member key → true until it responds (announce+offer, a single budget)
@@ -16275,13 +16275,13 @@ type outgoingFileTransfer struct {
 	progress  *fileTransferProgress
 	ackCh     chan fileChunkAckEvent // seq confirmed by recipients, read by the sending goroutine
 	resumeCh  chan fileResumeEvent   // resume announcements, read by the sending goroutine (see startSendingChunks)
-	// pendingDone/pendingClosed — signal to the sending goroutine that ALL
+	// pendingDone/pendingClosed, signal to the sending goroutine that ALL
 	// invitees have now responded (accepted or rejected): startSendingChunks'
 	// post-send grace window no longer has any reason to wait until
 	// fileTransferOfferTimeout, nobody else can accept late anymore. A
 	// channel, not a direct read of pending, because pending is mutated only
 	// by the Update() goroutine while startSendingChunks runs on a separate
-	// goroutine — reading it from there would be a race.
+	// goroutine, reading it from there would be a race.
 	// pendingClosed avoids a double close (mutated only by Update(), never by
 	// the sending goroutine, which only listens on the channel).
 	pendingDone   chan struct{}
@@ -16289,7 +16289,7 @@ type outgoingFileTransfer struct {
 }
 
 // signalAllResponded closes ft.pendingDone the FIRST time ft.pending
-// becomes empty — must be called from Update() (the only goroutine that
+// becomes empty, must be called from Update() (the only goroutine that
 // touches ft.pending), right after every delete(ft.pending, ...), for
 // both an acceptance and a rejection.
 func (ft *outgoingFileTransfer) signalAllResponded() {
@@ -16306,14 +16306,14 @@ type fileResumeEvent struct {
 	memberKey string // to remove it from the stalled list, stable unlike user_id
 	toUserID  string // CURRENT user_id to address recovery chunks to
 	fromByte  int64  // how many bytes the recipient already has (offset to resume from)
-	// isNewAccept — true ONLY when the event comes from the "readmitted"
+	// isNewAccept, true ONLY when the event comes from the "readmitted"
 	// fallback (the "file_accept" case above, for a genuine first
 	// acceptance arriving after sending has already started toward
 	// others), never from an actual file_resume on the wire. The sending
 	// goroutine uses it to decide whether to unconditionally admit the
 	// sender as a new recipient (isNewAccept=true, fromByte always 0: it
 	// has nothing yet) or to honor it only for an already-known recipient
-	// (isNewAccept=false) — a file_resume from someone who has NEVER
+	// (isNewAccept=false), a file_resume from someone who has NEVER
 	// accepted before is always ignored, otherwise a reconnection before
 	// even responding to the offer would be enough to have the entire file
 	// sent.
@@ -16328,18 +16328,18 @@ type fileChunkAckEvent struct {
 }
 
 // incomingFileTransfer holds the receiver-side state: raw encrypted chunks
-// queue up onto a temporary file (never in RAM) as they arrive — decrypted
+// queue up onto a temporary file (never in RAM) as they arrive, decrypted
 // and verified only once, when the transfer completes.
 //
 // The actual write (os.CreateTemp + Write) does not run on the Update()
 // loop: synchronous disk I/O inside the "file_chunk" case would block the
 // ENTIRE bubbletea event loop (not just that transfer) for the duration of
-// each individual write — the same reason encryption on the send side
+// each individual write, the same reason encryption on the send side
 // runs off the loop (see onFilePresetChosen).
 // chunkCh/chunkResultCh decouple the I/O onto a dedicated per-transfer
 // goroutine (startIncomingChunkWriter), consumed in Update() via the
 // "waiter" pattern already used by waitForRoom/waitForKnock (case
-// incomingChunkWrittenMsg) — the file handle itself (tmpFile) stays
+// incomingChunkWrittenMsg), the file handle itself (tmpFile) stays
 // private to the writer goroutine, never exposed here: tmpPath (set from
 // the first result) is enough for finalizeIncomingTransfer, which
 // re-reads from the path with a fresh os.ReadFile.
@@ -16351,11 +16351,11 @@ type incomingFileTransfer struct {
 	fileName   string
 	fileSize   int64  // size of the encrypted blob (how much must actually be received)
 	fileKey    []byte // symmetric content key, from the decrypted meta_blob (fileOfferMetaDecryptedMsg)
-	chunkCount uint64 // total chunk count declared by the sender in the meta_blob — see startIncomingChunkWriter
-	// hash — sha256(ciphertext) already verified at announce time (case
+	chunkCount uint64 // total chunk count declared by the sender in the meta_blob, see startIncomingChunkWriter
+	// hash, sha256(ciphertext) already verified at announce time (case
 	// "file_announce"), consumed by m.verifiedFileHashes at the time of
 	// this file_offer. At the end of the transfer, finalizeIncomingTransfer
-	// compares this hash against the sha256 of the received ciphertext —
+	// compares this hash against the sha256 of the received ciphertext,
 	// no signature to re-verify, already done before a single chunk arrived.
 	hash          []byte
 	tmpPath       string
@@ -16364,24 +16364,24 @@ type incomingFileTransfer struct {
 	chunkCh       chan incomingChunkJob
 	chunkResultCh chan incomingChunkResult
 	// abortCh: closed by dropIncomingTransfer to signal abandonment to the
-	// dedicated writer goroutine (startIncomingChunkWriter) — NEVER chunkCh,
+	// dedicated writer goroutine (startIncomingChunkWriter), NEVER chunkCh,
 	// which the success path (case incomingChunkWrittenMsg) closes on its
 	// own when written reaches fileSize; a distinct channel removes any
 	// ambiguity for the writer goroutine between "completed" (chunkCh
 	// closed, file to keep) and "abandoned" (abortCh closed, temporary file
-	// to remove) — see the comment on startIncomingChunkWriter.
+	// to remove), see the comment on startIncomingChunkWriter.
 	abortCh chan struct{}
 
-	// acceptRetryDeadline — the point past which fileAcceptRetryMsg stops
+	// acceptRetryDeadline, the point past which fileAcceptRetryMsg stops
 	// resending the file_accept and silently gives up (the sender will
 	// meanwhile have isolated this recipient on its side). Zero value until
-	// the offer is accepted — see case tea.KeyEnter in the file_offer popup.
+	// the offer is accepted, see case tea.KeyEnter in the file_offer popup.
 	acceptRetryDeadline time.Time
 }
 
-// pendingFileAnnounce — a file_announce whose signature did not verify on
+// pendingFileAnnounce, a file_announce whose signature did not verify on
 // the first attempt, held pending for self-heal instead of being
-// discarded — see model.pendingFileAnnounces and retryPendingFileAnnounces.
+// discarded, see model.pendingFileAnnounces and retryPendingFileAnnounces.
 type pendingFileAnnounce struct {
 	tabIdx     int
 	fromKey    string // sender's member key
@@ -16394,8 +16394,8 @@ type pendingFileAnnounce struct {
 	deadline   time.Time
 }
 
-// pendingInvite — an invite held in queue until the relationship-key
-// exchange (rel_init/rel_init_ack) completes for ALL involved contacts —
+// pendingInvite, an invite held in queue until the relationship-key
+// exchange (rel_init/rel_init_ack) completes for ALL involved contacts,
 // see model.pendingInvites and retryPendingInvites. label is descriptive
 // text (never executed), used only for the Console queuing/expiry message.
 type pendingInvite struct {
@@ -16405,7 +16405,7 @@ type pendingInvite struct {
 	deadline time.Time
 }
 
-// pendingJoin — see model.pendingJoins: a RECEIVED invite, accepted before
+// pendingJoin, see model.pendingJoins: a RECEIVED invite, accepted before
 // hostReadyForJoin(knock.FromIdentityPub) was true, waiting for
 // retryPendingJoins to retry it. Unlike pendingInvite it needs no set of
 // pending usernames: an incoming invite always has a single host.
@@ -16415,7 +16415,7 @@ type pendingJoin struct {
 }
 
 // incomingChunkJob is a raw incoming chunk, passed to the dedicated
-// writer goroutine of an incomingFileTransfer — seq is the chunk's STABLE
+// writer goroutine of an incomingFileTransfer, seq is the chunk's STABLE
 // INDEX (byteOffset/chunkSize on the sender side, see startSendingChunks),
 // not a simple send counter: two chunks with the same seq are always the
 // same byte range, even when one of the two arrives from a recovery
@@ -16427,7 +16427,7 @@ type incomingChunkJob struct {
 
 // incomingChunkResult is the outcome of processing ONE incoming chunk,
 // reported by the writer goroutine to Update() (case
-// incomingChunkWrittenMsg) — "processing" means written to disk IN ORDER,
+// incomingChunkWrittenMsg), "processing" means written to disk IN ORDER,
 // or buffered awaiting the missing chunks preceding it (see
 // startIncomingChunkWriter): in both cases the sender can consider the
 // chunk delivered and send another, so every incoming job always produces
@@ -16437,7 +16437,7 @@ type incomingChunkJob struct {
 // every result of the same transfer, set by the goroutine when it is
 // created, on the first chunk written). complete is true on the result
 // that brings the written chunk count to reach the chunkCount declared by
-// the sender in the offer — the only end-of-transfer signal, never
+// the sender in the offer, the only end-of-transfer signal, never
 // derived from written>=fileSize (fileSize is the encrypted blob's size,
 // but a buffered chunk is not yet "written" even though it has already
 // arrived).
@@ -16448,7 +16448,7 @@ type incomingChunkResult struct {
 	tmpPath    string
 	complete   bool
 	err        error
-	// nextIndex/buffered — chunk-level detail state at the time of THIS
+	// nextIndex/buffered, chunk-level detail state at the time of THIS
 	// result (see fileTransferProgress.chunksDone/chunksPending): nextIndex
 	// is the contiguous frontier already written, buffered how many chunks
 	// arrived early are still awaiting placement.
@@ -16460,17 +16460,17 @@ type incomingChunkResult struct {
 type incomingChunkWrittenMsg incomingChunkResult
 
 // dropIncomingTransfer removes an incoming transfer from
-// m.incomingTransfers, closing abortCh if present — without this explicit
+// m.incomingTransfers, closing abortCh if present, without this explicit
 // close the dedicated writer goroutine (startIncomingChunkWriter) would
 // stay blocked forever on a channel that nobody will ever write to or
 // close (goroutine leak), every time a transfer is abandoned BEFORE its
 // last chunk (rejected, timed out, metadata decryption error, closure of
-// the tab hosting it — see closeTabAt — or a write error arrived via
+// the tab hosting it, see closeTabAt, or a write error arrived via
 // incomingChunkWrittenMsg: the goroutine has already exited on its own in
 // that case, closing a channel nobody reads from anymore remains safe
 // regardless). abortCh, NEVER chunkCh: the "completed successfully" case
 // closes chunkCh separately (case incomingChunkWrittenMsg, when written
-// reaches fileSize) and never goes through this function — a distinct
+// reaches fileSize) and never goes through this function, a distinct
 // channel for abandonment lets the writer goroutine know with certainty,
 // unambiguously, when it must also remove the temporary file already
 // written (see startIncomingChunkWriter) instead of leaving it orphaned
@@ -16485,7 +16485,7 @@ func (m *model) dropIncomingTransfer(transferID string) {
 // scheduleFileAcceptRetry schedules the next check (case fileAcceptRetryMsg
 // in Update()): if by then no chunk has yet arrived for transferID,
 // resends the file_accept and reschedules itself, until
-// incomingFileTransfer.acceptRetryDeadline expires — see the comment on
+// incomingFileTransfer.acceptRetryDeadline expires, see the comment on
 // fileAcceptRetryMsg.
 func (m *model) scheduleFileAcceptRetry(tabIdx int, toUserID, transferID string) tea.Cmd {
 	return tea.Tick(m.fileAcceptRetryInterval, func(time.Time) tea.Msg {
@@ -16496,12 +16496,12 @@ func (m *model) scheduleFileAcceptRetry(tabIdx int, toUserID, transferID string)
 // startIncomingChunkWriter starts the dedicated goroutine that writes to
 // disk the chunks of ONE transfer, read in order from chunkCh (never
 // concurrent: a single writer per transfer, chunks arrive already in seq
-// order from the same WS connection) — never a tea.Cmd: this runs for the
+// order from the same WS connection), never a tea.Cmd: this runs for the
 // entire duration of the transfer, it does not return a single result but
 // produces many on resultCh, consumed by waitForIncomingChunkResult. Go's
 // os.File does not internally buffer Writes: each chunk is already
 // visible to a concurrent read (os.ReadFile in finalizeIncomingTransfer)
-// as soon as this function has received the corresponding result —
+// as soon as this function has received the corresponding result,
 // Close() below is only file-descriptor cleanup, not a condition for the
 // visibility of data already written.
 //
@@ -16513,12 +16513,12 @@ func (m *model) scheduleFileAcceptRetry(tabIdx int, toUserID, transferID string)
 //
 // Chunks do NOT necessarily arrive in seq order: a recovery catchup (see
 // startSendingChunks on the sender side) can deliver a higher index
-// before a lower one, never retransmitted, is finally recovered — writing
+// before a lower one, never retransmitted, is finally recovered, writing
 // blindly in arrival order would silently corrupt the file: it would
 // reach "100% written" with content in the wrong order, detected only by
 // the final signature verification. nextIndex is the contiguous frontier
 // already written to disk; buffered holds chunks that arrived early,
-// indexed by their own seq, until the frontier reaches them — at that
+// indexed by their own seq, until the frontier reaches them, at that
 // point they are written in a chain, in the same order the original bytes
 // arrived, never using os.File.WriteAt: writing always stays sequential
 // by construction, only deferred when necessary.
@@ -16540,13 +16540,13 @@ func startIncomingChunkWriter(transferID string, chunkCount uint64, chunkCh <-ch
 				switch {
 				case job.seq < nextIndex:
 					// Duplicate (retransmission after an ack lost on the
-					// network) — already written, discarded. The ack is
+					// network), already written, discarded. The ack is
 					// still sent: it is a pure flow signal ("I've finished
 					// processing this chunk"), never proof of correctness.
 					resultCh <- incomingChunkResult{transferID: transferID, seq: job.seq, nextIndex: nextIndex, buffered: len(buffered)}
 					continue
 				case job.seq > nextIndex:
-					// Arrived ahead of the contiguous frontier — buffered,
+					// Arrived ahead of the contiguous frontier, buffered,
 					// not written, awaiting what is missing before it.
 					buffered[job.seq] = job.chunk
 					resultCh <- incomingChunkResult{transferID: transferID, seq: job.seq, nextIndex: nextIndex, buffered: len(buffered)}
@@ -16594,7 +16594,7 @@ func startIncomingChunkWriter(transferID string, chunkCount uint64, chunkCh <-ch
 }
 
 // waitForIncomingChunkResult waits for the next write outcome for an
-// incoming transfer — same "waiter" pattern as waitForRoom/waitForKnock:
+// incoming transfer, same "waiter" pattern as waitForRoom/waitForKnock:
 // Update() re-arms it after every result until the transfer is complete
 // (at that point it closes chunkCh, the writer goroutine exits its
 // for-range and this function receives zero-value/false, tea.Msg nil, the
@@ -16611,7 +16611,7 @@ func waitForIncomingChunkResult(resultCh <-chan incomingChunkResult) tea.Cmd {
 
 // eligibleFileRecipients returns the member keys present in tab tabIdx with
 // a ContentKey relationship already established (see
-// contentRelEstablished) — the only list of valid candidates for
+// contentRelEstablished), the only list of valid candidates for
 // /grp-file-send: encrypting for a recipient requires their public
 // ContentKey, there is no other way.
 func (m *model) eligibleFileRecipients(tabIdx int) []string {
@@ -16627,10 +16627,10 @@ func (m *model) eligibleFileRecipients(tabIdx int) []string {
 
 // namesWithoutContentRel lists the display names (local name if a saved
 // contact, otherwise the member name) of the CONNECTED members of room
-// tabIdx that do not pass contentRelEstablished — the exact complement of
+// tabIdx that do not pass contentRelEstablished, the exact complement of
 // eligibleFileRecipients, used to tell the USER who is missing instead of
 // just "nobody" when /grp-file-send or /grp-contact-send refuse to
-// proceed (same pipeline, same check — see both callers).
+// proceed (same pipeline, same check, see both callers).
 func (m *model) namesWithoutContentRel(tabIdx int) []string {
 	tab := m.tabs[tabIdx]
 	names := make([]string, 0, len(tab.online))
@@ -16661,7 +16661,7 @@ func (m *model) noContentRecipientsMsg(tabIdx int) string {
 
 // cmdSendFile starts the file-send flow: preconditions (at least one
 // recipient with an established ContentKey relationship in the current
-// room — fail fast, before letting the user pick a file that could not be
+// room, fail fast, before letting the user pick a file that could not be
 // sent anyway), then opens the filesystem browser to choose the file to send.
 func (m *model) cmdSendFile() tea.Cmd {
 	tabIdx := m.active
@@ -16688,14 +16688,14 @@ func (m *model) cmdSendFile() tea.Cmd {
 }
 
 // fsEntry is an entry (file or directory) listed by the /grp-file-send
-// filesystem browser — see listDir and sendFileFilteredEntries.
+// filesystem browser, see listDir and sendFileFilteredEntries.
 type fsEntry struct {
 	name  string
 	isDir bool
 }
 
 // startDirForFileBrowser returns the directory neutrino was launched from
-// (the process cwd) — starting point both for picking a file to send
+// (the process cwd), starting point both for picking a file to send
 // (/grp-file-send) and for choosing where to save a received file.
 // Falls back to $HOME then "/" if the cwd is unavailable (rare).
 func startDirForFileBrowser() string {
@@ -16720,7 +16720,7 @@ func listDir(dir string) ([]fsEntry, error) {
 		isDir := de.IsDir()
 		if de.Type()&os.ModeSymlink != 0 {
 			// os.DirEntry.IsDir() reflects the symlink entry itself,
-			// never what it points to — a symlinked directory (e.g.
+			// never what it points to, a symlinked directory (e.g.
 			// Termux's ~/storage/pictures, pointing at Android's real
 			// storage) would otherwise show up as a plain file, with no
 			// way to open it. os.Stat follows the link; left as the
@@ -16742,7 +16742,7 @@ func listDir(dir string) ([]fsEntry, error) {
 }
 
 // sendFileFilteredEntries applies sendFileFilter (case-insensitive
-// substring) to sendFileEntries — same criterion as pickerItems for the
+// substring) to sendFileEntries, same criterion as pickerItems for the
 // other filtered popups.
 func (m model) sendFileFilteredEntries() []fsEntry {
 	filter := strings.ToLower(m.sendFileFilter)
@@ -16792,7 +16792,7 @@ func (m model) sendFileEnter(full string) model {
 	return m
 }
 
-// toggleStringInOrder adds s to list if absent, removes it if present —
+// toggleStringInOrder adds s to list if absent, removes it if present,
 // used by qrFileMode's multi-select (Space), preserving the order items
 // were toggled on (never re-sorted), so "which one was picked first"
 // stays meaningful even though AssembleQRMulti itself doesn't need it.
@@ -16805,7 +16805,7 @@ func toggleStringInOrder(list []string, s string) []string {
 	return append(list, s)
 }
 
-// qrFileFilteredEntries applies qrFileFilter to qrFileEntries — same
+// qrFileFilteredEntries applies qrFileFilter to qrFileEntries, same
 // criterion as sendFileFilteredEntries.
 func (m model) qrFileFilteredEntries() []fsEntry {
 	filter := strings.ToLower(m.qrFileFilter)
@@ -16821,7 +16821,7 @@ func (m model) qrFileFilteredEntries() []fsEntry {
 	return out
 }
 
-// qrFileGoUp moves up to qrFileDir's parent directory — same logic as
+// qrFileGoUp moves up to qrFileDir's parent directory, same logic as
 // sendFileGoUp. Selection (qrFileSelected) survives navigation: it holds
 // full paths, independent of which directory is currently shown.
 func (m model) qrFileGoUp() model {
@@ -16840,7 +16840,7 @@ func (m model) qrFileGoUp() model {
 	return m
 }
 
-// qrFileEnter descends into subdirectory full — same logic as sendFileEnter.
+// qrFileEnter descends into subdirectory full, same logic as sendFileEnter.
 func (m model) qrFileEnter(full string) model {
 	entries, err := listDir(full)
 	if err != nil {
@@ -16907,7 +16907,7 @@ func (m model) renderSaveDirBrowser() string {
 	return sb.String()
 }
 
-// filterDirsOnly drops files from entries — used by saveDirMode's folder
+// filterDirsOnly drops files from entries, used by saveDirMode's folder
 // browser, where selecting or navigating into a file makes no sense (it
 // only chooses where to save, never what to save).
 func filterDirsOnly(entries []fsEntry) []fsEntry {
@@ -16920,7 +16920,7 @@ func filterDirsOnly(entries []fsEntry) []fsEntry {
 	return out
 }
 
-// saveDirGoUp moves up to saveFileDir's parent directory — same logic as
+// saveDirGoUp moves up to saveFileDir's parent directory, same logic as
 // sendFileGoUp, filtered to subdirectories only.
 func (m model) saveDirGoUp() model {
 	parent := filepath.Dir(m.saveFileDir)
@@ -16937,7 +16937,7 @@ func (m model) saveDirGoUp() model {
 	return m
 }
 
-// saveDirEnter descends into subdirectory name (inside saveFileDir) —
+// saveDirEnter descends into subdirectory name (inside saveFileDir),
 // same logic as sendFileEnter, filtered to subdirectories only.
 func (m model) saveDirEnter(name string) model {
 	full := filepath.Join(m.saveFileDir, name)
@@ -16988,7 +16988,7 @@ func (m model) onFileChosenForSend(path string) (tea.Model, tea.Cmd) {
 
 // onFileRecipientsChosen is the step following recipient confirmation
 // (implicit in a two-member room, or chosen in the group popup): opens
-// the speed-preset choice. "slow" remains the default here too — the
+// the speed-preset choice. "slow" remains the default here too, the
 // cursor starts at idx 0, "warp" must be explicitly chosen by moving the
 // cursor before Enter.
 func (m model) onFileRecipientsChosen(recipients []string) (tea.Model, tea.Cmd) {
@@ -17004,7 +17004,7 @@ func (m model) onFileRecipientsChosen(recipients []string) (tea.Model, tea.Cmd) 
 // (case fileEncryptedMsg, below, resumes where this function leaves off).
 // Encrypt-then-sign, same scheme as chat messages (see
 // buildContentSigningKeys): the content is encrypted ONCE with a random
-// symmetric key (file_key), then that key — together with name/size — is
+// symmetric key (file_key), then that key, together with name/size, is
 // encrypted again separately for each recipient with their ContentKey
 // (encryptForContentPeer), and the shared ciphertext is signed once per
 // recipient with OUR ContentKey toward them (SignRelMsg/SignRelMsgMLDSA).
@@ -17012,7 +17012,7 @@ func (m model) onFileRecipientsChosen(recipients []string) (tea.Model, tea.Cmd) 
 // The heavy work (os.ReadFile of a file that can be several megabytes,
 // plus encryption, potentially several seconds) must NEVER run in here:
 // onFilePresetChosen is called synchronously from bubbletea's Update()
-// loop — blocking it blocks the ENTIRE TUI (every tab, every connection,
+// loop, blocking it blocks the ENTIRE TUI (every tab, every connection,
 // every command, including reading incoming network frames, which simply
 // queue up until Update() returns) for its whole duration, so the
 // encryption of the whole file content never runs here: it runs inside
@@ -17022,7 +17022,7 @@ func (m model) onFilePresetChosen(preset string) (tea.Model, tea.Cmd) {
 	tab := m.tabs[tabIdx]
 
 	type fileRecipient struct {
-		key      string // member key — also the "for" of the content signature
+		key      string // member key, also the "for" of the content signature
 		userID   string
 		pub      ed25519.PublicKey
 		mldsaPub []byte
@@ -17070,7 +17070,7 @@ func (m model) onFilePresetChosen(preset string) (tea.Model, tea.Cmd) {
 
 	// chunkSize decided here, not inside startSendingChunks: it is needed
 	// RIGHT AWAY to compute chunkCount (how many chunks the transfer will
-	// have), declared in the meta_blob below — the recipient cannot assume
+	// have), declared in the meta_blob below, the recipient cannot assume
 	// it from their own config.json (preset/chunk size are the sender's
 	// choice, potentially different from theirs).
 	chunkSizeKiB := m.fileWarpChunkSizeKiB
@@ -17111,7 +17111,7 @@ func (m model) onFilePresetChosen(preset string) (tea.Model, tea.Cmd) {
 
 		sigTS := shared.NowTS()
 
-		// We sign the HASH of the ciphertext, not the whole ciphertext —
+		// We sign the HASH of the ciphertext, not the whole ciphertext,
 		// the hash is available at zero cost BEFORE a single byte of the
 		// file is transferred, letting the recipient verify authenticity
 		// at announce time (file_announce), not only at the end of the transfer.
@@ -17129,16 +17129,16 @@ func (m model) onFilePresetChosen(preset string) (tea.Model, tea.Cmd) {
 
 		// Name, size, and file_key do not travel in the clear: encrypted
 		// for each content recipient in a separate, small envelope
-		// (meta_blob) — the relay routes it without being able to read it
+		// (meta_blob), the relay routes it without being able to read it
 		// (the server never needs them, only the recipient's UI and
 		// content decryption do). The actual offer (envelopes) is already
-		// prepared here but is NOT sent now — only after each recipient's
+		// prepared here but is NOT sent now, only after each recipient's
 		// file_announce_ack (case "file_announce_ack", Update()).
-		// ChunkCount — how many chunks the transfer will have, computed
+		// ChunkCount, how many chunks the transfer will have, computed
 		// with the SAME chunkSize the sender will actually use to send
 		// (decided above, before encryption). The recipient uses it to
 		// know when chunk numbering is complete (see
-		// startIncomingChunkWriter) — it cannot recompute it on its own:
+		// startIncomingChunkWriter), it cannot recompute it on its own:
 		// the preset/chunkSize is the sender's choice, their own
 		// config.json may have different values.
 		chunkCount := int64((len(ciphertext) + chunkSize - 1) / chunkSize)
@@ -17181,7 +17181,7 @@ func (m model) onFilePresetChosen(preset string) (tea.Model, tea.Cmd) {
 // startSendingChunks splits the ciphertext into chunks according to the
 // chosen preset and sends them with a sliding window (up to
 // FileWarpMaxInFlightChunks/FileSlowMaxInFlightChunks chunks without an
-// ack at once, instead of lockstep chunk-then-ack-then-chunk — a pipeline
+// ack at once, instead of lockstep chunk-then-ack-then-chunk, a pipeline
 // designed not to waste the round-trip over Tor). A recipient who
 // confirms no chunk within fileTransferReconnectTimeout is isolated
 // (removed from subsequent sends): the others continue independently.
@@ -17220,35 +17220,35 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 	pendingDone := ft.pendingDone
 	progress := ft.progress
 
-	// chunkCountTotal — the same computation as the meta_blob declared at
+	// chunkCountTotal, the same computation as the meta_blob declared at
 	// offer time, used here only for the "n. chunks sent - total" detail
 	// of each progress row, never for sending itself.
 	chunkCountTotal := uint64((len(ciphertext) + chunkSize - 1) / chunkSize)
 
 	return func() tea.Msg {
-		// groups — recipients grouped by shared position (same next
+		// groups, recipients grouped by shared position (same next
 		// expected chunk index), ordered by INCREASING index: groups[len-1]
 		// is always the front (the most advanced, the one generating new
 		// data from the ciphertext), groups[0] the furthest behind. A
 		// group behind ALWAYS chases the one immediately ahead of it in
-		// the ordering (never the front directly) — when it catches up
+		// the ordering (never the front directly), when it catches up
 		// they merge (mergeAdjacent) and the chase cascades toward the
 		// next, until all are merged into the front and sends go back to
-		// a single multicast — a straggler with a large backlog (e.g. a
+		// a single multicast, a straggler with a large backlog (e.g. a
 		// second full recovery round from scratch) never blocks the
 		// front's advancement for everyone else.
 		// Scheduling weight: the furthest-behind group (groups[0], only if
 		// there is more than one) gets weight 7, every other group
-		// (including the front) weight 3 — see pickGroup.
+		// (including the front) weight 3, see pickGroup.
 		type sendGroup struct {
 			index   uint64
 			members map[string]bool
 			sent    uint64 // chunks sent so far by this group, for weighted scheduling (see pickGroup)
-			// progress/progressID — dedicated row in the File tab for THIS
+			// progress/progressID, dedicated row in the File tab for THIS
 			// group. The front always reuses ft.progress (progressID ==
 			// transferID, the row already shown from offer time); a group
 			// behind, born from a missed merge, gets its own (see
-			// addMemberAtIndex) — so two straggling recipients appear on
+			// addMemberAtIndex), so two straggling recipients appear on
 			// separate rows with their own percentage as soon as they
 			// split off, and merge back into a single row once they
 			// rejoin (see mergeAdjacent/removeMember).
@@ -17258,7 +17258,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 		type inFlightChunk struct {
 			size    int
 			waiting map[string]bool // user_id → true until it confirms this chunk
-			group   *sendGroup      // owning group, for isolation/merge — see sendGroup
+			group   *sendGroup      // owning group, for isolation/merge, see sendGroup
 		}
 		// groupPeerNames resolves and sorts the names of a group's current
 		// members, for its progress row's peer field.
@@ -17280,11 +17280,11 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 		// unambiguous "no active recipients" signal, used below to exit
 		// right away instead of needlessly waiting out the grace window.
 		var groups []*sendGroup
-		// everAccepted — who has ACTUALLY accepted the offer at least once
+		// everAccepted, who has ACTUALLY accepted the offer at least once
 		// (never someone who only sent a file_resume): a genuine
 		// file_resume arriving BEFORE a real file_accept (e.g. a
 		// recipient's reconnection while the offer is still an unanswered
-		// popup) is ignored — see fileResumeEvent.isNewAccept.
+		// popup) is ignored, see fileResumeEvent.isNewAccept.
 		everAccepted := make(map[string]bool, len(toUserIDs))
 		if len(toUserIDs) > 0 {
 			front := &sendGroup{index: 0, members: make(map[string]bool, len(toUserIDs)), progress: progress, progressID: transferID}
@@ -17303,9 +17303,9 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 		deadline := time.Now().Add(offerTimeout)
 
 		// removeMember drops userID from whichever group currently
-		// contains it — a group left empty is removed from the list (even
+		// contains it, a group left empty is removed from the list (even
 		// if it is the front: the next most-advanced group left
-		// automatically replaces it, since the list stays ordered — no
+		// automatically replaces it, since the list stays ordered, no
 		// special case for "the front was isolated"). Its dedicated
 		// progress row disappears with it, EXCEPT when it was the very
 		// last group left: in that case the transfer has failed entirely,
@@ -17332,7 +17332,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 				}
 			}
 		}
-		// resetSent zeroes each group's "sent" counter — must be called
+		// resetSent zeroes each group's "sent" counter, must be called
 		// every time the SET of groups changes (new arrival, merge,
 		// isolation): pickGroup chooses based on the sent/weight ratio,
 		// and that ratio only makes sense relative to the CURRENT
@@ -17350,7 +17350,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 		}
 		// addMemberAtIndex adds userID to the already-existing group with
 		// exactly this index, or creates a new one keeping the increasing
-		// order — never past the current front (see the two callers, which
+		// order, never past the current front (see the two callers, which
 		// clamp idx to the front before invoking it).
 		addMemberAtIndex := func(idx uint64, userID string) {
 			for _, g := range groups {
@@ -17365,7 +17365,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 			ng := &sendGroup{index: idx, members: map[string]bool{userID: true}}
 			// Dedicated progress row: without this, a group just split
 			// off from the front (a new or readmitted straggler) would
-			// stay invisible in the File tab until it rejoins — see the
+			// stay invisible in the File tab until it rejoins, see the
 			// comment on sendGroup's progress field above.
 			if m.fileProgress != nil {
 				ng.progressID = fmt.Sprintf("%s#out#%d", transferID, nextGroupSeq)
@@ -17384,7 +17384,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 		}
 		// mergeAdjacent merges every pair of adjacent groups now at the
 		// same index (a straggler that just caught up with the one ahead
-		// of it) — cascading, until none are left to merge. inFlight
+		// of it), cascading, until none are left to merge. inFlight
 		// pointers still in flight toward the absorbed group are
 		// reattached to the destination group: their late isolation (ack
 		// never arrived) must remove the member from the group that is
@@ -17406,7 +17406,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 							info.group = dst
 						}
 					}
-					// The absorbed group's (src) dedicated row disappears —
+					// The absorbed group's (src) dedicated row disappears,
 					// dst's continues to represent everyone, with the
 					// updated name. The front (progressID==transferID)
 					// never has a dedicated row to remove here: it is
@@ -17436,7 +17436,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 		// the front directly, see the comment on groups above). Among the
 		// eligible ones it picks the one with the lowest sent/weight ratio
 		// (weighted fair scheduling, without floats: cross-multiplied
-		// comparison) — converges to the 7:3 ratio over time regardless of
+		// comparison), converges to the 7:3 ratio over time regardless of
 		// windowSize.
 		pickGroup := func() *sendGroup {
 			var best *sendGroup
@@ -17507,7 +17507,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 						}
 					}
 					// Group behind: the connection toward these specific
-					// members is down for now — not a local transport
+					// members is down for now, not a local transport
 					// failure, retried next round (the group stays eligible).
 					continue
 				}
@@ -17532,8 +17532,8 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 				return localDisplayMsg{tabIdx: consoleIdx, transferID: transferID, text: styleErr.Render(fmt.Sprintf(i18n.T("tui.send_file_no_recipients_left"), fileName)), isError: true}
 			}
 			// Timeout for this round: the normal ackTimeout while work is
-			// in flight; otherwise — all ciphertext sent and confirmed to
-			// the recipients known so far — the remaining grace window up
+			// in flight; otherwise, all ciphertext sent and confirmed to
+			// the recipients known so far, the remaining grace window up
 			// to the SAME shared deadline as the original offer
 			// (fileTransferOfferTimeout), instead of exiting immediately:
 			// a late acceptor (second, third…) still finds this goroutine
@@ -17546,7 +17546,7 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 					break sendLoop
 				}
 				// pendingDoneCh stays nil (never ready in a select) while
-				// work is in flight — only during the post-send wait does
+				// work is in flight, only during the post-send wait does
 				// it make sense to interrupt it as soon as everyone has
 				// responded, never while a send is still active.
 				pendingDoneCh = pendingDone
@@ -17575,10 +17575,10 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 			case ev := <-resumeCh:
 				// isNewAccept: this recipient's genuine first acceptance,
 				// arriving after sending had already started toward
-				// others (the "readmitted" fallback) — always restarts
+				// others (the "readmitted" fallback), always restarts
 				// from 0, it has nothing yet. Otherwise it is a genuine
 				// file_resume (reconnection): honored only if the sender
-				// already recognizes it as an acceptor — see
+				// already recognizes it as an acceptor, see
 				// fileResumeEvent.isNewAccept and the comment on
 				// everAccepted above.
 				var idx uint64
@@ -17611,8 +17611,8 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 					break sendLoop
 				}
 				// No progress within the timeout: isolate anyone still
-				// waiting on any in-flight chunk — the others continue.
-				client.Dbg("send_file: transfer=%s ack timeout (%s) — %d chunks still in flight", transferID, ackTimeout, len(inFlight))
+				// waiting on any in-flight chunk, the others continue.
+				client.Dbg("send_file: transfer=%s ack timeout (%s), %d chunks still in flight", transferID, ackTimeout, len(inFlight))
 				isolatedAny := false
 				for sq, info := range inFlight {
 					for u := range info.waiting {
@@ -17679,10 +17679,10 @@ func (m model) startSendingChunks(ft *outgoingFileTransfer) tea.Cmd {
 }
 
 // decryptFileOfferMeta decrypts {file_name, file_size, file_key} of an
-// incoming file_offer in the background — runs in a separate goroutine
+// incoming file_offer in the background, runs in a separate goroutine
 // (tea.Cmd) so as not to block the Update() loop while processing the
 // hybrid ECIES. myContentKey is OUR ContentKey-per-relationship toward
-// the sender (zero value if not yet established — decryptFromContentPeer
+// the sender (zero value if not yet established, decryptFromContentPeer
 // fails explicitly in that case, never a panic).
 func decryptFileOfferMeta(myContentKey shared.RelSigningKey, transferID, metaBlobB64 string) tea.Cmd {
 	return func() tea.Msg {
@@ -17701,7 +17701,7 @@ func decryptFileOfferMeta(myContentKey shared.RelSigningKey, transferID, metaBlo
 		}
 		if meta.ChunkCount <= 0 {
 			// Offer from a sender not sending chunk_count: no reliable
-			// way to know when numbering is complete — treated as an
+			// way to know when numbering is complete, treated as an
 			// explicit error instead of guessing.
 			return fileOfferMetaDecryptedMsg{transferID: transferID, err: errors.New(i18n.T("tui.err_recv_file_no_chunk_count"))}
 		}
@@ -17713,7 +17713,7 @@ func decryptFileOfferMeta(myContentKey shared.RelSigningKey, transferID, metaBlo
 // once (never streaming) and, only if the signature is valid, offers to
 // save it. The signature is verified with the SENDER's ContentKey toward
 // us (same scheme as chat messages), the content decrypted with fileKey
-// (from the meta_blob, already decrypted earlier — see decryptFileOfferMeta).
+// (from the meta_blob, already decrypted earlier, see decryptFileOfferMeta).
 func (m model) finalizeIncomingTransfer(it *incomingFileTransfer) tea.Cmd {
 	tabIdx := it.tabIdx
 	consoleIdx := m.consoleIdx
@@ -17725,10 +17725,10 @@ func (m model) finalizeIncomingTransfer(it *incomingFileTransfer) tea.Cmd {
 	progress := it.progress
 	// sendVerifyResult notifies the original sender of the FINAL outcome
 	// (integrity + decryption), after file_chunk_ack has already proven
-	// only transport-level delivery — without this, a failure here would
+	// only transport-level delivery, without this, a failure here would
 	// stay visible ONLY in the recipient's Console, and the sender would
 	// see "delivered" even for a discarded file. Fire-and-forget, harmless if
-	// the sender is no longer reachable — same treatment as
+	// the sender is no longer reachable, same treatment as
 	// SendFileChunkAck/SendFileResume.
 	cli := m.tabs[tabIdx].cli
 	tabCtx := m.tabs[tabIdx].ctx
@@ -17747,11 +17747,11 @@ func (m model) finalizeIncomingTransfer(it *incomingFileTransfer) tea.Cmd {
 			sendVerifyResult(false)
 			return localDisplayMsg{tabIdx: consoleIdx, text: styleErr.Render(fmt.Sprintf(i18n.T("tui.err_recv_file_read"), fromUser, err.Error())), isError: true}
 		}
-		// No signature to re-verify here — authenticity was already
+		// No signature to re-verify here, authenticity was already
 		// established at announce time, BEFORE a single chunk arrived
 		// (case "file_announce"). What remains here is only an integrity
 		// comparison (transport corruption/tampering, never a mismatched
-		// key issue — that is filtered upstream).
+		// key issue, that is filtered upstream).
 		actualHash := sha256.Sum256(ciphertext)
 		if !bytes.Equal(actualHash[:], declaredHash) {
 			if progress != nil {
@@ -17786,7 +17786,7 @@ func (m model) finalizeIncomingTransfer(it *incomingFileTransfer) tea.Cmd {
 }
 
 // uniqueDestPath avoids silently overwriting an existing file: appends a
-// numeric suffix instead of asking for confirmation — safe, no data lost,
+// numeric suffix instead of asking for confirmation, safe, no data lost,
 // one fewer popup.
 func uniqueDestPath(dir, name string) string {
 	dest := filepath.Join(dir, name)
@@ -17804,9 +17804,9 @@ func uniqueDestPath(dir, name string) string {
 }
 
 // renderFilePresetPicker shows the two speed presets ("slow" default,
-// "warp" explicit) — Up/Down toggles, Enter confirms the highlighted one.
-// renderShowQRFormatPicker shows /show-qr's two output choices — "save
-// as image" default (idx 0), "animated" (idx 1) — same two choices as
+// "warp" explicit), Up/Down toggles, Enter confirms the highlighted one.
+// renderShowQRFormatPicker shows /show-qr's two output choices, "save
+// as image" default (idx 0), "animated" (idx 1), same two choices as
 // `neutrino show-qr`'s CLI prompt. Up/Down toggles, Enter confirms.
 func (m model) renderShowQRFormatPicker() string {
 	var sb strings.Builder
@@ -17857,7 +17857,7 @@ func (m model) renderFilePresetPicker() string {
 }
 
 // renderFileOfferPopup shows sender/name/size and whether a ContentKey
-// relationship is already established with the sender — an immediate
+// relationship is already established with the sender, an immediate
 // check, not yet the cryptographic signature verification (which requires
 // the full ciphertext, happening only once the transfer is complete,
 // before saving).
@@ -17888,8 +17888,8 @@ func (m model) renderFileOfferPopup() string {
 }
 
 // renderFileProgressView draws the "File" tab's content: one row per
-// transfer (send ↑ or receive ↓), sftp/scp-style — no colors, only
-// numbers, percentage right-aligned after a fixed 3-dot leader — read
+// transfer (send ↑ or receive ↓), sftp/scp-style, no colors, only
+// numbers, percentage right-aligned after a fixed 3-dot leader, read
 // from fileTransferProgress, written by a goroutine outside the Update
 // loop (see tickFileProgressMsg for why an explicit tick is needed).
 func (m model) renderFileProgressView() string {
@@ -17923,7 +17923,7 @@ func (m model) renderFileProgressView() string {
 		}
 
 		// Chunk-level detail (see the comment on the same-named fields on
-		// fileTransferProgress) — absent until chunksTotal is known
+		// fileTransferProgress), absent until chunksTotal is known
 		// (offer/meta_blob not yet decrypted), never a misleading "0/0".
 		var chunkDetail string
 		if chunksTotal > 0 {
@@ -17939,7 +17939,7 @@ func (m model) renderFileProgressView() string {
 	return sb.String()
 }
 
-// renderSendFileBrowser draws the /grp-file-send filesystem-browser popup —
+// renderSendFileBrowser draws the /grp-file-send filesystem-browser popup,
 // same typed-filter scheme as renderContactPicker (tui.picker_filter_label,
 // tui.picker_no_results), but with directory navigation instead of a flat list.
 func (m model) renderSendFileBrowser() string {
@@ -17984,7 +17984,7 @@ func (m model) renderSendFileBrowser() string {
 }
 
 // renderQRFileBrowser draws the filesystem-browser popup for
-// /cnt-read-qrcode's "file" source — same navigation as
+// /cnt-read-qrcode's "file" source, same navigation as
 // renderSendFileBrowser, plus a "[ ]"/"[x]" checkbox per entry (Space
 // toggles it) for picking several numbered QR images at once instead of
 // one at a time, mirroring renderFileRecipientsPicker's checkbox style.
@@ -18071,7 +18071,7 @@ func (m model) renderFileRecipientsPicker() string {
 
 // inviteFilteredCandidates returns m.inviteCandidates filtered by the
 // text typed into m.inviteFilter (local name or username,
-// case-insensitive) — same matching criterion as pickerItems' generic
+// case-insensitive), same matching criterion as pickerItems' generic
 // branch. m.inviteSelected stays indexed by picker key and is unaffected by
 // the filter: hiding/showing entries does not touch selection already made.
 func (m model) inviteFilteredCandidates() []string {
@@ -18094,7 +18094,7 @@ func (m model) inviteFilteredCandidates() []string {
 
 // renderInvitePicker shows every contact in the address book, none
 // preselected; Space selects, Enter confirms (invites only the selected
-// ones), Esc cancels, typing filters by name — Space stays dedicated to
+// ones), Esc cancels, typing filters by name, Space stays dedicated to
 // selection, it does not enter the filter text (unlike the single-select
 // picker for /cnt-info, /cnt-edit, etc., where Space has no other action
 // to perform). Same interaction scheme as renderFileRecipientsPicker, but
@@ -18137,12 +18137,12 @@ func (m model) renderInvitePicker() string {
 			if c := m.resolveNameOrPickerKey(u); c != nil {
 				// Same structure as renderContactLine (Contacts tab): local
 				// name in quotes (placeholder if unset) plus the real
-				// username in parentheses — not NameWithUsername(), which
+				// username in parentheses, not NameWithUsername(), which
 				// instead omits the parentheses when the local name is
 				// missing and leaves rows misaligned. Unlike the Contacts tab,
 				// this does NOT use a fixed-width padName: a popup can end
 				// up on a much narrower terminal (Android/Termux), and a
-				// forced 14+14 columns would overflow the line and wrap —
+				// forced 14+14 columns would overflow the line and wrap,
 				// truncName only sets an upper cap, at natural length.
 				localPart := `"…"`
 				if c.LocalName != "" {
@@ -18178,7 +18178,7 @@ func (m model) renderInvitePicker() string {
 }
 
 // renderPingPicker shows the current room's members (self excluded) to
-// choose who to ping — Enter immediately confirms the highlighted one,
+// choose who to ping, Enter immediately confirms the highlighted one,
 // Esc cancels, single selection (no Space/multi-select unlike renderInvitePicker).
 func (m model) renderPingPicker() string {
 	var sb strings.Builder
@@ -18201,7 +18201,7 @@ func (m model) renderPingPicker() string {
 
 // renderRemoteNukePicker shows the known devices (Keystore.KnownDevices,
 // populated by "indoor" sync) to choose the target of a remote_nuke
-// command — Enter moves to explicit confirmation (never a direct send
+// command, Enter moves to explicit confirmation (never a direct send
 // from here), Esc cancels, single selection.
 func (m model) renderRemoteNukePicker() string {
 	var sb strings.Builder
@@ -18232,7 +18232,7 @@ func (m model) renderRemoteNukePicker() string {
 	return m.renderBoxPopup(sb.String())
 }
 
-// cmdRemoteNukeTrigger opens the picker over Keystore.KnownDevices — no
+// cmdRemoteNukeTrigger opens the picker over Keystore.KnownDevices, no
 // text-argument resolution (a device has no name as convenient to type as
 // a contact's), always a picker if there is at least one.
 func (m *model) cmdRemoteNukeTrigger() tea.Cmd {
@@ -18245,13 +18245,13 @@ func (m *model) cmdRemoteNukeTrigger() tea.Cmd {
 }
 
 // msgAcksMaxCandidates limits how many of our own recent messages the
-// /grp-msg-acks picker offers — only the most recent ones are practical
+// /grp-msg-acks picker offers, only the most recent ones are practical
 // to check, a history of thousands of messages must not turn into an
 // equally long list to scroll through.
 const msgAcksMaxCandidates = 20
 
 // cmdMsgAcksTrigger opens the picker over the most recent messages sent
-// BY US in this room (up to msgAcksMaxCandidates, most recent first) — no
+// BY US in this room (up to msgAcksMaxCandidates, most recent first), no
 // text-argument resolution (a message has no convenient name to type),
 // always a picker if there is at least one.
 func (m *model) cmdMsgAcksTrigger() tea.Cmd {
@@ -18277,7 +18277,7 @@ func (m *model) cmdMsgAcksTrigger() tea.Cmd {
 }
 
 // msgAcksPreviewLen truncates the message text preview shown in the
-// picker — only to recognize which message is which, not to reread it in
+// picker, only to recognize which message is which, not to reread it in
 // full (already visible by scrolling the room).
 const msgAcksPreviewLen = 40
 
@@ -18291,7 +18291,7 @@ func msgAcksPreview(text string) string {
 
 // renderMsgAcksPicker shows this room's most recent own messages
 // (m.msgAcksCandidates, indices into tab.lines) to choose which one to see
-// the ack detail for — Enter confirms, Esc cancels, single selection.
+// the ack detail for, Enter confirms, Esc cancels, single selection.
 func (m model) renderMsgAcksPicker() string {
 	tab := m.tabs[m.active]
 	var sb strings.Builder
@@ -18317,7 +18317,7 @@ func (m model) renderMsgAcksPicker() string {
 
 // renderMsgAcksDetail shows, for the chosen message
 // (m.msgAcksDetailLineIdx, an index into tab.lines), which room members
-// (self excluded) have confirmed receipt and which have not — a direct
+// (self excluded) have confirmed receipt and which have not, a direct
 // comparison between chatLine.ackers and tab.groupMembers, read-only.
 func (m model) renderMsgAcksDetail() string {
 	tab := m.tabs[m.active]
@@ -18408,7 +18408,7 @@ func (m *model) cmdIgnoreCard() tea.Cmd {
 // cmdPing measures the RTT toward a member of the current room. With an
 // argument that resolves to a present member it pings that one directly
 // (also resolved from a local name); otherwise (no argument, or one that
-// matches nobody) it opens the picker to choose among everyone present —
+// matches nobody) it opens the picker to choose among everyone present,
 // a room of 100 contacts is pinged one at a time, it is not a bulk operation.
 func (m *model) cmdPing(arg string) tea.Cmd {
 	tabIdx := m.active
@@ -18446,7 +18446,7 @@ func (m *model) cmdPing(arg string) tea.Cmd {
 }
 
 // doPing actually sends the probes toward the member with key peerKey
-// in room tabIdx — extracted from cmdPing since it is shared with the
+// in room tabIdx, extracted from cmdPing since it is shared with the
 // picker selection.
 func (m *model) doPing(tabIdx int, peerKey string) tea.Cmd {
 	tab := m.tabs[tabIdx]
@@ -18523,7 +18523,7 @@ func (m *model) cmdSafety(arg string) tea.Cmd {
 
 // applyVerification marks target as Verified. contactPub is the
 // IdentityPub of the contact chosen in /sec-verify (a snapshot taken
-// before this call, see verifySafetyConfirmContactPub) — the only
+// before this call, see verifySafetyConfirmContactPub), the only
 // identifier used; target is a display label.
 func (m *model) applyVerification(target string, contactPub []byte) tea.Cmd {
 	if len(contactPub) != ed25519.PublicKeySize {
@@ -18540,10 +18540,10 @@ func (m *model) applyVerification(target string, contactPub []byte) tea.Cmd {
 }
 
 // startRelDangerConfirm prepares the y/n confirmation for a relationship
-// key conflict (TrustDanger) — called by cmdVerifySafety when the
+// key conflict (TrustDanger), called by cmdVerifySafety when the
 // resolved contact has pending keys. Unlike the normal Safety Number
 // (root identity, unchanged in this scenario), it shows two codes
-// computed on the PENDING relationship keys — the exact same
+// computed on the PENDING relationship keys, the exact same
 // out-of-band comparison principle, never inside the app.
 func (m *model) startRelDangerConfirm(contact *ContactInfo) tea.Cmd {
 	display := contact.DisplayName()
@@ -18572,9 +18572,9 @@ func (m *model) startRelDangerConfirm(contact *ContactInfo) tea.Cmd {
 
 // applyPendingRelKeysConfirmation closes a relationship key conflict
 // (TrustDanger) after the user's explicit y/n confirmation: applies the
-// pending keys (keystore.ConfirmPendingRelKeys), clears Verified — the
+// pending keys (keystore.ConfirmPendingRelKeys), clears Verified, the
 // previous trust level applied to the old keys, it must be regained with
-// a second /sec-verify — and immediately updates the local mirror.
+// a second /sec-verify, and immediately updates the local mirror.
 func (m *model) applyPendingRelKeysConfirmation(target string, contactPub []byte) tea.Cmd {
 	if len(contactPub) != ed25519.PublicKeySize || m.confirmPendingRelKeys == nil || !m.confirmPendingRelKeys(contactPub) {
 		return consoleErrTab(m.consoleIdx, styleErr.Render(i18n.T("tui.err_safety_code_unavailable")))
@@ -18606,7 +18606,7 @@ func (m *model) applyPendingRelKeysConfirmation(target string, contactPub []byte
 	c.Verified = false
 	// No explicit refresh needed here: m.confirmPendingRelKeys above has
 	// already persisted the accepted keys in keystore.Contact BEFORE this
-	// line — the RoomRegistry of a room already open with this contact
+	// line, the RoomRegistry of a room already open with this contact
 	// resolves them live on the next ClientHello.Sig, never a cached copy.
 	return localTab(m.defaultTabIdx(), styleOwnMsg.Render(fmt.Sprintf(i18n.T("tui.verify_rel_danger_confirmed"), target)))
 }
@@ -18615,7 +18615,7 @@ func (m *model) applyPendingRelKeysConfirmation(target string, contactPub []byte
 // the whole code in the tab (not a popup dismissible with any key,
 // because right after it only needs to intercept y/n) with the
 // instruction to compare it in full with the contact over a secure
-// external channel (phone call, video, in person) — never inside the
+// external channel (phone call, video, in person), never inside the
 // app, because whoever controls that same connection would respond
 // exactly as the real contact would, without actually being the expected
 // person. On the user's explicit y/n confirmation, the contact is marked
@@ -18666,7 +18666,7 @@ func (m *model) cmdVerifySafety(arg string) tea.Cmd {
 
 	// The code must be shown inside the confirmation popup itself (not as
 	// a persistent row in a tab): closing with the y/n answer leaves no
-	// trace in any tab's history — consistent with it being data to read
+	// trace in any tab's history, consistent with it being data to read
 	// over the phone/in person, not to keep in the message history.
 	intro := fmt.Sprintf(i18n.T("tui.verify_safety_intro"), display, code, display)
 	m.verifySafetyConfirmContactPub = contactPub
@@ -18677,7 +18677,7 @@ func (m *model) cmdVerifySafety(arg string) tea.Cmd {
 }
 
 // cmdUnverify removes the Verified mark from a contact, resolved by
-// identity key — the inverse of /sec-verify. With no argument, or one
+// identity key, the inverse of /sec-verify. With no argument, or one
 // that doesn't resolve to exactly one contact, it opens the picker of
 // verified contacts.
 func (m *model) cmdUnverify(arg string) tea.Cmd {
@@ -18729,7 +18729,7 @@ func (m model) renderGroupBar(tab *roomTab, width int) string {
 		// never our own contact): cryptographically verifying our own identity with
 		// ourselves makes no sense. Name in a dedicated color (cyan, same
 		// as our own "me" in chat messages) instead of the green used for
-		// other verified members — still connected, so the dot is green
+		// other verified members, still connected, so the dot is green
 		// like anyone else online.
 		case isConn && isSelf:
 			rendered = styleOwnMsg.Render("●") + " " + stylePeerMsg.Render(name)
@@ -18784,7 +18784,7 @@ func (m model) renderGroupBar(tab *roomTab, width int) string {
 }
 
 // groupBarLines returns the number of rows renderGroupBar will occupy for
-// the given tab at the current width — used by calcVpH to reserve exactly
+// the given tab at the current width, used by calcVpH to reserve exactly
 // the space needed when the bar wraps onto multiple rows.
 func (m model) groupBarLines(tab *roomTab, width int) int {
 	if tab == nil || tab.groupID == "" || len(tab.groupMembers) == 0 {
@@ -18799,7 +18799,7 @@ func (m model) groupBarLines(tab *roomTab, width int) int {
 
 // defaultTabIdx is the default destination for generic feedback/announcements
 // (confirmations, cancellations, summaries) and the tab returned to when
-// leaving a room — Console holds this role, kept correctly updated when a
+// leaving a room, Console holds this role, kept correctly updated when a
 // tab closes (see cmdExit) and never closable by the user (isStandardTab):
 // m.consoleIdx always stays valid for the entire session, so no fallback
 // is needed.
@@ -18828,7 +18828,7 @@ func (m *model) refreshViewport() {
 	if tab.isConsole && m.compactMode {
 		lines = compactChatLines(lines)
 	}
-	// gseqIndex — resolves the explicit-reply preview: a single pass over
+	// gseqIndex, resolves the explicit-reply preview: a single pass over
 	// the whole tab instead of a linear search for every row with replyTo!=0.
 	var gseqIndex map[uint64]chatLine
 	for _, l := range lines {
@@ -18862,7 +18862,7 @@ func (m *model) refreshViewport() {
 // compactChatLines collapses consecutive runs of chatLine with the same
 // text (ignoring timestamp/other fields: two identical events at
 // different times are the same repeated event, e.g. a periodic probe
-// activation), leaving only the LAST occurrence of each run — used by
+// activation), leaving only the LAST occurrence of each run, used by
 // refreshViewport when m.compactMode is active (/compact on, console tab
 // only). Never modifies the input: always returns a new slice, tab.lines
 // stays intact.
@@ -18891,7 +18891,7 @@ func padName(s string, width int) string {
 }
 
 // truncName truncates s to maxWidth characters (runes) without padding
-// with spaces — unlike padName, meant for variable-width popups (e.g.
+// with spaces, unlike padName, meant for variable-width popups (e.g.
 // renderInvitePicker) where always imposing the same fixed width would
 // overflow the line on narrow terminals (Android/Termux has far fewer
 // columns than a desktop): here only an upper cap matters, not aligning
@@ -18922,7 +18922,7 @@ func (m *model) renderContactLine(c ContactInfo) string {
 	}
 
 	// dot2 is independent of dot1 (not subordinate to it): proof that
-	// they see us can arrive even when we cannot reach them — see the
+	// they see us can arrive even when we cannot reach them, see the
 	// comment on contactState.seenByPeer.
 	var dot2 string
 	switch {
@@ -18943,7 +18943,7 @@ func (m *model) renderContactLine(c ContactInfo) string {
 
 	// No local name set: a placeholder in quotes takes the name's place,
 	// to visually flag which contacts have not yet been customized
-	// (elsewhere — e.g. group chat — the real name is still the fallback,
+	// (elsewhere, e.g. group chat, the real name is still the fallback,
 	// see DisplayName; only here in the Contacts tab is the placeholder
 	// preferred). The quotes remain on set local names too, not just on
 	// the placeholder: same treatment for everyone, not only those who
@@ -18980,14 +18980,14 @@ func (m *model) renderContactLine(c ContactInfo) string {
 	return line
 }
 
-// reachabilityRank converts a contact's status into a sortable integer —
+// reachabilityRank converts a contact's status into a sortable integer,
 // lower = more reliable. dot2 is not subordinate to dot1 (see
 // contactState.seenByPeer), so the two columns contribute independently:
-// each is worth 0 (●, best), 1 (◌, unknown), or 2 (✗, worst) — score =
+// each is worth 0 (●, best), 1 (◌, unknown), or 2 (✗, worst), score =
 // dot1*3 + dot2, dot1 weighted as primary because it determines whether
 // the contact is concretely usable RIGHT NOW. A contact never probed in
 // either direction (or not yet in m.contactStates) scores 4 (dot1=1,
-// dot2=1 — ◌◌). The 9 possible combinations, best to worst: 0=●●, 1=●◌,
+// dot2=1, ◌◌). The 9 possible combinations, best to worst: 0=●●, 1=●◌,
 // 2=●✗, 3=◌●, 4=◌◌, 5=◌✗, 6=✗●, 7=✗◌, 8=✗✗.
 func (m *model) reachabilityRank(pub []byte) int {
 	st, known := m.contactStates[string(pub)]
@@ -19056,7 +19056,7 @@ func (m *model) renderContactList() string {
 
 	groups := m.groupContactsByTrust()
 	// Red/yellow/green on the same three colors already used for trust
-	// tags — the two "verified" levels share green, the only difference
+	// tags, the two "verified" levels share green, the only difference
 	// between them is whether they were also introduced by another contact.
 	headers := [4]string{
 		styleErr.Render(i18n.T("tui.contacts_group_unknown")),
@@ -19065,7 +19065,7 @@ func (m *model) renderContactList() string {
 		styleOwnMsg.Render(i18n.T("tui.contacts_group_verified_introduced")),
 	}
 	first := true
-	// TrustDanger (key conflict) ALWAYS goes first — as a trust VALUE it
+	// TrustDanger (key conflict) ALWAYS goes first, as a trust VALUE it
 	// is the lowest possible, but as URGENCY for the user it takes
 	// precedence over every other group, including "unverified" (a
 	// never-verified contact is normal, one in conflict is an anomaly).
@@ -19095,8 +19095,8 @@ func (m *model) renderContactList() string {
 
 // renderGroupsList generates the groups tab's text content. Unlike
 // contacts, there is no periodic reachability probe for saved groups
-// (probing them would require reopening them with /grp-recall — a heavy
-// action, a new secret and re-invites to every member — not something to
+// (probing them would require reopening them with /grp-recall, a heavy
+// action, a new secret and re-invites to every member, not something to
 // do passively just to show a status): the only data shown is whether the
 // group already has an active tab right now (reopened in this session).
 func (m *model) renderGroupsList() string {
@@ -19165,7 +19165,7 @@ func (m *model) myKey() string {
 
 // memberName is the display name of a room member: the username label
 // it was invited under, or the contact's username when no label is
-// known — with a short key fingerprint appended when another member of
+// known, with a short key fingerprint appended when another member of
 // the same room shows the same name, or the same name as ours, so
 // homonyms stay distinguishable.
 // Display only: never used to identify anyone.
@@ -19222,7 +19222,7 @@ type agentHooks struct {
 }
 
 // agent is populated only by a build-tag-gated file (neutrino_agent)
-// not part of the default build — nil here, RunTUI always uses the
+// not part of the default build, nil here, RunTUI always uses the
 // terminal.
 var agent *agentHooks
 
@@ -19232,20 +19232,20 @@ var agent *agentHooks
 type agentQueryMsg struct{ fn func(m model) }
 
 // RunTUI starts the multi-room bubbletea loop and blocks until exit.
-// Returns nukeOnExit=true if the user launched /nukex — in that case the
+// Returns nukeOnExit=true if the user launched /nukex, in that case the
 // caller must run the express-nuke procedure (terminate the process).
 // Returns duressWipeOnExit=true if a duress was recognized by the
-// interface lock during an already-active session — in that case the
+// interface lock during an already-active session, in that case the
 // caller must tear down Tor/server/keystore and re-enter the first-run
 // wizard WITHOUT terminating the process; the two bools are always
 // mutually exclusive. Returns clearAllOnExit=true if the user confirmed
-// /sec-clear-all — in that case the caller must wipe the whole config
+// /sec-clear-all, in that case the caller must wipe the whole config
 // directory (see wipeConfigDir) and terminate the process; mutually
 // exclusive with the other two.
 func RunTUI(params TUIParams) (nukeOnExit bool, duressWipeOnExit bool, clearAllOnExit bool, err error) {
 	// On Android/Termux, without a wake-lock the system can suspend the
 	// process for an unpredictable time as soon as it goes to the
-	// background or the screen turns off — see the termuxenv package
+	// background or the screen turns off, see the termuxenv package
 	// comment. Outside Termux (or if the command is not installed)
 	// AcquireWakeLock is a silent no-op.
 	releaseWakeLock := termuxenv.AcquireWakeLock()
@@ -19271,7 +19271,7 @@ func RunTUI(params TUIParams) (nukeOnExit bool, duressWipeOnExit bool, clearAllO
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		for range sigCh {
-			// signal received — intentionally ignored
+			// signal received, intentionally ignored
 		}
 	}()
 	defer func() {

@@ -28,7 +28,7 @@ import (
 )
 
 // runBothSides runs RunSession on both ends of a net.Pipe() (an in-memory
-// connection, no real network) in parallel — needed because the protocol
+// connection, no real network) in parallel, needed because the protocol
 // is synchronous and full-duplex on the same connection.
 func runBothSides(t *testing.T, identityPriv ed25519.PrivateKey, payloadA, payloadB SyncPayload) (gotByA, gotByB SyncPayload, errA, errB error) {
 	t.Helper()
@@ -48,7 +48,7 @@ func runBothSides(t *testing.T, identityPriv ed25519.PrivateKey, payloadA, paylo
 }
 
 // noopTombstoneRound is a TombstoneRound that never has anything to
-// reply or ack — used by tests that don't exercise deletion
+// reply or ack, used by tests that don't exercise deletion
 // reconciliation.
 func noopTombstoneRound() TombstoneRound {
 	return TombstoneRound{
@@ -104,7 +104,7 @@ func TestRunSessionRoundtripSameIdentity(t *testing.T) {
 // TestRunSessionRejectsDifferentIdentity covers the protocol's central
 // security guarantee: if the two sides do NOT have the same private key
 // (different identities, not a real duplication), the challenge/response
-// must fail on both sides — never a session silently established with a
+// must fail on both sides, never a session silently established with a
 // peer that doesn't prove possession of the same identity.
 func TestRunSessionRejectsDifferentIdentity(t *testing.T) {
 	_, privA, err := ed25519.GenerateKey(rand.Reader)
@@ -174,7 +174,7 @@ func TestDeriveSessionKeyDeterministicBothSides(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !bytes.Equal(k1, k2) {
-		t.Error("DeriveSessionKey must be deterministic for the same nonces/key — that's how both sides reach the same key without exchanging it")
+		t.Error("DeriveSessionKey must be deterministic for the same nonces/key, that's how both sides reach the same key without exchanging it")
 	}
 
 	otherNonceB := make([]byte, nonceLen)

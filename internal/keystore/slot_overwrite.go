@@ -23,17 +23,17 @@ import (
 )
 
 // OverwriteAllContacts empties EVERY currently non-empty contact on u's
-// own identity, in one batch — the in-place overwrite a nuke trigger
+// own identity, in one batch, the in-place overwrite a nuke trigger
 // uses on the identity it's destroying: the exact same treatment as a
 // single normal contact deletion (EmptyMirroredContact), just applied
 // to every contact at once instead of one at a time, with no special
 // case for a nuke. Never removes any Contact
 // slot (its index is recycled into ContactPendingIdx.Pending, same as a
-// normal deletion) and never touches the identity's own keys/Username —
+// normal deletion) and never touches the identity's own keys/Username,
 // only its Contacts. Each emptied contact's mirrored duress contact (if
 // any) is emptied identically on duress's own side, preserving the same
 // symmetric-shrink invariant as a normal deletion. Mutates u.Identity
-// (and, in memory, the duress Keystore this returns) — the caller must
+// (and, in memory, the duress Keystore this returns), the caller must
 // pass duressIdx/duressKi/duressPlain to SaveWithDuress to persist both
 // sides together; emptied==0 means nothing changed, nothing to save.
 func (u *UnlockedSlot) OverwriteAllContacts() (duressIdx int, duressKi, duressPlain []byte, emptied int, err error) {

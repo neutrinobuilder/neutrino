@@ -153,7 +153,7 @@ func (r *Run) Start(name string) *Instance {
 }
 
 // StartAs is Start for an identity whose username is name, kept in its
-// own directory dir — several instances can share the same username,
+// own directory dir, several instances can share the same username,
 // each with its own identity key.
 func (r *Run) StartAs(dir, name string) *Instance {
 	r.t.Helper()
@@ -416,7 +416,7 @@ func (in *Instance) Lines(tab string, from int) []Line {
 	return r.Lines
 }
 
-// LineCount returns how many lines tab currently holds — the "from"
+// LineCount returns how many lines tab currently holds, the "from"
 // to pass to a later Wait so it only matches what happens afterward.
 func (in *Instance) LineCount(tab string) int {
 	in.t.Helper()
@@ -547,7 +547,7 @@ func (in *Instance) WaitContact(username string, cond func(Contact) bool, what s
 }
 
 // WaitReady waits until both relationship keys toward username are
-// confirmed by the peer — the precondition for inviting them.
+// confirmed by the peer, the precondition for inviting them.
 func (in *Instance) WaitReady(username string) {
 	in.t.Helper()
 	in.WaitContact(username, func(c Contact) bool { return c.ReadyDevices > 0 }, "ready", longWait)
@@ -580,7 +580,7 @@ func (in *Instance) URI() string {
 // ── process control ─────────────────────────────────────────────────────────
 
 // Pause freezes the process (SIGSTOP): connections stay open, nothing is
-// read or written — the same as a phone suspending the app.
+// read or written, the same as a phone suspending the app.
 func (in *Instance) Pause() {
 	in.t.Helper()
 	if err := in.cmd.Process.Signal(syscall.SIGSTOP); err != nil {
@@ -708,7 +708,7 @@ func Pair(a, b *Instance) {
 }
 
 // OpenRoom has host invite members with /grp-invite, each member accepts
-// the invite popup, and waits until every participant — host included —
+// the invite popup, and waits until every participant, host included,
 // has the room tab listing all of them. Returns the room's tab name.
 func OpenRoom(host *Instance, members ...*Instance) string {
 	host.t.Helper()

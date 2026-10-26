@@ -65,7 +65,7 @@ func rootCAs() *x509.CertPool {
 }
 
 // provider is a DoH endpoint queried through a fixed (anycast) IP, bypassing
-// DNS resolution of its own hostname entirely — the standard Go client would
+// DNS resolution of its own hostname entirely, the standard Go client would
 // otherwise resolve "cloudflare-dns.com" and similar through the same system
 // resolver this package exists to bypass. The hostname is still used for SNI
 // and certificate verification; only the TCP connection address is fixed.

@@ -71,7 +71,7 @@ func TestSendFileGoUpAtFilesystemRootIsNoop(t *testing.T) {
 
 func TestSendFileGoUpWithUnreadableParentKeepsModelUnchanged(t *testing.T) {
 	// filepath.Dir of an already-removed directory can return a path that
-	// is no longer readable — sendFileGoUp must silently stay where it was,
+	// is no longer readable, sendFileGoUp must silently stay where it was,
 	// never propagate the error nor alter the state.
 	root := t.TempDir()
 	ghost := filepath.Join(root, "no-longer-exists", "even-deeper")
@@ -148,11 +148,11 @@ func TestSaveDirGoUpFiltersToSubdirectoriesOnly(t *testing.T) {
 	}
 	for _, e := range m2.saveFileEntries {
 		if !e.isDir {
-			t.Fatalf("saveFileEntries after saveDirGoUp contains a file: %+v — want only folders", e)
+			t.Fatalf("saveFileEntries after saveDirGoUp contains a file: %+v, want only folders", e)
 		}
 	}
 	// root contains two subfolders: "sub" (the one just ascended from, itself
-	// a child of root) and "sibling-dir" — never the file sibling-file.txt.
+	// a child of root) and "sibling-dir", never the file sibling-file.txt.
 	// Case-insensitive alphabetical order: sibling-dir, sub.
 	if len(m2.saveFileEntries) != 2 || m2.saveFileEntries[0].name != "sibling-dir" || m2.saveFileEntries[1].name != "sub" {
 		t.Fatalf("saveFileEntries after saveDirGoUp = %v, want [sibling-dir, sub]", m2.saveFileEntries)

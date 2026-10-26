@@ -110,13 +110,13 @@ func TestDeriveSessionKeySymmetric(t *testing.T) {
 }
 
 // TestDeriveSessionKeyHybridOrder verifies that the combined secret is
-// built as mlkemSS‖dhSecret and not dhSecret‖mlkemSS — order mandated by
+// built as mlkemSS‖dhSecret and not dhSecret‖mlkemSS, order mandated by
 // NIST SP 800-56Cr2 §2 (the FIPS-approved algorithm's secret precedes the
 // non-approved one; ML-KEM is FIPS 203, X25519 is not FIPS-approved), same
 // order as the TLS 1.3 X25519MLKEM768 hybrid group
 // (draft-ietf-tls-ecdhe-mlkem). Not deducible from the round-trip in
 // TestDeriveSessionKeySymmetric alone, since swapping two secrets of equal
-// length still produces different keys in both orders — here the combiner
+// length still produces different keys in both orders, here the combiner
 // is rebuilt by hand with the same logic as DeriveSessionKey to explicitly
 // compare the two possible orders.
 func TestDeriveSessionKeyHybridOrder(t *testing.T) {

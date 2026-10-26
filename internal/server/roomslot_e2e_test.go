@@ -31,12 +31,12 @@ import (
 )
 
 // TestRoomSlotRejectsSecondDeviceSameIdentity is the end-to-end test for
-// "one device per identity per room" — unlike the unit tests on
+// "one device per identity per room", unlike the unit tests on
 // roomState.ClaimIdentitySlot (rooms_internal_test.go), it exercises the
 // FULL real path: two real clients (internal/client.Client), a real server
 // (RunOnListener/handleWS), two independent secrets registered for the
 // SAME identityPub but different devices (exactly what the invite fan-out
-// produces, cmdInvite) — verifies that the second device is rejected with
+// produces, cmdInvite), verifies that the second device is rejected with
 // client.ErrAlreadyConnectedElsewhere while the first is still connected,
 // and that it succeeds as soon as that one disconnects.
 func TestRoomSlotRejectsSecondDeviceSameIdentity(t *testing.T) {
@@ -103,7 +103,7 @@ func TestRoomSlotRejectsSecondDeviceSameIdentity(t *testing.T) {
 	}
 
 	// Device A disconnects (clean close, detected right away by the
-	// server's read loop — ws.go, disconnect defer, ReleaseIdentitySlot):
+	// server's read loop, ws.go, disconnect defer, ReleaseIdentitySlot):
 	// device B must now succeed, with no need for any new invite/secret.
 	cliA.GracefulClose()
 	deadline := time.Now().Add(3 * time.Second)
@@ -122,8 +122,8 @@ func TestRoomSlotRejectsSecondDeviceSameIdentity(t *testing.T) {
 
 // TestRoomSlotAllowsSameDeviceReconnect verifies the other branch of
 // ClaimIdentitySlot along the real path: the SAME device (same secret, so
-// same devicePub) must be able to reconnect freely — never blocked by
-// itself — even while its previous session still shows as "connected" from
+// same devicePub) must be able to reconnect freely, never blocked by
+// itself, even while its previous session still shows as "connected" from
 // the server's point of view (simulating a connection dropped without a
 // clean close, e.g. a network timeout).
 func TestRoomSlotAllowsSameDeviceReconnect(t *testing.T) {
@@ -177,7 +177,7 @@ func TestRoomSlotAllowsSameDeviceReconnect(t *testing.T) {
 	}
 	// NO explicit disconnection of cli1: from the server's point of view
 	// its session still shows as active when cli2 (same device, same
-	// secret) attempts its own — it must still succeed (ClaimIdentitySlot:
+	// secret) attempts its own, it must still succeed (ClaimIdentitySlot:
 	// same devicePub → reclaims the slot, evicts the previous session),
 	// never a client.ErrAlreadyConnectedElsewhere.
 	cli2 := newCli()

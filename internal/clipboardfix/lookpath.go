@@ -16,7 +16,7 @@ import (
 // lookPathSafe is a drop-in replacement for exec.LookPath that avoids
 // internal/syscall/unix.Eaccess (the Faccessat2 syscall on Linux): that
 // syscall is blocked by Android's seccomp filter and kills the whole process
-// with SIGSYS "bad system call" on Termux — even though the very same binary
+// with SIGSYS "bad system call" on Termux, even though the very same binary
 // runs fine under a plain Linux kernel (e.g. Raspberry Pi). See
 // golang/go#57393 and golang/go#60125. Checking
 // the file mode's execute bits after a plain Stat (no Eaccess/Faccessat2

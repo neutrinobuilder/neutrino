@@ -28,7 +28,7 @@ const safetyCodePattern = `([0-9A-Za-z]{8}(?: [0-9A-Za-z]{8}){4})`
 
 // TestSafetyNumberAndVerify: /sec-safety shows the same safety code on
 // both sides, by name and through the picker; /sec-verify shows it for
-// confirmation — "n" leaves the contact unverified, "y" marks it
+// confirmation, "n" leaves the contact unverified, "y" marks it
 // verified, also after a restart; /sec-unverify removes the mark, also
 // after a restart.
 func TestSafetyNumberAndVerify(t *testing.T) {
@@ -91,7 +91,7 @@ func TestSafetyNumberAndVerify(t *testing.T) {
 }
 
 // TestPQCSign: /sec-pqc-sign turns ML-DSA-65 signing on and off for one
-// room — the other member is told, and receives the messages sent in
+// room, the other member is told, and receives the messages sent in
 // between with a valid PQC signature, the others without one. Outside a
 // room, or with an unknown argument, it is refused.
 func TestPQCSign(t *testing.T) {

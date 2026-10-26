@@ -30,7 +30,7 @@ import (
 
 // ErrPendingBackpressure is returned by Send when too many messages
 // remain unconfirmed BY THE SERVER (roomDelivery.Dispatch/wsMsgRelayAck)
-// — see PendingSlotLimit (config.Config.PendingSlotLimit). Not
+// see PendingSlotLimit (config.Config.PendingSlotLimit). Not
 // per-recipient: the server handles the last mile toward each contact,
 // so the sender only waits for the server's own pickup, a single
 // channel. The caller (the UI) must block writing
@@ -39,7 +39,7 @@ import (
 // constraint).
 var ErrPendingBackpressure = errors.New("pending_backpressure")
 
-// BackpressureError — a distinct type (instead of just
+// BackpressureError, a distinct type (instead of just
 // ErrPendingBackpressure) to stay recoverable by the caller with
 // errors.As, never by parsing Error()'s text; Is satisfies
 // errors.Is(err, ErrPendingBackpressure). Carries no UserID: backpressure
@@ -58,7 +58,7 @@ func (e *BackpressureError) Is(target error) bool {
 // pendingOutMsg is a broadcast message already written to the wire but
 // not yet picked up by the server (serverAcked) or, independently of
 // that, not yet confirmed by every recipient that was a known member at
-// send time (waiting). frame is the EXACT payload written — a
+// send time (waiting). frame is the EXACT payload written, a
 // retransmission within the message TTL resends it verbatim, never
 // re-encrypts it: a new step of the same chain for a message the
 // recipient might already have would create the kind of gap this queue
@@ -68,12 +68,12 @@ type pendingOutMsg struct {
 	msgID       uint64
 	frame       map[string]any
 	src         *pendingSource // nil for a sender_key frame, never re-encrypted
-	sentAt      time.Time      // last encryption — never touched by verbatim retransmissions, used for the TTL and the oldest unconfirmed message's age
+	sentAt      time.Time      // last encryption, never touched by verbatim retransmissions, used for the TTL and the oldest unconfirmed message's age
 	nextRetry   time.Time
 	backoff     time.Duration // doubles on every successful retransmission
-	serverAcked bool          // true once we recognize our own self-echo (parseMessage/TakeSentText, never a separate frame): the SERVER assigned a gseq and queued the message toward each recipient — from here on, last-mile delivery (retry included) is its responsibility, no longer ours. Unblocks backpressure/RetryDue; waiting below stays populated only for the UI (chatLine.ackedBy) and for RotateSenderKey, never to block writing.
-	gseq        uint64        // room-global sequence number assigned by the server — 0 until serverAcked is true
-	kid         string        // sender_key generation the message is encrypted under — empty for a sender_key frame itself
+	serverAcked bool          // true once we recognize our own self-echo (parseMessage/TakeSentText, never a separate frame): the SERVER assigned a gseq and queued the message toward each recipient, from here on, last-mile delivery (retry included) is its responsibility, no longer ours. Unblocks backpressure/RetryDue; waiting below stays populated only for the UI (chatLine.ackedBy) and for RotateSenderKey, never to block writing.
+	gseq        uint64        // room-global sequence number assigned by the server, 0 until serverAcked is true
+	kid         string        // sender_key generation the message is encrypted under, empty for a sender_key frame itself
 	waiting     map[string]bool
 }
 
@@ -87,7 +87,7 @@ type pendingSource struct {
 	mseq        uint64
 }
 
-// pendingState groups the reliable-delivery queue's fields — not part
+// pendingState groups the reliable-delivery queue's fields, not part
 // of the main Client struct (client.go is already very large) but
 // embedded by value into it, same package.
 type pendingState struct {
@@ -96,34 +96,34 @@ type pendingState struct {
 	slotLimit     int
 	retryDelay    time.Duration
 	escalationAge time.Duration
-	// ttl — see reencryptExpired. Atomic: also read under peerMu
+	// ttl, see reencryptExpired. Atomic: also read under peerMu
 	// (expireOutEph), never under pending.mu.
 	ttl atomic.Int64
 
-	// deferredKeys — see Client.RotateSenderKey/deferKeyDistribution: a
+	// deferredKeys, see Client.RotateSenderKey/deferKeyDistribution: a
 	// new sender_key not yet sent to a peer because it still had
 	// unconfirmed messages toward it at rotation time.
 	deferredKeys map[string]deferredKeyDist
 
 	// keyServed: peerID → keyID of the latest sender_key already written
 	// to that peer or deferred for it (sendSenderKeyTo,
-	// deferKeyDistribution) — SendSenderKeyReliable skips a peer whose
+	// deferKeyDistribution), SendSenderKeyReliable skips a peer whose
 	// entry matches the current generation.
 	keyServed map[string]string
 }
 
 // deferredKeyDist holds everything needed to send a deferred sender_key
 // (sendSenderKeyTo) as soon as FlushDeferredKeyDistributions finds that
-// peer's queue empty — key is an independent copy, zeroed after sending
+// peer's queue empty, key is an independent copy, zeroed after sending
 // or when replaced by a more recent rotation.
 type deferredKeyDist struct {
 	pub      *ecdh.PublicKey
 	mlkemPub *mlkem.EncapsulationKey768
 	key      []byte
-	keyID    string // keyID of key — messages already sent under it never hold the distribution back
+	keyID    string // keyID of key, messages already sent under it never hold the distribution back
 }
 
-// pendingDefaults mirrors config.Default() exactly — internal/client
+// pendingDefaults mirrors config.Default() exactly, internal/client
 // doesn't import internal/config (the caller, the UI, resolves the
 // values from config.json and injects them via SetPendingLimits, the
 // same principle already used for SenderKeyInterval/
@@ -147,7 +147,7 @@ func newPendingState() pendingState {
 
 // SetPendingLimits configures the reliable delivery's four parameters
 // (config.json: pending_slot_limit, message_retry_delay,
-// pending_escalation_age, message_ttl) — a value <= 0 leaves the current
+// pending_escalation_age, message_ttl), a value <= 0 leaves the current
 // one unchanged (never a silent reset of a safety threshold).
 func (c *Client) SetPendingLimits(slotLimit int, retryDelay, escalationAge, ttl time.Duration) {
 	c.pending.mu.Lock()
@@ -176,7 +176,7 @@ func (c *Client) messageTTL() time.Duration {
 }
 
 // EscalationAge exposes the configured threshold for the "soft" warning
-// in Console about the oldest unconfirmed message — used by the caller
+// in Console about the oldest unconfirmed message, used by the caller
 // to decide when to show it, not by this package.
 func (c *Client) EscalationAge() time.Duration {
 	c.pending.mu.Lock()
@@ -185,7 +185,7 @@ func (c *Client) EscalationAge() time.Duration {
 }
 
 // knownMemberIDs is a snapshot of the recipients currently known in
-// this room (members, maintained by RegisterUser/UnregisterUser) —
+// this room (members, maintained by RegisterUser/UnregisterUser),
 // used to decide both who must confirm a new send and whether writing
 // must be blocked for backpressure.
 func (c *Client) knownMemberIDs() []string {
@@ -199,7 +199,7 @@ func (c *Client) knownMemberIDs() []string {
 }
 
 // pendingBlockedFor checks how many chat messages remain without the
-// server's pickup (serverAcked==false) — if the total reaches the
+// server's pickup (serverAcked==false), if the total reaches the
 // configured limit, writing must be blocked. A single channel, not one
 // per recipient (see BackpressureError). sender_key deliveries (src ==
 // nil) don't count: they are point-to-point frames the server never
@@ -221,7 +221,7 @@ func (c *Client) pendingBlockedFor() bool {
 	return n >= c.pending.slotLimit
 }
 
-// registerPending tracks a message just written successfully — a no-op
+// registerPending tracks a message just written successfully, a no-op
 // if there was no known recipient at send time (nothing to confirm,
 // e.g. being alone in the room). kid is the sender_key generation of a
 // chat message, empty for a sender_key frame; src is nil for a
@@ -248,16 +248,16 @@ func (c *Client) registerPending(msgID uint64, frame map[string]any, recipients 
 	}
 }
 
-// HandleServerAck records the server's pickup for msgID — called by the
+// HandleServerAck records the server's pickup for msgID, called by the
 // caller (the UI) as soon as it recognizes its own self-echo
 // (parseMessage/TakeSentText), which travels in the same reliable
 // per-contact queue as anyone else's (roomDelivery.Dispatch) and already
-// carries the assigned gseq: releases backpressure/RetryDue — from here
+// carries the assigned gseq: releases backpressure/RetryDue, from here
 // on, last-mile delivery toward each recipient is the server's
 // responsibility, no longer ours. Doesn't touch waiting: that stays for
 // the UI (chatLine.ackedBy) and for RotateSenderKey, fed only by
 // HandleAck when the individual recipients' real acks arrive. gseq
-// updates the entry — returns found=false if msgID is no longer
+// updates the entry, returns found=false if msgID is no longer
 // pending.
 func (c *Client) HandleServerAck(msgID, gseq uint64) (found bool) {
 	c.pending.mu.Lock()
@@ -272,7 +272,7 @@ func (c *Client) HandleServerAck(msgID, gseq uint64) (found bool) {
 }
 
 // dropPendingWaiter removes userID from every pending message waiting
-// on its ack — called by UnregisterUser when a member leaves the room:
+// on its ack, called by UnregisterUser when a member leaves the room:
 // waiting for a confirmation from someone no longer present makes no
 // sense anymore, and a message that was waiting only on them must be
 // considered confirmed by the others. Any sender_key deferred for them
@@ -296,7 +296,7 @@ func (c *Client) dropPendingWaiter(userID string) {
 }
 
 // markKeyServed records that keyID has been written to peerID or
-// deferred for it — see pendingState.keyServed.
+// deferred for it, see pendingState.keyServed.
 func (c *Client) markKeyServed(peerID, keyID string) {
 	c.pending.mu.Lock()
 	defer c.pending.mu.Unlock()
@@ -329,7 +329,7 @@ func (c *Client) resetKeyServedOnConnect() {
 	}
 }
 
-// forgetKeyServed drops peerID's keyServed entry — used when a peer's
+// forgetKeyServed drops peerID's keyServed entry, used when a peer's
 // session userID is superseded by a reconnect.
 func (c *Client) forgetKeyServed(peerID string) {
 	c.pending.mu.Lock()
@@ -337,7 +337,7 @@ func (c *Client) forgetKeyServed(peerID string) {
 	delete(c.pending.keyServed, peerID)
 }
 
-// deferKeyDistribution defers sending a sender_key to peerID — see
+// deferKeyDistribution defers sending a sender_key to peerID, see
 // Client.RotateSenderKey. Silently replaces any earlier deferred
 // distribution still waiting for the same peer (zeroing its key): can
 // only happen if a second rotation fires before the first ever reached
@@ -361,7 +361,7 @@ func (c *Client) deferKeyDistribution(peerID string, pub *ecdh.PublicKey, mlkemP
 }
 
 // dropSupersededKeys forgets every sender_key still pending or deferred
-// toward peerID — called right before sending it a newer one
+// toward peerID, called right before sending it a newer one
 // immediately (rotateSenderKeyLocked with deferBusy=false): a late
 // retransmission of an older key would otherwise replace the newer one
 // on their side.
@@ -386,7 +386,7 @@ func (c *Client) dropSupersededKeys(peerID string) {
 // can't skip ahead. The sender_key is rotated, the new key sent to every
 // peer right away, and EVERY unacknowledged chat message re-encrypted
 // under the new generation, in original order, with the same msgID and
-// mseq — the server keeps its gseq, a recipient that already had it
+// mseq, the server keeps its gseq, a recipient that already had it
 // recognizes the msgID. Caller must hold sendMu.
 func (c *Client) reencryptExpired(ctx context.Context) {
 	ttl := c.messageTTL()
@@ -446,7 +446,7 @@ func (c *Client) reencryptExpired(ctx context.Context) {
 }
 
 // FlushDeferredKeyDistributions sends every deferred sender_key whose
-// peer now has no pending messages of an earlier generation — messages
+// peer now has no pending messages of an earlier generation, messages
 // already encrypted under the deferred key itself are ignored: the peer
 // can't decrypt (and so never acks) them before receiving that key.
 // Meant to be called from the same periodic cycle as RetryDue (a
@@ -480,7 +480,7 @@ func (c *Client) FlushDeferredKeyDistributions(ctx context.Context) {
 }
 
 // pendingBeforeGenLocked counts the messages still unconfirmed by
-// userID that are not encrypted under the generation keyID — the caller
+// userID that are not encrypted under the generation keyID, the caller
 // must already hold pending.mu (used by FlushDeferredKeyDistributions).
 func (c *Client) pendingBeforeGenLocked(userID, keyID string) int {
 	n := 0
@@ -492,7 +492,7 @@ func (c *Client) pendingBeforeGenLocked(userID, keyID string) int {
 	return n
 }
 
-// HandleAck records fromUserID's confirmation for msgID — called by
+// HandleAck records fromUserID's confirmation for msgID, called by
 // the UI layer when a msg_ack frame arrives, in addition to updating
 // its own view (chatLine.ackedBy): the
 // bookkeeping that decides backpressure and retransmission lives here,
@@ -521,7 +521,7 @@ func (c *Client) HandleAck(fromUserID string, msgID uint64) bool {
 // RetryDue first re-encrypts the unacknowledged messages if one is past
 // the message TTL (reencryptExpired), then retransmits (verbatim, the
 // same frame, never a new ratchet step) every message still waiting on
-// at least one ack whose backoff has expired — meant to be called
+// at least one ack whose backoff has expired, meant to be called
 // periodically by the caller (a tea.Tick in the TUI), the same
 // principle already used for runSenderKeyRotationLoop. Returns how many
 // messages were retransmitted this round (0 is normal when there's
@@ -558,7 +558,7 @@ func (c *Client) RetryDue(ctx context.Context) int {
 }
 
 // OldestPendingAge returns how long the oldest unconfirmed message has
-// been waiting, and whether there's at least one — used by the caller
+// been waiting, and whether there's at least one, used by the caller
 // to decide when to show Console's soft warning (PendingEscalationAge).
 func (c *Client) OldestPendingAge() (time.Duration, bool) {
 	c.pending.mu.Lock()
@@ -581,7 +581,7 @@ func (c *Client) OldestPendingAge() (time.Duration, bool) {
 }
 
 // PendingCountFor returns how many messages remain unconfirmed toward
-// userID — used by the caller for the backpressure UI (e.g. showing
+// userID, used by the caller for the backpressure UI (e.g. showing
 // which specific contact a write block is due to).
 func (c *Client) PendingCountFor(userID string) int {
 	c.pending.mu.Lock()

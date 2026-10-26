@@ -30,9 +30,9 @@ import (
 // silencing of the old hidden service after a rotation: with
 // ServerConfig.Silenced returning true, EVERY entry point (WS, /health,
 // /knock) must close the connection immediately, without completing any
-// protocol — verified here on WS and /health, the two most representative
+// protocol, verified here on WS and /health, the two most representative
 // paths (handshake vs. plain HTTP response). The listener/onion service
-// itself is never closed by this mechanism — only the application above it
+// itself is never closed by this mechanism, only the application above it
 // stops responding.
 func TestRunOnListenerSilencedRejectsConnections(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -77,7 +77,7 @@ func TestRunOnListenerSilencedRejectsConnections(t *testing.T) {
 	}
 
 	// With silencing turned off, the same listener goes back to responding
-	// normally — confirms that the listener/onion service itself was never
+	// normally, confirms that the listener/onion service itself was never
 	// touched, only the application policy.
 	silenced = false
 	resp2, err := http.Get(baseURL + "/health")

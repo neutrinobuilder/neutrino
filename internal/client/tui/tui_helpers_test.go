@@ -231,7 +231,7 @@ func TestListDirMissing(t *testing.T) {
 
 // TestListDirFollowsSymlinkedDirectories verifies a symlink pointing at
 // a directory (e.g. Termux's ~/storage/pictures, pointing at Android's
-// real storage) is listed as a directory — os.DirEntry.IsDir() alone
+// real storage) is listed as a directory, os.DirEntry.IsDir() alone
 // reflects the symlink itself, never its target, and would otherwise
 // show it as an unopenable plain file.
 func TestListDirFollowsSymlinkedDirectories(t *testing.T) {

@@ -22,7 +22,7 @@ import (
 	"neutrino/internal/i18n"
 )
 
-// gcmTagLen is the standard AES-GCM authentication tag size — used only
+// gcmTagLen is the standard AES-GCM authentication tag size, used only
 // to size the noise filler below the same as a real sealed blob, never
 // to implement GCM itself (that stays in aesgcmEncrypt/aesgcmDecrypt).
 const gcmTagLen = 16
@@ -30,7 +30,7 @@ const gcmTagLen = 16
 // DuressAccessField is the fixed-size field every identity (real or
 // duress, same schema) carries, written once at its creation:
 //   - in a real identity, it is K_i_duress sealed directly under the
-//     identity's own K_i (no password, no KDF — whoever already
+//     identity's own K_i (no password, no KDF, whoever already
 //     unlocked that real identity already holds its K_i, so this field
 //     yields K_i_duress directly: no
 //     re-authentication needed when a trigger fires mid-session).
@@ -43,7 +43,7 @@ type DuressAccessField struct {
 	Wrapped []byte `json:"wrapped"` // keyLen+gcmTagLen bytes
 }
 
-// SealDuressAccess wraps duressKi directly under ownKi — used when
+// SealDuressAccess wraps duressKi directly under ownKi, used when
 // creating or promoting a real identity, by whoever already has
 // legitimate access to both keys at that moment.
 func SealDuressAccess(ownKi, duressKi []byte) (DuressAccessField, error) {
@@ -60,7 +60,7 @@ func SealDuressAccess(ownKi, duressKi []byte) (DuressAccessField, error) {
 
 // OpenDuressAccess recovers K_i_duress from a real identity's own
 // DuressAccessField, using the K_i that identity's own login already
-// produced — no password, no derivation, ready in RAM for the whole
+// produced, no password, no derivation, ready in RAM for the whole
 // session.
 func OpenDuressAccess(ownKi []byte, f DuressAccessField) ([]byte, error) {
 	plain, err := aesgcmDecrypt(ownKi, f.Nonce, f.Wrapped)
@@ -71,7 +71,7 @@ func OpenDuressAccess(ownKi []byte, f DuressAccessField) ([]byte, error) {
 }
 
 // RandomDuressAccessField fills a field of the identical shape with
-// random bytes — used for the duress identity's own copy, which must
+// random bytes, used for the duress identity's own copy, which must
 // never contain a real wrapped key (see DuressAccessField's doc
 // comment).
 func RandomDuressAccessField() (DuressAccessField, error) {

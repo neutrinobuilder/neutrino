@@ -28,7 +28,7 @@ import (
 )
 
 // sessionResult is the outcome of ONE completed TCP session (success or
-// failure) — RunSync collects the first successful outcome, but also
+// failure), RunSync collects the first successful outcome, but also
 // drains (without blocking) failed ones, to keep listening.
 type sessionResult struct {
 	payload SyncPayload
@@ -36,7 +36,7 @@ type sessionResult struct {
 }
 
 // Event is a RunSync progress event, reported via onEvent to show it in
-// Console — never blocking for the caller (onEvent runs on the same
+// Console, never blocking for the caller (onEvent runs on the same
 // goroutine that emits it, so it must stay fast).
 type Event struct {
 	Kind   string // "listening" | "announcing" | "peer_found" | "session_failed" | "session_ok"
@@ -50,7 +50,7 @@ type Event struct {
 // starts a session toward any matching announcement received. Returns on
 // the FIRST successful exchange (the caller does MergeContacts/
 // AppendKnownDevice on the received payload), or when ctx is cancelled or
-// SyncWindow expires — whichever happens first. onEvent (optional)
+// SyncWindow expires, whichever happens first. onEvent (optional)
 // receives an Event for every significant step, for progress reporting in
 // Console.
 func RunSync(ctx context.Context, identityPriv ed25519.PrivateKey, myPayload SyncPayload, round TombstoneRound, onEvent func(Event)) (SyncPayload, error) {
@@ -132,7 +132,7 @@ func RunSync(ctx context.Context, identityPriv ed25519.PrivateKey, myPayload Syn
 				return
 			}
 			if err != nil {
-				continue // read timeout, normal — re-check ctx and retry
+				continue // read timeout, normal, re-check ctx and retry
 			}
 			pkt, err := DecodeAnnounce(buf[:n])
 			if err != nil || pkt.Version != ProtocolVersion {
@@ -241,7 +241,7 @@ var (
 )
 
 // openMulticast opens a UDP socket joined to the discovery multicast
-// group — usable both to receive (ReadFromUDP) and send (WriteToUDP)
+// group, usable both to receive (ReadFromUDP) and send (WriteToUDP)
 // announcements, the same *net.UDPConn for both directions. nil as the
 // interface joins the group on every available interface.
 func openMulticast() (*net.UDPConn, error) {

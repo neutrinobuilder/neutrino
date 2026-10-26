@@ -137,7 +137,7 @@ func waitOwnLine(t *testing.T, in *Instance, room, text string, cond func(Line) 
 
 // TestInviteRightAfterPairing: an invite sent before the relationship
 // key exchange completes is queued and starts on its own once the
-// contact is ready — the host must end up in the room exactly as if it
+// contact is ready, the host must end up in the room exactly as if it
 // had waited.
 func TestInviteRightAfterPairing(t *testing.T) {
 	r := NewRun(t)

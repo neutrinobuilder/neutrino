@@ -25,7 +25,7 @@ import (
 
 // Proxy is a single-purpose local HTTP CONNECT proxy: it resolves the
 // requested tunnel's host via Lookup (DoH, never the system resolver) and
-// then forwards raw bytes without inspecting them — the TLS of the
+// then forwards raw bytes without inspecting them, the TLS of the
 // downstream connection (e.g. i2pd's HTTPS reseed) stays intact end-to-end,
 // the proxy sees only an opaque TCP tunnel after the initial CONNECT.
 type Proxy struct {
@@ -63,7 +63,7 @@ func (p *Proxy) acceptLoop() {
 func (p *Proxy) handleConn(client net.Conn) {
 	defer client.Close()
 
-	// Deadline only for reading the CONNECT line — the 2048-byte cap below
+	// Deadline only for reading the CONNECT line, the 2048-byte cap below
 	// limits only how much is read, not how long it may take, so without
 	// this a client that connects and never sends anything (or stalls
 	// mid-line) would block this goroutine forever. Cleared immediately
@@ -72,7 +72,7 @@ func (p *Proxy) handleConn(client net.Conn) {
 	client.SetReadDeadline(time.Now().Add(10 * time.Second))
 
 	// Reads only the first line of the CONNECT request (e.g. "CONNECT
-	// host:443 HTTP/1.1") — no full HTTP parser is needed, the remaining
+	// host:443 HTTP/1.1"), no full HTTP parser is needed, the remaining
 	// headers are unused by a single-purpose CONNECT proxy.
 	buf := make([]byte, 0, 512)
 	one := make([]byte, 1)

@@ -27,7 +27,7 @@ import (
 
 // nativeLibraryDirViaProcMaps inspects this process's /proc/self/maps: the
 // app's binary (lib/<abi>/libNeutrino.so) is loaded by Android from
-// nativeLibraryDir — it will appear among the mappings. A cgo/JNI-free
+// nativeLibraryDir, it will appear among the mappings. A cgo/JNI-free
 // fallback to nativeLibraryDirViaJNI. GOOS=android implies the "linux"
 // build tag in Go, so this file compiles both on real Android and on an
 // ordinary Linux development machine (used only as a fallback in the

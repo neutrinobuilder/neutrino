@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Package qrscan decodes QR codes from images — used by the TUI's
+// Package qrscan decodes QR codes from images, used by the TUI's
 // /cnt-read-qrcode command and by `neutrino add-bridges`. Pure Go
 // (github.com/makiuchi-d/gozxing), no system dependency.
 package qrscan
@@ -47,7 +47,7 @@ func DecodeQRFile(path string) (string, error) {
 
 // DecodeQRImage decodes the first QR code found by reading a PNG/JPEG
 // image from any io.Reader (a local file, or a fyne.URIReadCloser from the
-// Android file picker — no real filesystem path required).
+// Android file picker, no real filesystem path required).
 func DecodeQRImage(r io.Reader) (string, error) {
 	img, _, err := image.Decode(r)
 	if err != nil {
@@ -57,7 +57,7 @@ func DecodeQRImage(r io.Reader) (string, error) {
 }
 
 // DecodeQRFromImage decodes the first QR code found in an already-decoded
-// image.Image — factored out of DecodeQRImage so it's also reusable by
+// image.Image, factored out of DecodeQRImage so it's also reusable by
 // callers that build the image by hand instead of reading it from a
 // file/reader (see camera_linux.go: a webcam's YUYV frame is converted
 // directly to image.Gray, never going through PNG/JPEG).
@@ -69,13 +69,13 @@ func DecodeQRFromImage(img image.Image) (string, error) {
 
 	// TRY_HARDER disables the finder-pattern search's row-skipping
 	// heuristic (which scales with image size, meant for a tight live
-	// camera/screen frame) — without it, a high-resolution phone photo
+	// camera/screen frame), without it, a high-resolution phone photo
 	// (several thousand pixels wide, finder patterns only a small
 	// fraction of the frame) can skip past the pattern entirely and
 	// report no QR found at all, or misdetect a bogus one (seen as a
 	// corrupt/out-of-range QR version). Slower, but DecodeQRFile/Image
 	// only ever runs once per user action (file picker, camera frame),
-	// never in a hot loop — worth the cost for reliability.
+	// never in a hot loop, worth the cost for reliability.
 	//
 	// CHARACTER_SET ISO-8859-1 makes byte-mode segments decode one byte to
 	// one code point (U+0000-U+00FF) instead of going through gozxing's
@@ -97,7 +97,7 @@ func DecodeQRFromImage(img image.Image) (string, error) {
 // latin1Bytes turns text decoded as ISO-8859-1 back into the original
 // bytes, one per code point. A code point above U+00FF can only come from
 // a segment not decoded as ISO-8859-1 (an explicit ECI marker, or Kanji
-// mode — never in a QR this app generates): then the text is returned
+// mode, never in a QR this app generates): then the text is returned
 // as is.
 func latin1Bytes(text string) string {
 	b := make([]byte, 0, len(text))

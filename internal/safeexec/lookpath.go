@@ -17,7 +17,7 @@
 // the Faccessat2 syscall. On Android/Termux that syscall is blocked by
 // Android's seccomp filter and kills the entire process with SIGSYS "bad
 // system call" instead of returning a handleable error (golang/go#57393,
-// #60125 — a known, unresolved Go issue). The same replacement is applied
+// #60125, a known, unresolved Go issue). The same replacement is applied
 // separately in internal/clipboardfix to the github.com/atotto/clipboard
 // third-party dependency; this package covers callers within this project
 // (internal/i2pnode, internal/tornode) that invoke exec.LookPath directly.

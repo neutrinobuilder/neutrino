@@ -33,7 +33,7 @@ import (
 // TestHandleKnockMutualityFilter covers the pre-decryption filter via
 // shared.KnockDHTag: a knock from an unknown sender must be discarded
 // WITHOUT being routed to knockCh, with the SAME HTTP response (202) as a
-// processed knock — a knock from a known contact, or from the recipient
+// processed knock, a knock from a known contact, or from the recipient
 // itself (self-probe), must instead arrive on knockCh.
 func TestHandleKnockMutualityFilter(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -103,7 +103,7 @@ func TestHandleKnockMutualityFilter(t *testing.T) {
 	t.Run("unknown sender: discarded, same 202, never forwarded", func(t *testing.T) {
 		resp := post(t, strangerPriv, shared.KnockPayload{FromUsername: "stranger", FromIdentityPub: strangerPub})
 		if resp.StatusCode != http.StatusAccepted {
-			t.Fatalf("status = %d, want 202 (same response as a processed knock — must not be distinguishable)", resp.StatusCode)
+			t.Fatalf("status = %d, want 202 (same response as a processed knock, must not be distinguishable)", resp.StatusCode)
 		}
 		select {
 		case p := <-knockCh:
@@ -139,7 +139,7 @@ func TestHandleKnockMutualityFilter(t *testing.T) {
 }
 
 // TestHandleKnockHybridDecryption mirrors the "known contact: forwarded"
-// case above but encrypts the knock in hybrid X25519+ML-KEM-768 form —
+// case above but encrypts the knock in hybrid X25519+ML-KEM-768 form,
 // verifies that handleKnock, with a non-nil mlkemDecap (RunOnListener),
 // decrypts it correctly and routes it to knockCh exactly like a classic
 // knock.

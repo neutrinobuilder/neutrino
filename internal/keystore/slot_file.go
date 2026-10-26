@@ -24,15 +24,15 @@ import (
 	"neutrino/internal/i18n"
 )
 
-// slotFileOnDisk is the N-slot keystore file's outer container — a list
+// slotFileOnDisk is the N-slot keystore file's outer container, a list
 // of independent slotEntry blobs, no plaintext metadata about which are
 // real/duress/noise.
 type slotFileOnDisk struct {
 	Slots []slotEntry `json:"slots"`
 }
 
-// WriteSlotContainer serializes c to path atomically — temp file in the
-// same directory, fsync, then rename — the same pattern as
+// WriteSlotContainer serializes c to path atomically, temp file in the
+// same directory, fsync, then rename, the same pattern as
 // Keystore.Save, so a kill mid-write never leaves a corrupted file:
 // path keeps either its previous content or the fully new one.
 func WriteSlotContainer(path string, c *slotContainer) error {
@@ -68,7 +68,7 @@ func WriteSlotContainer(path string, c *slotContainer) error {
 	return os.Rename(tmpPath, path)
 }
 
-// ReadSlotContainer reads and parses path as an N-slot keystore file —
+// ReadSlotContainer reads and parses path as an N-slot keystore file,
 // no decryption happens here, just the outer container shape: every
 // slot's own content stays sealed until someone tries a password
 // combination against it (see slots.go, unwrapKi/openSlotContent).

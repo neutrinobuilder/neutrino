@@ -137,8 +137,8 @@ func TestInterfaceLockTimeout(t *testing.T) {
 
 // TestPasswordChangeAndBackup: /sec-backup shows the 24 words only after
 // the identity password; /sec-passwd refuses a wrong current password
-// and mismatched confirmations, and after a change the new password —
-// not the old one — opens the backup, unlocks the interface and logs in
+// and mismatched confirmations, and after a change the new password,
+// not the old one, opens the backup, unlocks the interface and logs in
 // after a restart.
 func TestPasswordChangeAndBackup(t *testing.T) {
 	r := NewRun(t)
@@ -150,10 +150,10 @@ func TestPasswordChangeAndBackup(t *testing.T) {
 	from := alice.LineCount("Console")
 	alice.Send("/sec-backup")
 	enterSecrets(alice, "wrong")
-	alice.Wait("Console", `wrong password — backup cancelled`, from, shortWait)
+	alice.Wait("Console", `wrong password, backup cancelled`, from, shortWait)
 	alice.Send("/sec-backup")
 	enterSecrets(alice, oldPwd)
-	alice.WaitScreen(`IDENTITY BACKUP — 24 BIP-39 WORDS`, shortWait)
+	alice.WaitScreen(`IDENTITY BACKUP, 24 BIP-39 WORDS`, shortWait)
 	alice.Key("esc")
 
 	alice.Send("/sec-passwd")
@@ -169,10 +169,10 @@ func TestPasswordChangeAndBackup(t *testing.T) {
 	from = alice.LineCount("Console")
 	alice.Send("/sec-backup")
 	enterSecrets(alice, oldPwd)
-	alice.Wait("Console", `wrong password — backup cancelled`, from, shortWait)
+	alice.Wait("Console", `wrong password, backup cancelled`, from, shortWait)
 	alice.Send("/sec-backup")
 	enterSecrets(alice, newPwd)
-	alice.WaitScreen(`IDENTITY BACKUP — 24 BIP-39 WORDS`, shortWait)
+	alice.WaitScreen(`IDENTITY BACKUP, 24 BIP-39 WORDS`, shortWait)
 	alice.Key("esc")
 
 	alice.Send("/sec-lock")

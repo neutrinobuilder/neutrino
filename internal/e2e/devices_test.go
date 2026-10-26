@@ -51,7 +51,7 @@ func TestDeviceCommandsWithoutSiblings(t *testing.T) {
 	for _, cmd := range []string{"/sec-devices", "/sec-device-sync", "/sec-device-sync laptop", "/sec-remote-nuke"} {
 		from := alice.LineCount("Console")
 		alice.Send(cmd)
-		alice.Wait("Console", `no known devices — run an indoor sync first \(/sec-indoor-sync\)`, from, shortWait)
+		alice.Wait("Console", `no known devices, run an indoor sync first \(/sec-indoor-sync\)`, from, shortWait)
 	}
 }
 
@@ -104,8 +104,8 @@ func TestIndoorSyncAndDevices(t *testing.T) {
 }
 
 // TestDeviceSync: after an indoor sync, /sec-device-sync sends this
-// device's address book to a known sibling over the network — a contact
-// added since on one device reaches the other — and refuses a device it
+// device's address book to a known sibling over the network, a contact
+// added since on one device reaches the other, and refuses a device it
 // doesn't know.
 func TestDeviceSync(t *testing.T) {
 	r := NewRun(t)

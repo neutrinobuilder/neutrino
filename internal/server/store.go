@@ -36,7 +36,7 @@ func (s *SessionStore) Add(sess *UserSession) {
 }
 
 // Get is not called from production code (server.go/handlers.go use
-// RoomRegistry/Hub for routing) — it is an inspection accessor used by
+// RoomRegistry/Hub for routing), it is an inspection accessor used by
 // the test suite (store_test.go, rooms_internal_test.go)
 // to verify internal state after Add/Remove/CleanupStale, same role as
 // EncryptTestSealedFrame in internal/client.

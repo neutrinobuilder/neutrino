@@ -62,7 +62,7 @@ if [ "$(sha256sum "${BUILD_DEPS_FILE}" | cut -d' ' -f1)" != "${BUILD_DEPS_SHA256
 fi
 
 if [ ! -s "${RELEASE_KEY}" ]; then
-    echo "Error: ${RELEASE_KEY} missing or empty — cannot verify the i2pd release tag signature." >&2
+    echo "Error: ${RELEASE_KEY} missing or empty, cannot verify the i2pd release tag signature." >&2
     exit 1
 fi
 

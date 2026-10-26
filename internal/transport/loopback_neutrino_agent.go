@@ -35,7 +35,7 @@ import (
 // anonymity network: a "hidden service" is a plain listener on
 // 127.0.0.1, and its address (the same .onion string Tor would publish
 // for that key) is resolved through a directory shared by all the
-// instances of a test run — one file per published address, holding the
+// instances of a test run, one file per published address, holding the
 // listener's "127.0.0.1:port". Built only with the neutrino_agent tag,
 // never part of a release.
 const KindLoopback Kind = "loopback"

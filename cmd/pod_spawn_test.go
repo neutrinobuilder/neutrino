@@ -29,7 +29,7 @@ import (
 // (GO_WANT_POD_HELPER=1) so spawnPod can be tested end-to-end without
 // needing the real `neutrino` binary or its "__pod" dispatch in
 // main(): spawnPod only cares that SOME process reads stdin and exits,
-// not which one — the standard os/exec "helper process" pattern (see
+// not which one, the standard os/exec "helper process" pattern (see
 // the Go standard library's own exec_test.go). Every other invocation
 // (the normal `go test` run) falls through to m.Run() unchanged.
 func TestMain(m *testing.M) {
@@ -72,7 +72,7 @@ func TestSpawnPodDeliversSnapshotOverStdin(t *testing.T) {
 		t.Fatalf("spawnPod: %v", err)
 	}
 
-	// spawnPod never waits by design — poll briefly for the helper to
+	// spawnPod never waits by design, poll briefly for the helper to
 	// finish writing, same spirit as every other best-effort wait in
 	// this codebase (e.g. remoteNukeExecuteTimeout), never a fixed sleep.
 	var got []byte
@@ -86,7 +86,7 @@ func TestSpawnPodDeliversSnapshotOverStdin(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 	}
 	if got == nil {
-		t.Fatal("helper process never wrote the file — stdin pipe not delivered?")
+		t.Fatal("helper process never wrote the file, stdin pipe not delivered?")
 	}
 
 	var decoded keystore.PodSnapshot
@@ -103,7 +103,7 @@ func TestSpawnPodDeliversSnapshotOverStdin(t *testing.T) {
 
 func TestSpawnPodNeverBlocksCaller(t *testing.T) {
 	// The helper process never receives POD_HELPER_OUT here, so it
-	// exits(1) almost immediately without writing anything — spawnPod
+	// exits(1) almost immediately without writing anything, spawnPod
 	// itself must still return right away, regardless of what the child
 	// does or how fast it dies.
 	start := time.Now()
@@ -112,6 +112,6 @@ func TestSpawnPodNeverBlocksCaller(t *testing.T) {
 		t.Fatalf("spawnPod: %v", err)
 	}
 	if elapsed := time.Since(start); elapsed > 500*time.Millisecond {
-		t.Errorf("spawnPod took %v to return — should never wait for the child", elapsed)
+		t.Errorf("spawnPod took %v to return, should never wait for the child", elapsed)
 	}
 }

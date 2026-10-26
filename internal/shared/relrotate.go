@@ -27,14 +27,14 @@ import "crypto/ed25519"
 //
 // Sig/SigMLDSA certify NewPub with the SIBLING relationship key, which stays
 // stable (ContentKey-per-relationship if the IdentityKey is rotating, and
-// vice versa) — NEVER with the previous version of the same key being
+// vice versa), NEVER with the previous version of the same key being
 // rotated: one rotation at a time per relationship (never identity and
 // content together) always leaves the sibling as the continuity anchor for
 // the other. Populated only in the request: an ack merely echoes NewPub (the
 // sender compares it against the key currently being rotated before
-// accepting it as confirmation — see applyRelRotate — so a late ack
+// accepting it as confirmation, see applyRelRotate, so a late ack
 // referring to a rotation already forced/closed is never applied to a
-// subsequent rotation); Sig/SigMLDSA stay empty in that direction — an ack
+// subsequent rotation); Sig/SigMLDSA stay empty in that direction, an ack
 // certifies nothing new, it only confirms receipt.
 type RelRotatePayload struct {
 	NewPub      ed25519.PublicKey `json:"new_pub"`
@@ -43,19 +43,19 @@ type RelRotatePayload struct {
 	Sig         []byte            `json:"sig,omitempty"`
 	SigMLDSA    []byte            `json:"sig_mldsa,omitempty"`
 
-	// Ts — signing instant (RFC3339, shared.NowTS()), present ONLY in the
+	// Ts, signing instant (RFC3339, shared.NowTS()), present ONLY in the
 	// request (never in the ack, which carries no signature). Included in
 	// the SIGNED message (RelKeyRotationMsg), not just in the payload:
 	// verified with shared.TsFresh by the receiver BEFORE applying the
 	// rotation, against an old rotation message captured and replayed
-	// later — without this check, a silent downgrade to a previous version
+	// later, without this check, a silent downgrade to a previous version
 	// of the key being rotated would be possible as long as the signing
 	// sibling key never changes. The sender re-signs with a fresh ts on
 	// every single attempt/retry (never a ts fixed once at the start of the
 	// rotation), so the probe cycle's periodic retry always stays valid.
 	Ts string `json:"ts,omitempty"`
 
-	// DevicePub — same meaning and reason as RelBootstrapPayload.DevicePub
+	// DevicePub, same meaning and reason as RelBootstrapPayload.DevicePub
 	// (relbootstrap.go): keys the correct keystore.Contact.Devices entry on
 	// the receiving side.
 	DevicePub []byte `json:"device_pub,omitempty"`

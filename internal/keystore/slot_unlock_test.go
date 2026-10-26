@@ -21,7 +21,7 @@ import (
 )
 
 // sealIdentity marshals a minimal Keystore and seals it into slot idx
-// under ki — a test helper for a slot holding a bare identity.
+// under ki, a test helper for a slot holding a bare identity.
 func sealIdentity(t *testing.T, c *slotContainer, idx int, ki []byte, username string) {
 	t.Helper()
 	ks := &Keystore{Version: version, Username: username, Contacts: []Contact{}}

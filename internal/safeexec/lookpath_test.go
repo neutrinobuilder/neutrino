@@ -122,7 +122,7 @@ func TestLookPathEmptyPATHEntryMeansCurrentDir(t *testing.T) {
 		t.Fatalf("Chdir: %v", err)
 	}
 
-	// An empty PATH entry (e.g. "::") means "current directory" — the same
+	// An empty PATH entry (e.g. "::") means "current directory", the same
 	// semantics as os/exec.LookPath.
 	t.Setenv("PATH", ":")
 

@@ -28,25 +28,25 @@ import (
 
 // ServerConfig holds the server's optional parameters. The zero value uses the defaults.
 type ServerConfig struct {
-	PingInterval    time.Duration // WS keepalive; default 1m — a single missed ping isn't enough to declare the connection dead, see the comment on the ping/pong goroutine in ws.go
+	PingInterval    time.Duration // WS keepalive; default 1m, a single missed ping isn't enough to declare the connection dead, see the comment on the ping/pong goroutine in ws.go
 	CleanupInterval time.Duration // rate limiter + stale session cleanup; default 5m
 	// SessionStaleTimeout: UserSession.IsStale threshold for
 	// RoomRegistry.CleanupStaleSessions, a backup safety net relative to
-	// the ping/pong watchdog (see the comment on CleanupStaleSessions) —
+	// the ping/pong watchdog (see the comment on CleanupStaleSessions),
 	// default 24h, deliberately long: LastSeen only advances on actual chat
 	// frames (room.sessions.Touch in ws.go, never on ping/pong), so a
 	// connected but silent member for hours is "stale" by this metric
-	// alone despite being perfectly online — a short timeout would wrongly
+	// alone despite being perfectly online, a short timeout would wrongly
 	// evict them. Only meant to eventually recover a session whose
 	// deferred removal never fired for some unexpected reason.
 	SessionStaleTimeout time.Duration
 
 	// Silenced (nil = never silenced): APPLICATION-level silencing of this
-	// listener — used for the previous hidden service after a rotation
+	// listener, used for the previous hidden service after a rotation
 	// has been confirmed by all contacts. Does
 	// not close the onion service/listener itself (documented deadlock risk
 	// in the bine library when closing a single *tor.OnionService without
-	// stopping the whole Tor process) — when Silenced()
+	// stopping the whole Tor process), when Silenced()
 	// returns true, every entry point closes the connection immediately
 	// BEFORE any handshake/decryption, without touching
 	// identityPriv/mlkemDecap. The Tor descriptor stays published on HSDir,
@@ -80,17 +80,17 @@ func (c ServerConfig) sessionStale() time.Duration {
 // (typically a Tor hidden service). Doesn't use TLS: the transport is
 // protected by Tor. identityPriv and knockCh enable the POST /knock
 // endpoint for private connections. knownContactPubsFn (can be nil as a
-// function pointer only if the caller doesn't want to enforce mutuality —
+// function pointer only if the caller doesn't want to enforce mutuality,
 // see appCtx.knownContactPubs) returns the Ed25519 pubkeys of all known
-// contacts, read on every knock — enables mandatory mutuality on POST
+// contacts, read on every knock, enables mandatory mutuality on POST
 // /knock (Briar-style model, pre-decryption filter via KnockDHTag).
 //
 // ServerHello's signature uses the IdentityKey-per-relationship known from
 // the invite bootstrap (RoomRegistry.LookupSecret), never a global identity
 // distributed on request.
 // mlkemDecap is the durable ML-KEM-768 decapsulation key paired with
-// identityPriv (always rotates in the same event as the Ed25519 identity —
-// see Keystore.MLKEMKey) — used by handleKnock to decrypt hybrid knocks. A
+// identityPriv (always rotates in the same event as the Ed25519 identity,
+// see Keystore.MLKEMKey), used by handleKnock to decrypt hybrid knocks. A
 // fixed value, not a getter: like identityPriv, a rotation spawns a NEW
 // listener/RunOnListener (new hidden service), it doesn't modify the one
 // already running.
@@ -126,7 +126,7 @@ func RunOnListener(ctx context.Context, ln net.Listener, registry *RoomRegistry,
 		}
 	}()
 
-	// Retry/kick of the room's reliable delivery (roomDelivery) — an
+	// Retry/kick of the room's reliable delivery (roomDelivery), an
 	// independent, tighter cadence than cleanupInterval (20s initial
 	// backoff, same threshold already used client-side for the direct
 	// relationship), doesn't reuse the ticker above: that one stays tied to
@@ -162,7 +162,7 @@ func RunOnListener(ctx context.Context, ln net.Listener, registry *RoomRegistry,
 		shutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		// notify shutdown on all active rooms (only those with at least one
-		// successful connection — the others don't have a state/hub created yet)
+		// successful connection, the others don't have a state/hub created yet)
 		app.registry.mu.RLock()
 		for _, entry := range app.registry.rooms {
 			if entry.state != nil {

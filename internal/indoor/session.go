@@ -30,12 +30,12 @@ import (
 )
 
 // maxFrameLen is the safety cap for a single length-prefixed frame on the
-// TCP session — ample for a realistic contact-list/DeviceRecord payload,
+// TCP session, ample for a realistic contact-list/DeviceRecord payload,
 // while still protecting against a peer declaring an absurd length.
 const maxFrameLen = 4 << 20 // 4 MiB
 
 // sessionAAD/tombstoneReplyAAD/tombstoneAckAAD bind each round's
-// encryption to its own distinct protocol step — domain separation
+// encryption to its own distinct protocol step, domain separation
 // between the three rounds exchanged over the same session key.
 const (
 	sessionAAD        = "neutrino-indoor-payload-v1"
@@ -81,7 +81,7 @@ func randomNonce() ([]byte, error) {
 }
 
 // runChallengeResponse runs the three-step challenge/response (see the
-// package comment) and returns the derived session key — identical on
+// package comment) and returns the derived session key, identical on
 // both sides by construction, no exchange of different public keys
 // needed: the SAME identity pub/priv is already known to both. initiator
 // only distinguishes the order of messages on the wire (who sends the
@@ -108,7 +108,7 @@ func runChallengeResponse(conn net.Conn, identityPriv ed25519.PrivateKey, identi
 		nonceB = respFrame[:nonceLen]
 		sigB := respFrame[nonceLen:]
 		if !VerifyChallenge(identityPub, nonceA, nonceB, sigB) {
-			return nil, errors.New("indoor: invalid peer signature — not the same identity")
+			return nil, errors.New("indoor: invalid peer signature, not the same identity")
 		}
 
 		sigA := SignChallenge(identityPriv, nonceB, nonceA)
@@ -139,7 +139,7 @@ func runChallengeResponse(conn net.Conn, identityPriv ed25519.PrivateKey, identi
 			return nil, err
 		}
 		if !VerifyChallenge(identityPub, nonceB, nonceA, sigAFrame) {
-			return nil, errors.New("indoor: invalid peer signature — not the same identity")
+			return nil, errors.New("indoor: invalid peer signature, not the same identity")
 		}
 	}
 
@@ -147,7 +147,7 @@ func runChallengeResponse(conn net.Conn, identityPriv ed25519.PrivateKey, identi
 }
 
 // exchangeBytes sends myData (encrypted under sessionKey, bound to aad)
-// and returns the peer's own — fixed order (initiator writes then
+// and returns the peer's own, fixed order (initiator writes then
 // reads, responder reads then writes) to avoid a deadlock on a single
 // TCP connection that is full-duplex but without dedicated
 // application-level buffering. The one primitive every round of the
@@ -184,13 +184,13 @@ func exchangeBytes(conn net.Conn, sessionKey []byte, aad string, myData []byte, 
 }
 
 // TombstoneRound bundles the three steps a session runs, after the base
-// SyncPayload exchange, to reconcile contact deletions with the peer —
+// SyncPayload exchange, to reconcile contact deletions with the peer,
 // same explicit reply/ack protocol as the knock channel (device_sync),
 // run here over the already-open TCP connection instead of separate
 // knocks:
 //   - ComputeReplies: given the peer's Contacts just received, returns
 //     this side's DeletedContacts rows for any already known deleted
-//     locally — sent back to the peer as the tombstone reply.
+//     locally, sent back to the peer as the tombstone reply.
 //   - ApplyAndAck: adopts the peer's own reply rows (deleting any
 //     matching live contact, merging ConfirmedSiblings) and returns the
 //     IdentityPubs to ack as adopted.
@@ -241,7 +241,7 @@ func runTombstoneRounds(conn net.Conn, sessionKey []byte, peer SyncPayload, init
 // TCP connection (dial or accept, see discovery.go): mutual
 // challenge/response with the SAME identity key known to both sides,
 // exchange of the encrypted SyncPayload, then the tombstone
-// reply/ack rounds (round) — returns the SyncPayload received from the
+// reply/ack rounds (round), returns the SyncPayload received from the
 // peer (the caller does MergeContacts/AppendKnownDevice). initiator =
 // true for whoever opened the connection (whoever received the
 // multicast announcement and connected to the announcer).

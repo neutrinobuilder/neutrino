@@ -43,17 +43,17 @@ func writeRandomFile(t *testing.T, in *Instance, name string, size int) [32]byte
 
 // sendFile runs /grp-file-send in room: picks name in the file browser
 // through its filter, confirms the recipient picker if shown (all
-// preselected), and confirms the speed popup — warp selects the second
+// preselected), and confirms the speed popup, warp selects the second
 // speed, noCompress toggles compression off.
 func sendFile(t *testing.T, from *Instance, room, name string, warp, noCompress bool) {
 	t.Helper()
 	from.Focus(room)
 	from.Send("/grp-file-send")
-	from.WaitScreen(`choose file to send — `, shortWait)
+	from.WaitScreen(`choose file to send, `, shortWait)
 	from.Type(name)
 	from.Key("enter")
-	from.WaitScreenMatch(`recipients — Space deselects|sending speed`, shortWait)
-	if regexp.MustCompile(`recipients — Space deselects`).MatchString(from.Screen()) {
+	from.WaitScreenMatch(`recipients, Space deselects|sending speed`, shortWait)
+	if regexp.MustCompile(`recipients, Space deselects`).MatchString(from.Screen()) {
 		from.Key("enter")
 		from.WaitScreen(`sending speed`, shortWait)
 	}
@@ -73,9 +73,9 @@ func receiveFile(t *testing.T, to *Instance, sender, name string) [32]byte {
 	t.Helper()
 	to.WaitScreen(`(?s)INCOMING FILE.*from:\s+`+regexp.QuoteMeta(sender)+`.*name:\s+`+regexp.QuoteMeta(name), longWait)
 	to.Key("enter")
-	to.WaitScreen(`name of the received file — editable`, longWait)
+	to.WaitScreen(`name of the received file, editable`, longWait)
 	to.Key("enter")
-	to.WaitScreen(`save "`+regexp.QuoteMeta(name)+`" in — `, shortWait)
+	to.WaitScreen(`save "`+regexp.QuoteMeta(name)+`" in, `, shortWait)
 	to.Key("enter")
 	path := filepath.Join(to.Dir, name)
 	deadline := time.Now().Add(shortWait)
@@ -170,7 +170,7 @@ func sendContactCard(t *testing.T, from, to *Instance, room, contact string) {
 
 // TestContactCardIntroduction: alice introduces bob and carol to each
 // other by sending each one the other's card; bob and carol then become
-// working contacts of their own — they open a room and talk.
+// working contacts of their own, they open a room and talk.
 func TestContactCardIntroduction(t *testing.T) {
 	r := NewRun(t)
 	alice := r.Start("alice")

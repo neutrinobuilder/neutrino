@@ -25,7 +25,7 @@ import (
 )
 
 // TestHandleInputClearAllEntersConfirmMode verifies "/sec-clear-all" only
-// arms the confirmation popup — it must never wipe anything by itself.
+// arms the confirmation popup, it must never wipe anything by itself.
 func TestHandleInputClearAllEntersConfirmMode(t *testing.T) {
 	m := &model{}
 	cmd := m.handleInput("/sec-clear-all")
@@ -59,7 +59,7 @@ func TestClearAllConfirmNoCancels(t *testing.T) {
 }
 
 // TestClearAllConfirmYesQuits verifies the "yes" answer sets
-// clearAllOnExit and returns tea.Quit — the actual wipe runs only after
+// clearAllOnExit and returns tea.Quit, the actual wipe runs only after
 // the TUI exits (cmd/main.go:wipeConfigDir), never from inside this Cmd.
 func TestClearAllConfirmYesQuits(t *testing.T) {
 	m := model{clearAllConfirmMode: true}

@@ -27,7 +27,7 @@ import (
 )
 
 // GeneratePassphrase generates a random passphrase from n words of the
-// BIP-39 wordlist (2048 words, ~11 bits of entropy each) — the same list
+// BIP-39 wordlist (2048 words, ~11 bits of entropy each), the same list
 // already used for identity backup, so already vetted to be typeable
 // unambiguously. Not an actual BIP-39 mnemonic (no checksum, no seed
 // encoding): just n uniformly random words, meant for a long but
@@ -47,7 +47,7 @@ func GeneratePassphrase(n int) (string, error) {
 }
 
 // PasswordStrengthLevel is a rough, dependency-free estimate of password
-// strength — just length × observed alphabet size, not a real entropy
+// strength, just length × observed alphabet size, not a real entropy
 // calculation (doesn't detect dictionary words, known patterns, reuse).
 // Serves as a general indication in the wizard and in /sec-passwd, not as the
 // only defense: the real protection against offline brute-force is

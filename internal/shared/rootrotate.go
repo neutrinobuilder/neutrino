@@ -25,7 +25,7 @@ import "crypto/ed25519"
 // RelIdentityKey-per-contact. The knock itself is tagged (KnockDHTag) with
 // the OLD root private key, retained temporarily
 // (Keystore.OldIdentityKey): the recipient still recognizes it, because it
-// has not yet applied the announcement — no change needed to the server-side
+// has not yet applied the announcement, no change needed to the server-side
 // mutuality filter.
 type RootRotatePayload struct {
 	NewIdentityPub ed25519.PublicKey `json:"new_identity_pub"`
@@ -34,13 +34,13 @@ type RootRotatePayload struct {
 	Sig            []byte            `json:"sig,omitempty"`
 	SigMLDSA       []byte            `json:"sig_mldsa,omitempty"`
 
-	// Ts — signing instant (RFC3339, shared.NowTS()), present ONLY in the
-	// request — same reason/use as RelRotatePayload.Ts (RootRotationMsg
+	// Ts, signing instant (RFC3339, shared.NowTS()), present ONLY in the
+	// request, same reason/use as RelRotatePayload.Ts (RootRotationMsg
 	// includes ts in the signed message, verified with TsFresh by the
 	// receiver before applying).
 	Ts string `json:"ts,omitempty"`
 
-	// DevicePub — the sender's DEVICE-level key (Keystore.DevicePub), same
+	// DevicePub, the sender's DEVICE-level key (Keystore.DevicePub), same
 	// role as RelRotatePayload.DevicePub: keys the correct
 	// keystore.Contact.Devices entry on the receiving side (the sender may
 	// have multiple devices, each with an independent relationship toward
@@ -49,27 +49,27 @@ type RootRotatePayload struct {
 }
 
 // DeviceSyncPayload travels inside KnockPayload.DeviceSync for the
-// "device_sync"/"device_sync_ack" knocks — a my-device→my-device channel,
+// "device_sync"/"device_sync_ack" knocks, a my-device→my-device channel,
 // addressed via Keystore.NetworkIdentityPrivKeyFor(targetDeviceID) instead
 // of through a contact (both sides share the same root
-// IdentityKey — no ECDH needed, same principle already used by
+// IdentityKey, no ECDH needed, same principle already used by
 // internal/indoor for LAN sync). Carries EXACTLY one of the following two
 // things, never both:
 //
 //   - propagation of the NEW private material of an in-progress root
-//     rotation (NewIdentityKey/NewMLKEMKey/NewMLDSAKey — the sibling
+//     rotation (NewIdentityKey/NewMLKEMKey/NewMLDSAKey, the sibling
 //     immediately adopts the new root and republishes its own hidden
 //     service);
-//   - a remote address-book sync (SyncData, JSON of indoor.SyncPayload —
+//   - a remote address-book sync (SyncData, JSON of indoor.SyncPayload,
 //     the same payload already used by "indoor" LAN sync, here over a
 //     different transport; package internal/shared does not import
-//     internal/indoor to avoid an import cycle — the caller
+//     internal/indoor to avoid an import cycle, the caller
 //     marshals/unmarshals it).
 //
 // No signature of its own: the whole KnockPayload is already inside the
 // knock's encrypted+tagged envelope (EncryptKnockWithTag), and the tag's own
 // mutuality (computable only by whoever holds the root, old or new) is
-// already the proof of authenticity — same principle already used for the
+// already the proof of authenticity, same principle already used for the
 // self-probe knock.
 type DeviceSyncPayload struct {
 	NewIdentityKey []byte `json:"new_identity_key,omitempty"`

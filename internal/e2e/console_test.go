@@ -39,9 +39,9 @@ func TestHelpAndInfoApp(t *testing.T) {
 	total := len(client.CommandList())
 	alice.Send("/help")
 	alice.WaitScreen(`── Available commands ──`, shortWait)
-	alice.WaitScreen(fmt.Sprintf(`1–15 / %d`, total), shortWait)
+	alice.WaitScreen(fmt.Sprintf(`1-15 / %d`, total), shortWait)
 	alice.Key("pgdown")
-	alice.WaitScreen(fmt.Sprintf(`16–30 / %d`, total), shortWait)
+	alice.WaitScreen(fmt.Sprintf(`16-30 / %d`, total), shortWait)
 	alice.WaitScreen(`/grp-invite`, shortWait)
 	alice.Key("esc")
 
@@ -80,7 +80,7 @@ func TestCompactAndConsoleExport(t *testing.T) {
 
 	from := alice.LineCount("Console")
 	alice.Send("/compact")
-	alice.Wait("Console", `compaction off — use /compact on or /compact off`, from, shortWait)
+	alice.Wait("Console", `compaction off, use /compact on or /compact off`, from, shortWait)
 	alice.Send("/compact on")
 	alice.Wait("Console", `compaction on`, from, shortWait)
 	compacted := screenCount(alice, "Probe activation")
@@ -132,9 +132,9 @@ func exportConsole(t *testing.T, in *Instance) {
 	t.Helper()
 	os.Remove(exportPath(in))
 	in.Send("/console-export")
-	in.WaitScreen(`console export file name — editable`, shortWait)
+	in.WaitScreen(`console export file name, editable`, shortWait)
 	in.Key("enter")
-	in.WaitScreen(`save "console-`+in.Name+`\.txt" in — `, shortWait)
+	in.WaitScreen(`save "console-`+in.Name+`\.txt" in, `, shortWait)
 	in.Key("enter")
 }
 
@@ -167,7 +167,7 @@ func TestDebugToggle(t *testing.T) {
 
 	from := alice.LineCount("Console")
 	alice.Send("/debug")
-	alice.Wait("Console", `debug off — use /debug on or /debug off`, from, shortWait)
+	alice.Wait("Console", `debug off, use /debug on or /debug off`, from, shortWait)
 	alice.Send("/debug loud")
 	alice.Wait("Console", `usage: /debug on \| /debug off`, from, shortWait)
 

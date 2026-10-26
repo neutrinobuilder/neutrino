@@ -30,7 +30,7 @@ type torTransport struct {
 
 func startTor(ctx context.Context, cfg StartConfig) (Transport, error) {
 	// Retries the bridge fallback only when there are really two
-	// distinct bridge sets to try — a Bridges with no BridgesFallback
+	// distinct bridge sets to try, a Bridges with no BridgesFallback
 	// (or no bridges at all) takes the single-attempt path.
 	if cfg.Bridges != nil && len(cfg.Bridges.Lines) > 0 && cfg.BridgesFallback != nil && len(cfg.BridgesFallback.Lines) > 0 {
 		timeout := cfg.BridgeBootstrapTimeout
@@ -70,7 +70,7 @@ func (t *torTransport) HasCircuits() bool {
 }
 
 // ProxyAddr returns Tor's local SOCKS5 "host:port", or "" if it can't be
-// queried right now (e.g. the control port isn't reachable) — see
+// queried right now (e.g. the control port isn't reachable), see
 // BuildPodSnapshot/DialerSAM callers (cmd/pod_spawn.go), which treat ""
 // the same as "no network inherited".
 func (t *torTransport) ProxyAddr() string {

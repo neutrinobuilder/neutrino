@@ -19,7 +19,7 @@ package androidnative
 
 import "errors"
 
-// nativeLibraryDirViaJNI makes no sense outside Android (no Context/JVM) —
+// nativeLibraryDirViaJNI makes no sense outside Android (no Context/JVM),
 // stub for the desktop/Termux build of internal/tornode.
 func nativeLibraryDirViaJNI() (string, error) {
 	return "", errors.New("androidnative: not on Android")

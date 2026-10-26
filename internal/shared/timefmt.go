@@ -17,7 +17,7 @@ package shared
 
 import "time"
 
-// TimeLayout is the layout used everywhere the app prints hours/minutes —
+// TimeLayout is the layout used everywhere the app prints hours/minutes,
 // identical to the format Tor itself uses to timestamp each log line (e.g.
 // "Jul 27 19:17:17.558"). "_2" is the space-padded (not zero-padded) day of
 // the month, same as Tor's log.

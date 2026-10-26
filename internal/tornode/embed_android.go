@@ -19,9 +19,9 @@ package tornode
 
 // torBinary stays empty on Android: unlike the other platforms, the
 // real Tor binary (libtor.so, from guardianproject/tor-android) isn't
-// embedded via go:embed into the Go binary — it instead arrives as part
+// embedded via go:embed into the Go binary, it instead arrives as part
 // of the APK packaging (jniLibs/<abi>/libtor.so) and is resolved at
-// runtime via internal/androidnative.Resolve() — see StartTor in
+// runtime via internal/androidnative.Resolve(), see StartTor in
 // tornode.go.
 //
 // Build tag note: GOOS=android also satisfies the "linux" constraint

@@ -89,7 +89,7 @@ func TestAllowRequestLoopbackAlwaysAllowed(t *testing.T) {
 
 // TestAllowRequestMalformedAddrDenied verifies that an unparsable remoteAddr
 // (SplitHostPort failing) is denied (fail-closed), never treated as an
-// "empty IP" — which AllowRequest always allows, silently bypassing the
+// "empty IP", which AllowRequest always allows, silently bypassing the
 // rate limit for any malformed input.
 func TestAllowRequestMalformedAddrDenied(t *testing.T) {
 	rl := serverhs.NewRateLimiter(time.Minute, 1)

@@ -26,7 +26,7 @@ import (
 
 // TestContentPeerPubCandidatesForExcludesRevoked verifies that a device
 // with RevokedContent=true must never appear among the candidates for
-// verifying a message signature — neither as an exact DevicePub match,
+// verifying a message signature, neither as an exact DevicePub match,
 // nor in the fallback over all known devices.
 func TestContentPeerPubCandidatesForExcludesRevoked(t *testing.T) {
 	bobPub, _, _ := ed25519.GenerateKey(rand.Reader)
@@ -66,7 +66,7 @@ func TestContentPeerPubCandidatesForExcludesRevoked(t *testing.T) {
 
 // TestContentPeerKeysForExcludesRevoked verifies the same principle for
 // contentPeerKeysFor (used to encrypt files/contact cards toward the peer
-// AND to verify an incoming file_announce) — a revoked device must never
+// AND to verify an incoming file_announce), a revoked device must never
 // be chosen.
 func TestContentPeerKeysForExcludesRevoked(t *testing.T) {
 	bobPub, _, _ := ed25519.GenerateKey(rand.Reader)

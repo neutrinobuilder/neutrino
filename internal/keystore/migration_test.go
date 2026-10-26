@@ -147,7 +147,7 @@ func TestMigrateVersionUnsupportedFuture(t *testing.T) {
 // TestPruneOrphanPlaceholderDevicesRemovesUnconfirmedPlaceholder covers
 // the real case: a contact with a device already confirmed in both
 // directions PLUS a "" placeholder that never came to anything (no
-// PeerRelIdentityPub/PeerRelContentPub) — the placeholder must be
+// PeerRelIdentityPub/PeerRelContentPub), the placeholder must be
 // removed, the real device stays intact.
 func TestPruneOrphanPlaceholderDevicesRemovesUnconfirmedPlaceholder(t *testing.T) {
 	ks := &Keystore{

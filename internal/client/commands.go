@@ -23,7 +23,7 @@ import (
 
 // CmdID is a TUI slash command's canonical identifier. The command name
 // recognized by the parser is always in English (e.g. "/invite"),
-// regardless of the interface's active language — only the argument and
+// regardless of the interface's active language, only the argument and
 // description stay localized (see i18n.SetActive).
 type CmdID = i18n.CmdID
 
@@ -89,7 +89,7 @@ const (
 
 // cmdDef describes a command: name (with slash, always English), and
 // the i18n catalog keys for the argument placeholder and the
-// help/palette description — resolved in the active language by
+// help/palette description, resolved in the active language by
 // i18n.T().
 type cmdDef struct {
 	id              CmdID
@@ -154,7 +154,7 @@ var commandDefs = []cmdDef{
 	{CmdMsg, "/msg", "tui.help_msg_arg", "tui.help_msg_desc"},
 }
 
-// PaletteItem is a command resolved for the active language — name,
+// PaletteItem is a command resolved for the active language, name,
 // argument and description. The single source of truth for the command
 // table, shared by every user interface (the tui package's palette and
 // /help).

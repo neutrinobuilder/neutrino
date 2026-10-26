@@ -170,8 +170,8 @@ func TestAddAndEmptyMirroredContact(t *testing.T) {
 // TestEmptyMirroredContactRecyclesBothSides verifies the symmetric
 // recycling rule: an emptied Contact is bit-for-bit identical to a
 // freshly-born one, so its index goes straight back into
-// ContactPendingIdx.Pending for BOTH the real identity and duress — no
-// permanent, ever-growing hole on either side — and the now-stale
+// ContactPendingIdx.Pending for BOTH the real identity and duress, no
+// permanent, ever-growing hole on either side, and the now-stale
 // real→duress mirror mapping is dropped.
 func TestEmptyMirroredContactRecyclesBothSides(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "keystore.json")
@@ -246,7 +246,7 @@ func TestEmptyMirroredContactWithoutMirrorIsNoop(t *testing.T) {
 	}
 
 	// Index 0 here is the pre-allocated empty placeholder from CreateFile
-	// — never filled via AddMirroredContacts, so it has no mirror.
+	// never filled via AddMirroredContacts, so it has no mirror.
 	_, _, _, hadMirror, err := u.EmptyMirroredContact(0)
 	if err != nil {
 		t.Fatalf("EmptyMirroredContact: %v", err)
@@ -259,7 +259,7 @@ func TestEmptyMirroredContactWithoutMirrorIsNoop(t *testing.T) {
 // TestAddAndEmptyPlainContactOnDuressSession verifies that a session
 // already operating as the duress identity (after PromoteDuress, or a
 // direct duress login) can manage its own contacts without ever
-// touching openDuressContent — there is no further duress beneath
+// touching openDuressContent, there is no further duress beneath
 // duress to mirror into, so AddPlainContacts/EmptyPlainContact must
 // work on u.Identity alone: AddMirroredContacts/EmptyMirroredContact
 // would fail there, since duress's own DuressAccess field is random
@@ -418,7 +418,7 @@ func TestPromoteDuress(t *testing.T) {
 	}
 
 	// A plain mutation (never through AddMirroredContacts/
-	// EmptyMirroredContact — those assume u.Identity.DuressAccess opens
+	// EmptyMirroredContact, those assume u.Identity.DuressAccess opens
 	// a REAL "duress beneath it", which duress's own is deliberately
 	// random noise, not usable this way) persists
 	// correctly via the promoted session's own SaveSlot.

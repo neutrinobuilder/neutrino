@@ -24,13 +24,13 @@ import (
 
 // ObliterateOtherSlots overwrites every slot in c except keepIdx with
 // fresh random bytes, field by field, each exactly as long as the
-// field it replaces — the container's slot count and every slot's byte
+// field it replaces, the container's slot count and every slot's byte
 // size stay identical, so the file looks structurally unchanged to
 // anyone without a password. No slot's own password or K_i is ever
 // needed for this: destroying a ciphertext requires no more than
 // overwriting its bytes, never decrypting it first. The caller does not
 // know, and does not need to know, which indices held a real identity
-// versus pre-existing noise — every one of them is overwritten alike.
+// versus pre-existing noise, every one of them is overwritten alike.
 func ObliterateOtherSlots(c *slotContainer, keepIdx int) error {
 	for i := range c.Slots {
 		if i == keepIdx {
@@ -44,13 +44,13 @@ func ObliterateOtherSlots(c *slotContainer, keepIdx int) error {
 }
 
 // ObliterateSlot overwrites exactly ONE slot (idx) with fresh random
-// bytes, field by field — the inverse selection of ObliterateOtherSlots
+// bytes, field by field, the inverse selection of ObliterateOtherSlots
 // above, used where only one specific slot (not everything else) must
 // be destroyed: a nuke trigger reached from an already-active session
 // (/nukex, the "time" trigger, duress at the lock screen, remote_nuke on
 // the target) must guarantee the triggering real identity's own slot
-// never survives, but — unlike login-time duress obliteration, a
-// deliberate "destroy everything else" panic action — must NOT blindly
+// never survives, but, unlike login-time duress obliteration, a
+// deliberate "destroy everything else" panic action, must NOT blindly
 // destroy every other slot in the same file: another real identity
 // (a sibling identity) sharing the same keystore file is a legitimate,
 // independently active identity, never implicated by this one's trigger

@@ -32,7 +32,7 @@ func (ks *Keystore) deletedContactIdx(identityPub []byte) int {
 }
 
 // HasDeletedContact reports whether identityPub already has a tombstone
-// row — checked before accepting an incoming live contact during sync,
+// row, checked before accepting an incoming live contact during sync,
 // so a stale copy from a sibling that hasn't learned of the deletion
 // yet is never re-merged.
 func (ks *Keystore) HasDeletedContact(identityPub []byte) bool {
@@ -40,7 +40,7 @@ func (ks *Keystore) HasDeletedContact(identityPub []byte) bool {
 }
 
 // RecordContactDeletion creates identityPub's tombstone row if one
-// doesn't already exist yet — a no-op otherwise (deleting an
+// doesn't already exist yet, a no-op otherwise (deleting an
 // already-deleted contact a second time changes nothing). Called from
 // the real deletion path (EmptyMirroredContact's caller), never for
 // duress's own mirrored contacts.
@@ -56,7 +56,7 @@ func (ks *Keystore) RecordContactDeletion(identityPub []byte) {
 
 // DeletedContactRow returns a copy of identityPub's tombstone row,
 // ready to send to a sibling that just sent a stale live copy of that
-// same contact — ok is false if no such row exists.
+// same contact, ok is false if no such row exists.
 func (ks *Keystore) DeletedContactRow(identityPub []byte) (row DeletedContact, ok bool) {
 	i := ks.deletedContactIdx(identityPub)
 	if i == -1 {
@@ -70,7 +70,7 @@ func (ks *Keystore) DeletedContactRow(identityPub []byte) (row DeletedContact, o
 // AdoptDeletedContact merges an incoming tombstone row (received from a
 // sibling) into ks.DeletedContacts: creates the row if this identity
 // never had it, or unions ConfirmedSiblings into the existing row
-// otherwise. Returns true if the row was brand new here — the caller
+// otherwise. Returns true if the row was brand new here, the caller
 // must then also delete any live contact matching incoming.IdentityPub.
 func (ks *Keystore) AdoptDeletedContact(incoming DeletedContact) (isNew bool) {
 	i := ks.deletedContactIdx(incoming.IdentityPub)
@@ -89,7 +89,7 @@ func (ks *Keystore) AdoptDeletedContact(incoming DeletedContact) (isNew bool) {
 }
 
 // ConfirmSiblingForDeletion adds deviceID to identityPub's tombstone row
-// — called once that sibling has acked having adopted the tombstone. A
+// called once that sibling has acked having adopted the tombstone. A
 // no-op if the row doesn't exist (shouldn't happen in correct usage:
 // the row is always created before anyone could be asked to confirm
 // it) or if deviceID is already recorded.

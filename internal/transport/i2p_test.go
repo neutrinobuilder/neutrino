@@ -24,7 +24,7 @@ import (
 )
 
 // sessionThenDialHandler replies to SESSION CREATE with success and to
-// STREAM CONNECT with the outcome given by connectResult — reused by the
+// STREAM CONNECT with the outcome given by connectResult, reused by the
 // two tests below to drive the dial's outcome without duplicating the
 // fakeSAMBridge infrastructure (sam_test.go, same package).
 func sessionThenDialHandler(connectResult string) func(rw *bufio.ReadWriter, cmdLine string) {
@@ -51,7 +51,7 @@ func TestI2PHasCircuitsFalseWithoutSession(t *testing.T) {
 
 // TestI2PHasCircuitsFalseAfterFailedDial verifies that a genuinely
 // failed dial (STREAM CONNECT with an outcome other than OK) makes
-// HasCircuits() return false — a SAM session existing is not enough by
+// HasCircuits() return false, a SAM session existing is not enough by
 // itself.
 func TestI2PHasCircuitsFalseAfterFailedDial(t *testing.T) {
 	b := startFakeSAMBridge(t, sessionThenDialHandler("CANT_REACH_PEER"))
@@ -99,7 +99,7 @@ func TestI2PHasCircuitsRecoversAfterSuccessfulDial(t *testing.T) {
 
 // TestI2PDialerForTokenRespectsCtxTimeout verifies that a SAM bridge
 // which replies to HELLO but then stays silent on SESSION CREATE doesn't
-// leave DialerForToken hanging indefinitely — a ctx with a short timeout
+// leave DialerForToken hanging indefinitely, a ctx with a short timeout
 // must unblock it within a reasonable window.
 func TestI2PDialerForTokenRespectsCtxTimeout(t *testing.T) {
 	silence := make(chan struct{})
@@ -124,6 +124,6 @@ func TestI2PDialerForTokenRespectsCtxTimeout(t *testing.T) {
 			t.Fatal("DialerForToken: want an error for the ctx timeout")
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal("DialerForToken didn't unblock within the ctx timeout — session creation ignores ctx")
+		t.Fatal("DialerForToken didn't unblock within the ctx timeout, session creation ignores ctx")
 	}
 }

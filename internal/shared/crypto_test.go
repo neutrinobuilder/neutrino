@@ -241,7 +241,7 @@ func TestHybridECIESWrongMLKEMRecipient(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := HybridECIESDecrypt(priv, otherMLKEMDK, encoded); err == nil {
-		t.Fatal("HybridECIESDecrypt: wrong ML-KEM private key accepted — the hybrid secret doesn't really depend on both components")
+		t.Fatal("HybridECIESDecrypt: wrong ML-KEM private key accepted, the hybrid secret doesn't really depend on both components")
 	}
 }
 
@@ -518,7 +518,7 @@ func TestEncryptKnockWithTagRoundtrip(t *testing.T) {
 		t.Error("KnockEnvelope.Tag doesn't match the tag computed by the caller")
 	}
 	// The recipient must be able to recompute the same tag from their own
-	// private key + the sender's pubkey (after decryption) — consistency
+	// private key + the sender's pubkey (after decryption), consistency
 	// check used by handleKnock.
 	recipientTag, err := KnockDHTag(recipientPriv, senderPub)
 	if err != nil {
@@ -579,7 +579,7 @@ func TestEncryptDecryptKnockHybridRoundtrip(t *testing.T) {
 	}
 
 	// Without the ML-KEM decapsulation key the recipient can't decrypt a
-	// hybrid payload, even with the right Ed25519 key — explicit error, not
+	// hybrid payload, even with the right Ed25519 key, explicit error, not
 	// a silent fallback to the classic form.
 	if _, err := DecryptKnock(recipientPriv, nil, encoded); err == nil {
 		t.Fatal("DecryptKnock: hybrid payload decrypted without the ML-KEM key")
@@ -588,7 +588,7 @@ func TestEncryptDecryptKnockHybridRoundtrip(t *testing.T) {
 
 // TestEncryptKnockClassicPrefix verifies that a knock with no recipient
 // ML-KEM key (none known for the recipient) stays encrypted in the
-// classic form on the wire, permanently — not a transition state, see the
+// classic form on the wire, permanently, not a transition state, see the
 // comment on peerEncFormatClassic/peerEncFormatHybrid.
 func TestEncryptKnockClassicPrefix(t *testing.T) {
 	recipientPub, _, err := ed25519.GenerateKey(rand.Reader)
@@ -623,7 +623,7 @@ func TestRelKeyRotationSigVerifyRoundtrip(t *testing.T) {
 }
 
 // TestRelKeyRotationSigTamperedTs verifies that ts is part of the SIGNED
-// message, not just the payload — an attacker who rewrites ts on a captured
+// message, not just the payload, an attacker who rewrites ts on a captured
 // message (to make it look fresh) invalidates the signature, not just the
 // separate TsFresh check.
 func TestRelKeyRotationSigTamperedTs(t *testing.T) {
@@ -635,7 +635,7 @@ func TestRelKeyRotationSigTamperedTs(t *testing.T) {
 		t.Fatal("VerifyRelKeyRotation: valid signature (original ts) refused")
 	}
 	if VerifyRelKeyRotation(certPub, newPub, "alice", NowTS(), sig) {
-		t.Fatal("VerifyRelKeyRotation: a ts rewritten on a captured signature verified — replay-freshening must not work")
+		t.Fatal("VerifyRelKeyRotation: a ts rewritten on a captured signature verified, replay-freshening must not work")
 	}
 }
 
@@ -734,13 +734,13 @@ func TestRelRevokeSigVerifyRoundtrip(t *testing.T) {
 
 // TestRelRevokeSigStaysValidAfterKeyDisappears explicitly tests the
 // property that makes pre-generation useful: verification depends only on
-// pub/sig/username, never on priv — a caller can verify a revocation even
+// pub/sig/username, never on priv, a caller can verify a revocation even
 // after priv no longer exists (simulates what happens after a nuke, where
 // only pub+sig survive, never priv).
 func TestRelRevokeSigStaysValidAfterKeyDisappears(t *testing.T) {
 	pub, priv, _ := ed25519.GenerateKey(rand.Reader)
 	sig := SignRelRevoke(priv, "alice")
-	priv = nil // priv "gone" — sig and pub survive on their own
+	priv = nil // priv "gone", sig and pub survive on their own
 	_ = priv
 	if !VerifyRelRevoke(pub, "alice", sig) {
 		t.Fatal("VerifyRelRevoke: verification must not depend on priv surviving")
@@ -1019,7 +1019,7 @@ func TestRemoteNukeAckSigVerifyRoundtrip(t *testing.T) {
 // TestRemoteNukeAckWrongDeviceRejected covers the distinction between the
 // two keys involved in the protocol: an ack signature made with the
 // AUTHORITY's key (instead of the TARGET DEVICE's key) must not verify
-// against the device's devicePub — they're two different keys by
+// against the device's devicePub, they're two different keys by
 // construction, never interchangeable.
 func TestRemoteNukeAckWrongDeviceRejected(t *testing.T) {
 	devicePub, _, _ := ed25519.GenerateKey(rand.Reader)
@@ -1064,7 +1064,7 @@ func TestSafetyCodeSymmetric(t *testing.T) {
 	codeAB := SafetyCode(aPub, bPub)
 	codeBA := SafetyCode(bPub, aPub)
 	if codeAB != codeBA {
-		t.Fatalf("SafetyCode: not symmetric — %q vs %q", codeAB, codeBA)
+		t.Fatalf("SafetyCode: not symmetric, %q vs %q", codeAB, codeBA)
 	}
 }
 

@@ -19,7 +19,7 @@ package syslock
 
 import "context"
 
-// Watch is unavailable outside "desktop" Linux — no systemd-logind D-Bus
+// Watch is unavailable outside "desktop" Linux, no systemd-logind D-Bus
 // there. Android's own screen-off signal (ACTION_SCREEN_OFF, JNI bridge)
 // is not handled by this package. Returns nil, same "feature unavailable" contract as
 // the Linux implementation when logind/D-Bus can't be reached.

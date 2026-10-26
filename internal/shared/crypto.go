@@ -167,15 +167,15 @@ func eciesChannelKey(sharedSecret, ephPub, recipientPub []byte) ([]byte, error) 
 
 // HybridECIESEncrypt encrypts plaintext for a recipient by combining an
 // ephemeral X25519 ECDH (like ECIESEncrypt) with an ML-KEM-768
-// encapsulation toward their encapsulation key — used for peer-to-peer
+// encapsulation toward their encapsulation key, used for peer-to-peer
 // delivery of sender_key.
 // No second X25519/ML-KEM key pair to generate here: recipientPub and
 // recipientMLKEMPub are the ones already exchanged in the handshake
 // (ClientHello.ECIESPub/MLKEMPub, relayed to other members via
-// wsUserJoined/userInfo — see HandshakeResult.PeerMLKEMPub). Safe by
+// wsUserJoined/userInfo, see HandshakeResult.PeerMLKEMPub). Safe by
 // construction: an ML-KEM encapsulation key can receive Encapsulate() from
 // many different parties (server for the handshake, N peers for the
-// sender_key) with no loss of security — unlike a DH nonce, that's the
+// sender_key) with no loss of security, unlike a DH nonce, that's the
 // whole point of a KEM.
 // Wire format: base64(ephPub[32] ‖ mlkemCiphertext[1088] ‖ nonce[12] ‖ ciphertext ‖ tag[16])
 func HybridECIESEncrypt(recipientPub *ecdh.PublicKey, recipientMLKEMPub *mlkem.EncapsulationKey768, plaintext []byte) (string, error) {
@@ -257,7 +257,7 @@ func HybridECIESDecrypt(myPriv *ecdh.PrivateKey, myMLKEMPriv *mlkem.Decapsulatio
 }
 
 // hybridECIESChannelKey derives the channel key from the combined secret
-// mlkemSS‖dhSecret — same order and reasoning as DeriveSessionKey: ML-KEM
+// mlkemSS‖dhSecret, same order and reasoning as DeriveSessionKey: ML-KEM
 // (FIPS 203) precedes X25519 (not FIPS-approved), per NIST SP 800-56Cr2 §2.
 func hybridECIESChannelKey(mlkemSS, dhSecret, ephPub, recipientPub []byte) ([]byte, error) {
 	combined := make([]byte, 0, len(mlkemSS)+len(dhSecret))
@@ -279,7 +279,7 @@ func RandomBytes(n int) ([]byte, error) {
 	return b, err
 }
 
-// ── Handshake — cryptographic primitives ─────────────────────────────────────
+// ── Handshake, cryptographic primitives ─────────────────────────────────────
 
 // ComputeRoomProof computes HMAC-SHA256(roomKey, nonceClient).
 // The client includes it in ClientHello as proof of knowledge of S.
@@ -316,7 +316,7 @@ func VerifyRoomProof(secret, nonceClient, proof []byte) (int64, bool) {
 // the connection's specific endpoints, preventing relay/key-confusion
 // attacks.
 //
-// combined_ss: ML-KEM-768 first, then X25519 — same order as the TLS 1.3
+// combined_ss: ML-KEM-768 first, then X25519, same order as the TLS 1.3
 // X25519MLKEM768 hybrid group (draft-ietf-tls-ecdhe-mlkem), in turn mandated
 // by NIST SP 800-56Cr2 §2 (the first FIPS-approved algorithm's secret
 // precedes the non-approved one; X25519 is not FIPS-approved, ML-KEM is).
@@ -351,9 +351,9 @@ func ServerSigPayload(nonceClient, nonceServer, sessionPub []byte) []byte {
 	return append(out, sessionPub...)
 }
 
-// ── Tor hidden service — time-based derivation ────────────────────────────────
+// ── Tor hidden service, time-based derivation ────────────────────────────────
 
-const periodSeconds = 43200 // 12 hours — rotations at 00:00 and 12:00 UTC
+const periodSeconds = 43200 // 12 hours, rotations at 00:00 and 12:00 UTC
 
 // CurrentPeriod returns the current 12-hour period index.
 // Both peers compute the same value independently from UTC time.
@@ -392,9 +392,9 @@ type MemberInfo struct {
 //   - ""                → knock/invite (RoomSecret populated)
 //   - "probe_ping"      → periodic reachability ping, answered with "probe_ack"
 //   - "rel_init"        → first communication of relationship keys toward a
-//     newly added contact (RelBootstrap populated) — see below
+//     newly added contact (RelBootstrap populated), see below
 //   - "rel_init_ack"    → symmetric counterpart of rel_init (same payload, name
-//     differs only for log clarity — see RelBootstrap)
+//     differs only for log clarity, see RelBootstrap)
 //
 // The other types (root_rotate, rel_identity_rotate, rel_revoke,
 // remote_nuke, danger_broadcast, danger_end, device_sync,
@@ -411,13 +411,13 @@ type KnockPayload struct {
 	GroupID         string       `json:"group_id,omitempty"`
 	Members         []MemberInfo `json:"members,omitempty"`
 	// MLKEMPub is the sender's current durable ML-KEM-768 encapsulation
-	// key (1184 bytes) — lets the recipient reply in hybrid form. Empty
+	// key (1184 bytes), lets the recipient reply in hybrid form. Empty
 	// when the sender has no ML-KEM key: knocks toward them stay classic
 	// until a later rotation or a new QR carries one.
 	MLKEMPub []byte `json:"mlkem_pub,omitempty"`
 
 	// RelBootstrap carries the sender's public relationship keys toward the
-	// recipient (Type "rel_init"/"rel_init_ack" only) — reuses the same
+	// recipient (Type "rel_init"/"rel_init_ack" only), reuses the same
 	// struct already written for the ephemeral in-room bootstrap
 	// (RelBootstrapPayload, relbootstrap.go), here in a persistent context:
 	// exchanged only once when two users become each other's contact
@@ -428,7 +428,7 @@ type KnockPayload struct {
 	RelBootstrap *RelBootstrapPayload `json:"rel_bootstrap,omitempty"`
 
 	// RelRotate carries the rotation of ONE of the two relationship keys
-	// toward the recipient — Type "rel_identity_rotate"/
+	// toward the recipient, Type "rel_identity_rotate"/
 	// "rel_identity_rotate_ack" (IdentityKey-per-relationship) or
 	// "rel_content_rotate"/"rel_content_rotate_ack"
 	// (ContentKey-per-relationship), never both in the same knock. See
@@ -437,12 +437,12 @@ type KnockPayload struct {
 
 	// DevicePub/DeviceSig co-sign the knock with the sender's device-level
 	// key (see keystore.Keystore.DevicePriv/DevicePub)
-	// — verified and shown (TOFU on Contact.KnownDevicePub), never
+	// verified and shown (TOFU on Contact.KnownDevicePub), never
 	// blocking. Unlike chat messages (where the device's public key travels
 	// inside the ciphertext, see sealedMsg.DP), here the whole KnockPayload
 	// is already inside the knock's encrypted envelope: no bootstrap
 	// problem, DevicePub and the signature arrive together. NOT the same
-	// field as TargetDeviceID (remote_nuke protocol) — that one
+	// field as TargetDeviceID (remote_nuke protocol), that one
 	// identifies the TARGET device (16 random bytes, Keystore.DeviceID),
 	// this one the KEY that signs it (32 bytes Ed25519).
 	DevicePub []byte `json:"device_pub,omitempty"`
@@ -453,44 +453,44 @@ type KnockPayload struct {
 	// different meaning depending on Type: for remote_nuke it's the device
 	// TO WIPE (target's Keystore.DeviceID); for danger_broadcast it's the
 	// device ANNOUNCING ITSELF as compromised (informational, no signature
-	// required — see below); absent for remote_nuke_ack (implicit, it's
+	// required, see below); absent for remote_nuke_ack (implicit, it's
 	// always the responder). NukeTs/NukeSig are used only by remote_nuke
 	// (signed by the AUTHORITY, RemoteNukeMsg/SignRemoteNuke) and
 	// remote_nuke_ack (signed by the TARGET device,
-	// RemoteNukeAckMsg/SignRemoteNukeAck) — two distinct signature schemes
+	// RemoteNukeAckMsg/SignRemoteNukeAck), two distinct signature schemes
 	// on the same field name, never confusable because Type distinguishes
 	// them.
 	TargetDeviceID []byte `json:"target_device_id,omitempty"`
 	NukeTs         string `json:"nuke_ts,omitempty"`
 	NukeSig        []byte `json:"nuke_sig,omitempty"`
 	// NukeSigMLDSA is the parallel ML-DSA-65 signature of NukeSig (hybrid
-	// PQC network identity) — SignRemoteNukeMLDSA, Type
+	// PQC network identity), SignRemoteNukeMLDSA, Type
 	// "remote_nuke" only (the ack stays signed with DevicePriv, a different
-	// key, out of scope here — see SignRemoteNukeAck).
+	// key, out of scope here, see SignRemoteNukeAck).
 	NukeSigMLDSA []byte `json:"nuke_sig_mldsa,omitempty"`
 
 	// RootRotate carries the announcement of a root IdentityKey rotation
-	// toward a contact — Type "root_rotate" (request) / "root_rotate_ack"
+	// toward a contact, Type "root_rotate" (request) / "root_rotate_ack"
 	// (confirmation, RootRotate nil in that direction: no new
 	// certification, just a fire-and-forget confirmation). See
 	// RootRotatePayload.
 	RootRotate *RootRotatePayload `json:"root_rotate,omitempty"`
 
-	// DeviceSync carries the my-device→my-device channel — Type
+	// DeviceSync carries the my-device→my-device channel, Type
 	// "device_sync" (request, addressed via
 	// Keystore.NetworkIdentityPrivKeyFor, never through a contact) /
 	// "device_sync_ack" (confirmation, same DeviceSync echoed or nil
-	// depending on content — see DeviceSyncPayload).
+	// depending on content, see DeviceSyncPayload).
 	DeviceSync *DeviceSyncPayload `json:"device_sync,omitempty"`
 
 	// RelRevoke carries the revocation of one or both relationship keys of
-	// ONE device toward the recipient — Type "rel_revoke" (announcement,
+	// ONE device toward the recipient, Type "rel_revoke" (announcement,
 	// signatures populated) / "rel_revoke_ack" (confirmation, only
 	// DevicePub populated). See RelRevokePayload (relrevoke.go).
 	RelRevoke *RelRevokePayload `json:"rel_revoke,omitempty"`
 
 	// ContactTombstone carries the contact-deletion reconciliation
-	// protocol between sibling devices — Type "contact_tombstone"
+	// protocol between sibling devices, Type "contact_tombstone"
 	// (Rows populated: JSON-marshaled tombstone rows for a contact the
 	// sender just received as live but already knows deleted) /
 	// "contact_tombstone_ack" (Acked populated: JSON-marshaled list of
@@ -499,7 +499,7 @@ type KnockPayload struct {
 	ContactTombstone *ContactTombstonePayload `json:"contact_tombstone,omitempty"`
 }
 
-// ContactTombstonePayload is KnockPayload.ContactTombstone's content —
+// ContactTombstonePayload is KnockPayload.ContactTombstone's content,
 // Rows and Acked are both JSON-marshaled byte blobs rather than typed
 // values because this package never imports internal/keystore (the
 // Go type for a tombstone row lives there): the caller marshals/
@@ -511,15 +511,15 @@ type ContactTombstonePayload struct {
 
 // mldsaSign/mldsaVerify are internal helpers shared by all the network
 // identity's parallel ML-DSA-65 signatures (SignRootRotationMLDSA,
-// SignRemoteNukeMLDSA) — avoid repeating the buffer-allocation boilerplate
+// SignRemoteNukeMLDSA), avoid repeating the buffer-allocation boilerplate
 // required by mldsa65.SignTo at every call site.
-// randomized=true ("hedged" signature, FIPS 204's default recommendation) —
+// randomized=true ("hedged" signature, FIPS 204's default recommendation),
 // no context string (ctx=nil), no extra domain separation needed beyond the
 // prefix already present in every *Msg.
 func mldsaSign(priv *mldsa65.PrivateKey, msg []byte) []byte {
 	sig := make([]byte, mldsa65.SignatureSize)
 	// The only possible error from SignTo is a wrong-length buffer
-	// (impossible here, explicitly sized above) — ignored to keep the same
+	// (impossible here, explicitly sized above), ignored to keep the same
 	// "returns []byte" shape as the Ed25519 signatures already used in this
 	// file (SignRemoteNuke, SignRootRotation, etc.).
 	_ = mldsa65.SignTo(priv, msg, nil, true, sig)
@@ -532,7 +532,7 @@ func mldsaVerify(pub *mldsa65.PublicKey, msg, sig []byte) bool {
 
 // mldsaPrivFromSeed/mldsaPubFromBytes derive a complete ML-DSA-65 key from,
 // respectively, a raw seed (32 bytes, as already stored on
-// Contact.RelIdentityMLDSAPriv/RelContentMLDSAPriv) or a packed public key —
+// Contact.RelIdentityMLDSAPriv/RelContentMLDSAPriv) or a packed public key,
 // nil on absent/malformed input, never a panic. Used only by
 // SignRelKeyRotationMLDSA/VerifyRelKeyRotationMLDSA: this file's other
 // ML-DSA signers (SignRemoteNukeMLDSA...) already receive the derived
@@ -562,14 +562,14 @@ func mldsaPubFromBytes(b []byte) *mldsa65.PublicKey {
 
 // RelKeyRotationMsg is the common signed message for the rotation of ONE
 // relationship key (IdentityKey-per-contact or ContentKey-per-contact),
-// certified by the stable SIBLING key — the two keys involved are always
+// certified by the stable SIBLING key, the two keys involved are always
 // different by construction. Separate signing domain ("rel_key_rotate:") so
 // no ambiguity is ever possible with a message signed by another scheme in
 // the project. ts is included in the SIGNED message (not just the payload):
 // without this, an attacker could rewrite ts on a captured message without
 // invalidating the signature, defeating the freshness check (TsFresh) done
 // by the receiver. The caller must re-sign with a fresh ts on every single
-// send/retry — see probeContacts, which already does this on every probe
+// send/retry, see probeContacts, which already does this on every probe
 // cycle.
 // msg = "rel_key_rotate:" ‖ username ‖ ":" ‖ ts ‖ ":" ‖ newPub
 func RelKeyRotationMsg(newPub ed25519.PublicKey, username string, ts string) []byte {
@@ -584,8 +584,8 @@ func SignRelKeyRotation(certifyingPriv ed25519.PrivateKey, newPub ed25519.Public
 
 // VerifyRelKeyRotation verifies SignRelKeyRotation with the already-known
 // sibling public key (Contact.PeerRelIdentityPub/PeerRelContentPub,
-// depending on which key is rotating — never one's own). Verifies ONLY the
-// message's authenticity (ts‖newPub signed together) — the caller must
+// depending on which key is rotating, never one's own). Verifies ONLY the
+// message's authenticity (ts‖newPub signed together), the caller must
 // separately verify TsFresh(ts) for replay protection.
 func VerifyRelKeyRotation(certifyingPub, newPub ed25519.PublicKey, username string, ts string, sig []byte) bool {
 	if len(certifyingPub) != ed25519.PublicKeySize {
@@ -594,13 +594,13 @@ func VerifyRelKeyRotation(certifyingPub, newPub ed25519.PublicKey, username stri
 	return ed25519.Verify(certifyingPub, RelKeyRotationMsg(newPub, username, ts), sig)
 }
 
-// SignRelKeyRotationMLDSA/VerifyRelKeyRotationMLDSA — parallel ML-DSA-65
+// SignRelKeyRotationMLDSA/VerifyRelKeyRotationMLDSA, parallel ML-DSA-65
 // counterpart of SignRelKeyRotation/VerifyRelKeyRotation, never blocking if
 // absent (one of the two parties doesn't yet have an ML-DSA companion for
 // that relationship key). Unlike SignRemoteNukeMLDSA (which takes an
 // already-derived *mldsa65.PrivateKey/PublicKey), here the caller (tui.go)
-// always passes raw bytes already present on Contact — seed to sign, packed
-// key to verify — the derivation happens here.
+// always passes raw bytes already present on Contact, seed to sign, packed
+// key to verify, the derivation happens here.
 func SignRelKeyRotationMLDSA(certifyingMLDSASeed []byte, newPub ed25519.PublicKey, username string, ts string) []byte {
 	priv := mldsaPrivFromSeed(certifyingMLDSASeed)
 	if priv == nil {
@@ -623,7 +623,7 @@ func VerifyRelKeyRotationMLDSA(certifyingMLDSAPubBytes []byte, newPub ed25519.Pu
 // RootRotationMsg is the common signed message for the announcement of a
 // root IdentityKey (network address) rotation toward a contact. Continuity
 // is certified by the RelIdentityKey-per-contact (stable, independent per
-// contact, survives a compromise of the root alone) — never by the old root
+// contact, survives a compromise of the root alone), never by the old root
 // itself. Separate signing domain ("root_rotate:"), ts included in the
 // signed message for the same reason as RelKeyRotationMsg (the caller
 // re-signs with a fresh ts on every send/retry).
@@ -640,7 +640,7 @@ func SignRootRotation(certifyingPriv ed25519.PrivateKey, newIdentityPub ed25519.
 
 // VerifyRootRotation verifies SignRootRotation with the already-known
 // RelIdentityKey-per-contact (Contact.Devices[...].PeerRelIdentityPub).
-// Verifies ONLY the message's authenticity — the caller must separately
+// Verifies ONLY the message's authenticity, the caller must separately
 // verify TsFresh(ts) for replay protection.
 func VerifyRootRotation(certifyingPub, newIdentityPub ed25519.PublicKey, username string, ts string, sig []byte) bool {
 	if len(certifyingPub) != ed25519.PublicKeySize {
@@ -649,7 +649,7 @@ func VerifyRootRotation(certifyingPub, newIdentityPub ed25519.PublicKey, usernam
 	return ed25519.Verify(certifyingPub, RootRotationMsg(newIdentityPub, username, ts), sig)
 }
 
-// SignRootRotationMLDSA/VerifyRootRotationMLDSA — parallel ML-DSA-65
+// SignRootRotationMLDSA/VerifyRootRotationMLDSA, parallel ML-DSA-65
 // counterpart of SignRootRotation/VerifyRootRotation, never blocking if
 // absent.
 func SignRootRotationMLDSA(certifyingMLDSASeed []byte, newIdentityPub ed25519.PublicKey, username string, ts string) []byte {
@@ -675,19 +675,19 @@ func VerifyRootRotationMLDSA(certifyingMLDSAPubBytes []byte, newIdentityPub ed25
 // toward ONE specific recipient, with the ContentKey-per-relationship
 // (persistent for a real contact, ephemeral for an introduced stranger). A
 // broadcast message in a room with N members carries up to N-1 distinct
-// signatures, one per pairwise relationship present — never a key shared by
+// signatures, one per pairwise relationship present, never a key shared by
 // more than two parties. ciphertext is the same SenderKey-encrypted text
 // broadcast to everyone (never the plaintext: whoever can't decrypt it must
 // not be able to infer anything from the signature either), for is the
 // recipient's member key (its root identity key, base64) this specific
-// signature is computed for — never a username, which two members may
+// signature is computed for, never a username, which two members may
 // share.
 // msg = "rel_msg:" ‖ for ‖ ":" ‖ ciphertext ‖ ":" ‖ ts
 func RelMsgSigPayload(ciphertext, ts, forMember string) []byte {
 	return []byte("rel_msg:" + forMember + ":" + ciphertext + ":" + ts)
 }
 
-// SignRelMsg/VerifyRelMsg — Ed25519, relationship key (sender's
+// SignRelMsg/VerifyRelMsg, Ed25519, relationship key (sender's
 // RelContentPriv toward forMember / PeerRelContentPub known to the
 // recipient).
 func SignRelMsg(priv ed25519.PrivateKey, ciphertext, ts, forMember string) []byte {
@@ -701,7 +701,7 @@ func VerifyRelMsg(pub ed25519.PublicKey, ciphertext, ts, forMember string, sig [
 	return ed25519.Verify(pub, RelMsgSigPayload(ciphertext, ts, forMember), sig)
 }
 
-// SignRelMsgMLDSA/VerifyRelMsgMLDSA — parallel ML-DSA-65 counterpart, never
+// SignRelMsgMLDSA/VerifyRelMsgMLDSA, parallel ML-DSA-65 counterpart, never
 // blocking if absent (one of the two parties doesn't yet have an ML-DSA
 // companion for that ContentKey). Same on-the-fly derivation scheme as
 // SignRelKeyRotationMLDSA/VerifyRelKeyRotationMLDSA (mldsaPrivFromSeed/
@@ -732,7 +732,7 @@ func VerifyRelMsgMLDSA(mldsaPubBytes []byte, ciphertext, ts, forMember string, s
 // internal/shared (not just internal/client) because the server must read
 // it from the incoming frame and relay it intact to recipients
 // (internal/server/ws.go: wsIncoming.ContentSigs / wsRawMsgData.ContentSigs)
-// — without this shared type, the "content_sigs" JSON tags written by the
+// without this shared type, the "content_sigs" JSON tags written by the
 // sender (Client.Send) would be read into a wsIncoming that doesn't declare
 // them at all and so would be silently dropped by encoding/json before
 // being relayed.
@@ -744,11 +744,11 @@ type ContentSigEntry struct {
 
 // FileOfferEnvelope carries, for ONE single file_offer recipient, the
 // meta_blob encrypted specifically for them (EncryptForPeer toward their
-// ContentKey: {file_name, file_size, file_key} — file_key is the symmetric
+// ContentKey: {file_name, file_size, file_key}, file_key is the symmetric
 // AES-256-GCM key that encrypts the file content once for everyone,
 // distributed one recipient at a time instead of with a native
 // multi-recipient format). A file_offer with N recipients carries N of
-// these, never a shared envelope. Carries no signature — that lives only
+// these, never a shared envelope. Carries no signature, that lives only
 // in FileAnnounceEnvelope, below, verified BEFORE this frame is even built: a
 // file_offer reaches the recipient only after its authenticity is already
 // established.
@@ -758,28 +758,28 @@ type FileOfferEnvelope struct {
 
 // FileAnnounceEnvelope carries, for ONE single recipient, the signature
 // over the HASH of the shared ciphertext (never the ciphertext itself, not
-// yet transferred at this point) — an announcement phase that precedes any
+// yet transferred at this point), an announcement phase that precedes any
 // actual file_offer/chunk. Verifiable at near-zero cost as soon as it
 // arrives: if the signature doesn't check out (sender's key out of sync),
 // self-heal can kick in and resync BEFORE a single byte of the file is
-// transferred — unlike a "downstream" verification, a failure here doesn't
+// transferred, unlike a "downstream" verification, a failure here doesn't
 // throw away anything expensive. Same signature scheme as chat messages
 // (SignRelMsg/SignRelMsgMLDSA, RelMsgSigPayload also ties the signature to
-// For, here the username of this envelope's recipient) — only the signed
+// For, here the username of this envelope's recipient), only the signed
 // "message" is the hex hash, not the whole ciphertext.
 type FileAnnounceEnvelope struct {
 	Sig      []byte `json:"sig"`
 	SigMLDSA []byte `json:"sig_mldsa,omitempty"`
 }
 
-// DeviceSigMsg is the message signed by the device-level key — used both
+// DeviceSigMsg is the message signed by the device-level key, used both
 // on ordinary chat messages (ciphertext = enc, ts = timestamp external to
 // the ciphertext) and on knocks (ciphertext = the
 // knock's encrypted payload). No device identifier inside the signed
 // message: the public key used to VERIFY the signature is already the
-// identifier itself — including it in the signed text too would be
+// identifier itself, including it in the signed text too would be
 // circular. Only ties the signature to the moment it was produced, against
-// reuse of a signature captured in the past — not a strict anti-replay
+// reuse of a signature captured in the past, not a strict anti-replay
 // mechanism in itself (that lives in the remote_nuke protocol, not
 // here).
 // msg = "device_sig:" ‖ ts ‖ ":" ‖ ciphertext
@@ -805,7 +805,7 @@ func VerifyDeviceSig(devicePub ed25519.PublicKey, ciphertext, ts string, sig []b
 
 // PQCSigMsg is the message signed by the network identity's ML-DSA-65 key
 // when the optional per-room PQC signature (hybrid network identity) is
-// active on a chat message — same scheme as DeviceSigMsg, same reasoning:
+// active on a chat message, same scheme as DeviceSigMsg, same reasoning:
 // no identifier inside the signed message (the public key used to verify
 // is already the identifier), only ties the signature to the moment it was
 // produced.
@@ -826,7 +826,7 @@ func SignPQCSig(priv *mldsa65.PrivateKey, ciphertext, ts string) []byte {
 }
 
 // VerifyPQCSig verifies PQCSigMsg with the sender's network identity
-// ML-DSA-65 public key — never blocking for the caller: just an absent or
+// ML-DSA-65 public key, never blocking for the caller: just an absent or
 // unverifiable signature, never a message rejection.
 func VerifyPQCSig(pub *mldsa65.PublicKey, ciphertext, ts string, sig []byte) bool {
 	if pub == nil || len(sig) == 0 {
@@ -837,12 +837,12 @@ func VerifyPQCSig(pub *mldsa65.PublicKey, ciphertext, ts string, sig []byte) boo
 
 // ── timestamp freshness (remote_nuke, rel_key_rotate) ─────────────────────────
 
-// TsFreshnessWindow — validity window of a signed timestamp (RFC3339)
+// TsFreshnessWindow, validity window of a signed timestamp (RFC3339)
 // verified with TsFresh, in both directions relative to the verifier's
 // local clock: prevents replay of a message intercepted in the past, while
 // still tolerating a reasonable clock drift between the two devices (no
 // guaranteed NTP sync, especially on Termux). Shared by remote_nuke
-// (RemoteNukeMsg) and rel_key_rotate (RelKeyRotationMsg) — same principle,
+// (RemoteNukeMsg) and rel_key_rotate (RelKeyRotationMsg), same principle,
 // same tolerance, a single place to change if the window needs adjusting.
 const TsFreshnessWindow = 5 * time.Minute
 
@@ -872,7 +872,7 @@ func RemoteNukeMsg(targetDeviceID []byte, ts string) []byte {
 }
 
 // SignRemoteNuke signs a remote_nuke command with the Ed25519 private key
-// of an identity also held on the target device — the AUTHORITY: no
+// of an identity also held on the target device, the AUTHORITY: no
 // separate role, possession of the private key is itself the authorization
 // to wipe that device.
 func SignRemoteNuke(authorityPriv ed25519.PrivateKey, targetDeviceID []byte, ts string) []byte {
@@ -881,7 +881,7 @@ func SignRemoteNuke(authorityPriv ed25519.PrivateKey, targetDeviceID []byte, ts 
 
 // VerifyRemoteNuke verifies a remote_nuke command against the public key of
 // a sibling identity of the target device (the caller tries it against each
-// local identity, both current AND old during an in-progress rotation — no
+// local identity, both current AND old during an in-progress rotation, no
 // list of "authorized devices" to consult: possession is the proof).
 func VerifyRemoteNuke(authorityPub ed25519.PublicKey, targetDeviceID []byte, ts string, sig []byte) bool {
 	if len(authorityPub) == 0 || len(sig) == 0 {
@@ -891,7 +891,7 @@ func VerifyRemoteNuke(authorityPub ed25519.PublicKey, targetDeviceID []byte, ts 
 }
 
 // SignRemoteNukeMLDSA signs the same RemoteNukeMsg with the AUTHORITY's
-// ML-DSA-65 key — same reasoning and same treatment (never blocking,
+// ML-DSA-65 key, same reasoning and same treatment (never blocking,
 // additional verification on top of SignRemoteNuke) as the other parallel
 // signatures above. Here the risk covered is more concrete than the other
 // two: a remote_nuke command forged with a broken Ed25519 would destroy a
@@ -910,7 +910,7 @@ func VerifyRemoteNukeMLDSA(authorityPub *mldsa65.PublicKey, targetDeviceID []byt
 }
 
 // RemoteNukeAckMsg is the message signed by the target device to confirm
-// it received the command and is about to wipe itself — same scheme as
+// it received the command and is about to wipe itself, same scheme as
 // RemoteNukeMsg but with its own
 // ts (fresh at ack time, not the same ts as the received command) and
 // verified with the DEVICE-level key, not with an identity: it's the
@@ -991,7 +991,7 @@ func Ed25519PrivToX25519(edPriv ed25519.PrivateKey) (*ecdh.PrivateKey, error) {
 
 // peerEncFormatHybrid/peerEncFormatClassic mark the encryption form of a
 // blob encrypted toward a single Ed25519-per-relationship key inside
-// EncryptForPeer/DecryptFromPeer — generalized beyond knocks alone (see
+// EncryptForPeer/DecryptFromPeer, generalized beyond knocks alone (see
 // EncryptForPeer below). Prefix on the string (not on the payload's raw
 // bytes), chosen specifically to avoid touching the base64 already produced
 // by ECIESEncrypt/HybridECIESEncrypt. PERMANENT dual-mode, not just a
@@ -1005,9 +1005,9 @@ const (
 // EncryptForPeer encrypts an arbitrary plaintext for a single recipient
 // identified by their durable or relationship Ed25519 key (converted to
 // X25519). If recipientMLKEMPub is non-nil, uses HybridECIESEncrypt
-// (X25519+ML-KEM-768) — otherwise falls back to plain ECIESEncrypt, for a
+// (X25519+ML-KEM-768), otherwise falls back to plain ECIESEncrypt, for a
 // recipient whose ML-KEM key isn't known yet. Base for EncryptKnock (below)
-// and for file transfer (per-recipient meta_blob) — same ContentKey/
+// and for file transfer (per-recipient meta_blob), same ContentKey/
 // IdentityKey used elsewhere for signing, dual Ed25519/X25519 use.
 func EncryptForPeer(recipientEdPub ed25519.PublicKey, recipientMLKEMPub *mlkem.EncapsulationKey768, plaintext []byte) (string, error) {
 	xPub, err := Ed25519PubToX25519(recipientEdPub)
@@ -1029,7 +1029,7 @@ func EncryptForPeer(recipientEdPub ed25519.PublicKey, recipientMLKEMPub *mlkem.E
 }
 
 // DecryptFromPeer decrypts a payload produced by EncryptForPeer. myMLKEMPriv
-// can be nil (no ML-KEM key for this identity/relationship) — in that case
+// can be nil (no ML-KEM key for this identity/relationship), in that case
 // a payload arriving in hybrid form can't be decrypted (explicit error, not
 // a silent fallback). A payload with no format prefix is treated as
 // classic.
@@ -1052,7 +1052,7 @@ func DecryptFromPeer(myEdPriv ed25519.PrivateKey, myMLKEMPriv *mlkem.Decapsulati
 }
 
 // EncryptKnock encrypts a KnockPayload for the recipient (durable Ed25519
-// key, converted to X25519) — see EncryptForPeer.
+// key, converted to X25519), see EncryptForPeer.
 func EncryptKnock(recipientEdPub ed25519.PublicKey, recipientMLKEMPub *mlkem.EncapsulationKey768, p KnockPayload) (string, error) {
 	plain, err := json.Marshal(p)
 	if err != nil {
@@ -1065,7 +1065,7 @@ func EncryptKnock(recipientEdPub ed25519.PublicKey, recipientMLKEMPub *mlkem.Enc
 	return s, nil
 }
 
-// DecryptKnock decrypts a payload produced by EncryptKnock — see DecryptFromPeer.
+// DecryptKnock decrypts a payload produced by EncryptKnock, see DecryptFromPeer.
 func DecryptKnock(myEdPriv ed25519.PrivateKey, myMLKEMPriv *mlkem.DecapsulationKey768, payload string) (KnockPayload, error) {
 	plain, err := DecryptFromPeer(myEdPriv, myMLKEMPriv, payload)
 	if err != nil {
@@ -1079,20 +1079,20 @@ func DecryptKnock(myEdPriv ed25519.PrivateKey, myMLKEMPriv *mlkem.DecapsulationK
 }
 
 // knockDHTagLabel is the HMAC context of the static-static DH tag attached
-// in plaintext to a POST /knock — see KnockDHTag.
+// in plaintext to a POST /knock, see KnockDHTag.
 const knockDHTagLabel = "neutrino-knock-tag"
 
 // KnockDHTag computes a cheap tag, verifiable BEFORE the actual ECIES
 // decryption (DecryptKnock), attached in plaintext to a POST /knock
 // (KnockEnvelope). Derived from a static-static DH X25519(myPriv, peerPub)
-// — symmetric: sender and recipient get the SAME value, each with their own
+// symmetric: sender and recipient get the SAME value, each with their own
 // private key and the other's Ed25519 pubkey (Ed25519PrivToX25519/
-// Ed25519PubToX25519, same birational map already used for ECIES) — never
+// Ed25519PubToX25519, same birational map already used for ECIES), never
 // transmitted in plaintext.
 //
 // A plain hash of the two public pubkeys (SHA256(fromPub‖toPub)) would be
 // forgeable by anyone who had simply SEEN both public pubkeys (leaked QR,
-// compromised device), without holding either private key — this tag
+// compromised device), without holding either private key, this tag
 // instead requires actual possession of a REAL private key of one of the
 // two identities.
 func KnockDHTag(myPriv ed25519.PrivateKey, peerPub ed25519.PublicKey) ([]byte, error) {
@@ -1123,7 +1123,7 @@ type KnockEnvelope struct {
 
 // DeviceSyncPath is the endpoint for knocks between devices of the same
 // identity (device_sync, device_sync_ack, contact_tombstone), whose
-// payload can carry the whole address book — too large for POST /knock.
+// payload can carry the whole address book, too large for POST /knock.
 // The sender puts the envelope's tag, base64-encoded, in the
 // DeviceSyncTagHeader header, so the receiver checks it is its own
 // identity before reading the body.
@@ -1134,10 +1134,10 @@ const (
 
 // EncryptKnockWithTag encrypts a KnockPayload like EncryptKnock and wraps
 // it in a KnockEnvelope together with the tag already computed by the
-// caller (KnockDHTag) — tag passed in, not recomputed here, because the
+// caller (KnockDHTag), tag passed in, not recomputed here, because the
 // client-side caller typically doesn't expose the raw Ed25519 private key
 // to this package (it instead goes through a dedicated closure, same
-// pattern already used for signing — see dhTagFn in internal/client/tui).
+// pattern already used for signing, see dhTagFn in internal/client/tui).
 // Returns the JSON body ready for the POST.
 func EncryptKnockWithTag(recipientEdPub ed25519.PublicKey, recipientMLKEMPub *mlkem.EncapsulationKey768, p KnockPayload, tag []byte) (string, error) {
 	payload, err := EncryptKnock(recipientEdPub, recipientMLKEMPub, p)
@@ -1215,7 +1215,7 @@ func SafetyCode(a, b ed25519.PublicKey) string {
 
 // DeriveChainStep advances the symmetric ratchet by one step.
 // msgKey is used to encrypt/decrypt exactly one message and must be zeroed after use.
-// nextChainKey replaces chainKey in the ratchet state — the step is one-way; past keys
+// nextChainKey replaces chainKey in the ratchet state, the step is one-way; past keys
 // cannot be rederived from nextChainKey.
 func DeriveChainStep(chainKey []byte) (msgKey, nextChainKey []byte) {
 	mac := hmac.New(sha256.New, chainKey)
@@ -1228,17 +1228,17 @@ func DeriveChainStep(chainKey []byte) (msgKey, nextChainKey []byte) {
 }
 
 // DeriveChainStepDH advances the ratchet like DeriveChainStep, but mixes an
-// additional DH secret into the next step — gives post-compromise security
+// additional DH secret into the next step, gives post-compromise security
 // beyond plain forward secrecy: whoever steals chainKey can't compute
 // nextChainKey without also knowing dhShared. dhShared is generically
 // []byte to stay algorithm-agnostic (X25519, or a post-quantum hybrid
 // with no change to this function). Used
-// only for two-member rooms (see Client.ratchetDH) — groups stay on
+// only for two-member rooms (see Client.ratchetDH), groups stay on
 // DeriveChainStep.
 func DeriveChainStepDH(chainKey, dhShared []byte) (msgKey, nextChainKey []byte) {
 	mac := hmac.New(sha256.New, chainKey)
 	mac.Write([]byte{0x01})
-	msgKey = mac.Sum(nil) // identical to DeriveChainStep — doesn't depend on the DH
+	msgKey = mac.Sum(nil) // identical to DeriveChainStep, doesn't depend on the DH
 	mac2 := hmac.New(sha256.New, chainKey)
 	mac2.Write(dhShared)
 	mac2.Write([]byte{0x02})
@@ -1247,7 +1247,7 @@ func DeriveChainStepDH(chainKey, dhShared []byte) (msgKey, nextChainKey []byte) 
 }
 
 // EphID identifies an ephemeral X25519 pubkey with 8 hex characters
-// (truncated SHA-256). Not a secret (the pubkey is already public) — only
+// (truncated SHA-256). Not a secret (the pubkey is already public), only
 // used by the receiver to know which of their retired keys
 // (Client.outEphRing) to use in the DH mix, without having to try them by
 // trial and error.

@@ -24,8 +24,8 @@ import (
 )
 
 // TestHelpPagingVisitsEveryCommand verifies that PgDn in the /help popup
-// moves to the entry right after the last one shown — contiguous pages
-// covering every command — and PgUp walks the same pages back.
+// moves to the entry right after the last one shown, contiguous pages
+// covering every command, and PgUp walks the same pages back.
 func TestHelpPagingVisitsEveryCommand(t *testing.T) {
 	for _, size := range []struct{ w, h int }{{80, 24}, {160, 50}, {40, 12}} {
 		m := model{lastTermW: size.w, lastTermH: size.h, helpMode: true}

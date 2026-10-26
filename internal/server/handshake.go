@@ -47,14 +47,14 @@ import (
 //
 // secretLookup receives (nonceClient, roomProof) and returns the matching
 // group secret, the peer's IdentityKey-per-relationship (to verify Sig) and
-// our own IdentityKey-per-relationship toward that peer (to sign Sig) — or
+// our own IdentityKey-per-relationship toward that peer (to sign Sig), or
 // ok=false if no secret matches.
 // claimSlot (nil = not enforced) enforces "one device per identity per
-// room" — called INSIDE the handshake, after ClientHello.Sig has already
+// room", called INSIDE the handshake, after ClientHello.Sig has already
 // been verified (never before: only a peer that has already
 // cryptographically proven possession of the IdentityKey-per-relationship
 // can trigger an "occupied" rejection, otherwise an attacker with just a
-// stolen secret — without the corresponding private key — could still
+// stolen secret, without the corresponding private key, could still
 // discover whether that slot is occupied), BEFORE generating/sending
 // ServerHello: a later rejection (e.g. in ws.go, after DoServerHandshake
 // has already returned successfully) would always arrive too late, because
@@ -84,7 +84,7 @@ func DoServerHandshake(
 	}
 
 	// 2b. verify ML-KEM-768 format (mandatory) and
-	// encapsulate right away — a malformed payload with the correct version
+	// encapsulate right away, a malformed payload with the correct version
 	// is distinct from an actual version_mismatch, hence the dedicated
 	// error code.
 	if len(hello.MLKEMPub) != mlkem.EncapsulationKeySize768 {
@@ -114,10 +114,10 @@ func DoServerHandshake(
 	}
 	dbg("handshake: label=%s peerKey.Pub=%s mySigningKey.Pub=%s", matchedLabel, base64.RawStdEncoding.EncodeToString(peerKey.Pub), base64.RawStdEncoding.EncodeToString(mySigningPub))
 
-	// 4. verify Sig with the peer's IdentityKey-per-relationship — known
+	// 4. verify Sig with the peer's IdentityKey-per-relationship, known
 	// from the invite bootstrap (registered together with the secret),
 	// never a global key or a fingerprint to resolve. SigMLDSA (if the peer
-	// sends it) is verified additionally, never blocking if absent — same
+	// sends it) is verified additionally, never blocking if absent, same
 	// principle as VerifyRemoteNukeMLDSA.
 	if len(peerKey.Pub) != ed25519.PublicKeySize {
 		return reject(shared.ErrUnknownIdentity, i18n.T("handshake.reject_unknown_identity"))
@@ -135,7 +135,7 @@ func DoServerHandshake(
 		}
 	}
 
-	// 4b. "one device per identity per room" — see the comment on claimSlot
+	// 4b. "one device per identity per room", see the comment on claimSlot
 	// above for why this must happen here, not after DoServerHandshake has
 	// already returned.
 	if claimSlot != nil && !claimSlot(matchedRoomID, matchedRootIdentityPub, matchedDevicePub) {
@@ -166,7 +166,7 @@ func DoServerHandshake(
 	}
 	sessionPubBytes := sessionPriv.PublicKey().Bytes()
 
-	// 6. build ServerHello — signed with OUR OWN IdentityKey-per-
+	// 6. build ServerHello, signed with OUR OWN IdentityKey-per-
 	// relationship toward this specific peer (mySigningKey, from
 	// secretLookup), never a global key. mySigningKey.Priv already verified
 	// valid at step 4c above: the signature here is unconditional, never

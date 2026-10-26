@@ -57,11 +57,11 @@ const (
 // Contact represents a contact in the keystore.
 // Username is the contact's network name (immutable, used in the protocols).
 // LocalName is the personal name the user chose for this contact
-// (optional, local only — e.g. "Al" for a contact whose username is "Albert").
+// (optional, local only, e.g. "Al" for a contact whose username is "Albert").
 type Contact struct {
 	Username  string `json:"username"`
 	LocalName string `json:"local_name,omitempty"` // personal name, empty = use Username
-	// IdentityPub is the contact's TRANSPORT key (Ed25519, 32 bytes) —
+	// IdentityPub is the contact's TRANSPORT key (Ed25519, 32 bytes),
 	// used ONLY to compute their network address
 	// (OnionAddressFromPub/I2PAddressFromPub), never to authenticate a
 	// handshake/knock. That role belongs to the four relationship keys
@@ -69,7 +69,7 @@ type Contact struct {
 	IdentityPub []byte `json:"identity_pub"`
 
 	// Devices holds an independent cryptographic relationship for EVERY
-	// device of this contact (D1, D2, ...) — map key: string(DevicePub)
+	// device of this contact (D1, D2...), map key: string(DevicePub)
 	// of the CONTACT's device (32 raw bytes as a string, never exposed
 	// elsewhere as a comparable type). Two devices of the same identity
 	// never share the same material, each negotiates its own
@@ -84,14 +84,14 @@ type Contact struct {
 	Verified     bool      `json:"verified,omitempty"`      // full safety number comparison done out of band and confirmed by the user (see /sec-verify)
 	IntroducedBy string    `json:"introduced_by,omitempty"` // display name of whoever introduced this contact via a card, at that time; empty = added directly (knock, QR, manual)
 	// IntroducedByPub is the identity key of whoever introduced this
-	// contact via a card — the introducer's identity; IntroducedBy only
+	// contact via a card, the introducer's identity; IntroducedBy only
 	// labels it.
 	IntroducedByPub []byte `json:"introduced_by_pub,omitempty"`
 	// MLKEMPub is the contact's durable ML-KEM-768 encapsulation key
 	// (1184 bytes), learned from the nu:// QR/URI at exchange time.
 	// Empty when the URI didn't carry it: knocks to them remain
 	// encrypted in classic form (X25519 only) until the QR is
-	// re-exchanged — see EncryptKnock, internal/shared/crypto.go.
+	// re-exchanged, see EncryptKnock, internal/shared/crypto.go.
 	MLKEMPub []byte `json:"mlkem_pub,omitempty"`
 
 	// MLDSAPub is the contact's durable ML-DSA-65 signing public key
@@ -100,14 +100,14 @@ type Contact struct {
 	// root_rotate. Empty when the URI didn't carry it, until the QR is
 	// re-exchanged: the parallel ML-DSA
 	// signatures on remote_nuke remain verifiable only with
-	// Ed25519 until then — never blocking.
+	// Ed25519 until then, never blocking.
 	MLDSAPub []byte `json:"mldsa_pub,omitempty"`
 
 	// KnownDevicePub is the public key of the device seen signing this
-	// contact's messages (device_sig, see shared.DeviceSigMsg) — TOFU:
+	// contact's messages (device_sig, see shared.DeviceSigMsg), TOFU:
 	// updated on every successfully verified message (the device pubkey
-	// travels INSIDE the ciphertext along with the text — see
-	// sealedMsg.DP — so verification is self-contained in a single
+	// travels INSIDE the ciphertext along with the text, see
+	// sealedMsg.DP, so verification is self-contained in a single
 	// message, no additional bootstrap round-trip). A device different
 	// from the already-known one only produces a distinct on-screen tag
 	// ([DEV:new]), never a rejection. Distinct concept from
@@ -118,16 +118,16 @@ type Contact struct {
 
 	// SiblingRevocations is the pool of self-revocation certificates
 	// from ALL sibling devices (same identity/username, physically
-	// different keystore — NEVER this device's own: those live in
-	// Devices above) toward THIS contact's devices — never a private
+	// different keystore, NEVER this device's own: those live in
+	// Devices above) toward THIS contact's devices, never a private
 	// key, only ready-to-use signatures. Propagated via device_sync/
 	// indoor sync along with the rest of this Contact (MergeContacts
 	// merges it here, zeroed only in the "new contact" branch along
-	// with Devices — never inherited like Devices, but for the opposite
+	// with Devices, never inherited like Devices, but for the opposite
 	// reason: this one does NOT contain private material, so it should
 	// still accumulate). Consulted only if this device must act as a
 	// backstop for a nuked sibling. Key:
-	// string(SiblingDevicePub)+string(PeerDevicePub) — direct
+	// string(SiblingDevicePub)+string(PeerDevicePub), direct
 	// unambiguous concatenation (32+32 fixed bytes), several siblings
 	// can have independent relationships with the same device of this
 	// contact.
@@ -135,19 +135,19 @@ type Contact struct {
 }
 
 // SiblingRevocation is ONE sibling device's self-revocation certificate
-// toward ONE device of a contact — an entry of Contact.SiblingRevocations
+// toward ONE device of a contact, an entry of Contact.SiblingRevocations
 // above. See DeviceRelation.RevokeIdentitySig/RevokeContentSig: the same
 // signature pair, here held on behalf of another device.
 type SiblingRevocation struct {
 	// SiblingDevicePub identifies THE SIBLING that generated this
-	// revocation — Keystore.DevicePub, 32 bytes, the SAME value that
+	// revocation, Keystore.DevicePub, 32 bytes, the SAME value that
 	// ends up in a future RelRevokePayload's DevicePub field when this
 	// sibling resends the revocation on behalf of the nuked device (not
 	// Keystore.DeviceID: that doesn't identify any key reusable on the
 	// wire). Not the contact's device (that's PeerDevicePub below).
 	SiblingDevicePub []byte `json:"sibling_device_pub"`
 	// PeerDevicePub is the CONTACT's device this revocation applies to
-	// — the same key used as a Contact.Devices entry.
+	// the same key used as a Contact.Devices entry.
 	PeerDevicePub []byte `json:"peer_device_pub"`
 
 	IdentitySig      []byte `json:"identity_sig,omitempty"`
@@ -157,17 +157,17 @@ type SiblingRevocation struct {
 
 	// Acked reports whether a rel_revoke_ack has already been received
 	// for this specific revocation (from any sibling, not necessarily
-	// the one that sent it last) — propagated along with the rest via
+	// the one that sent it last), propagated along with the rest via
 	// device_sync, so a dormant sibling that wakes up late inherits the
 	// updated state instead of starting over.
 	Acked bool `json:"acked,omitempty"`
 }
 
 // DeviceRelation is the independent cryptographic relationship with ONE
-// device of a contact — an entry of the Contact.Devices map above.
+// device of a contact, an entry of the Contact.Devices map above.
 type DeviceRelation struct {
 	// Address is the network address this device declared in its
-	// rel_init (KnockPayload.FromAddr) — for D1 it matches
+	// rel_init (KnockPayload.FromAddr), for D1 it matches
 	// Contact.NetAddr (root-derived, always computable without
 	// negotiation); for an additional device it's the one delivered via
 	// bootstrap, never derivable from the contact's IdentityPub alone.
@@ -176,7 +176,7 @@ type DeviceRelation struct {
 
 	// RelIdentityPriv/PeerRelIdentityPub and RelContentPriv/
 	// PeerRelContentPub are the four relationship keys with THIS
-	// device — generated randomly and independent for each
+	// device, generated randomly and independent for each
 	// relationship (no master secret), exchanged bidirectionally at
 	// bootstrap (rel_init/rel_init_ack).
 	//
@@ -186,18 +186,18 @@ type DeviceRelation struct {
 	// RelContentPriv/PeerRelContentPub: native Ed25519 signing +
 	// encryption via X25519 conversion
 	// (Ed25519PrivToX25519/Ed25519PubToX25519) toward this device, used
-	// only inside rooms (messages, files, contact cards) — never
+	// only inside rooms (messages, files, contact cards), never
 	// recertified out of band.
 	RelIdentityPriv    []byte `json:"rel_identity_priv,omitempty"`
 	PeerRelIdentityPub []byte `json:"peer_rel_identity_pub,omitempty"`
 	RelContentPriv     []byte `json:"rel_content_priv,omitempty"`
 	PeerRelContentPub  []byte `json:"peer_rel_content_pub,omitempty"`
 
-	// Hybrid PQC companions of the two relationship keys above — the
+	// Hybrid PQC companions of the two relationship keys above, the
 	// same principle already mandatory for the global identity
 	// (ML-KEM-768 for hybrid encryption, resistant to
 	// harvest-now-decrypt-later; ML-DSA-65 as a parallel signature,
-	// resistant to a quantum attacker breaking Ed25519 — KnockDHTag
+	// resistant to a quantum attacker breaking Ed25519, KnockDHTag
 	// doesn't need this, being HMAC-SHA256 already Grover-resistant),
 	// here applied per-relationship instead of globally. Always rotate
 	// together with their respective Ed25519 key.
@@ -211,11 +211,11 @@ type DeviceRelation struct {
 	PeerRelContentMLDSAPub  []byte `json:"peer_rel_content_mldsa_pub,omitempty"`
 
 	// RevokeIdentitySig/RevokeContentSig (+ ML-DSA-65 companions) are
-	// self-revocation certificates — the CURRENT RelIdentityPriv/
+	// self-revocation certificates, the CURRENT RelIdentityPriv/
 	// RelContentPriv signs its own public key, exactly like a PGP
 	// revocation certificate is self-signed by the key it revokes.
 	// Generated once, together with the key itself (bootstrap or
-	// rotation — never at nuke time: that key is already gone forever
+	// rotation, never at nuke time: that key is already gone forever
 	// by then), by `ensureRelRevocations` (called by UnlockedSlot.
 	// SaveSlot/SaveWithDuress before every disk write under the N-slot
 	// format, self-healing regardless of which code path generates/
@@ -228,11 +228,11 @@ type DeviceRelation struct {
 
 	// IdentityKeyPending/OldRelIdentityPriv and ContentKeyPending/
 	// OldRelContentPriv track an in-progress rotation of ONE of the two
-	// relationship keys toward THIS device — never both together (the
+	// relationship keys toward THIS device, never both together (the
 	// key not being rotated acts as the continuity anchor for the other,
 	// see StartRelIdentityRotationByPub/StartRelContentRotationByPub).
 	// OldRelIdentityPriv/OldRelContentPriv (vault) also carry the old
-	// PQC companions inside (concatenated seeds) — a single vault
+	// PQC companions inside (concatenated seeds), a single vault
 	// instead of six, same lifecycle.
 	IdentityKeyPending bool       `json:"identity_key_pending,omitempty"`
 	OldRelIdentityPriv vaultBytes `json:"old_rel_identity_priv,omitempty"`
@@ -243,20 +243,20 @@ type DeviceRelation struct {
 	// "I have the peer's relationship public keys" (PeerRelIdentityPub/
 	// PeerRelContentPub above, populated either by a spontaneous
 	// rel_init from the peer or by a rel_init_ack) from "the peer has
-	// confirmed having MINE" — they turn on ONLY on receiving an actual
+	// confirmed having MINE", they turn on ONLY on receiving an actual
 	// rel_init_ack (never from a rel_init, which is a request, not a
 	// confirmation), always TOGETHER (bootstrap carries both keys in the
-	// same payload — there's no "identity only" or "content only"
+	// same payload, there's no "identity only" or "content only"
 	// rel_init on the wire). It's this pair, not PeerRelIdentityPub/
 	// PeerRelContentPub, that decides whether to keep resending one's
 	// own rel_init: if the peer received and processed my rel_init but
-	// its response was lost, I still need to retry — regardless of
+	// its response was lost, I still need to retry, regardless of
 	// whether I've meanwhile already received THEIR keys for an
 	// unrelated reason (their own independent spontaneous rel_init,
 	// e.g. near-simultaneous onboarding).
 	//
 	// Split into two fields: a mismatch discovered AFTER bootstrap that
-	// concerns only one of the two (self-heal — handshake verification
+	// concerns only one of the two (self-heal, handshake verification
 	// for Identity, message/file signature verification for Content)
 	// clears only the relevant flag, instead of forcing a wider
 	// re-exchange than necessary (which would also block
@@ -266,21 +266,21 @@ type DeviceRelation struct {
 	RelIdentityConfirmedByPeer bool `json:"rel_identity_confirmed_by_peer,omitempty"`
 	RelContentConfirmedByPeer  bool `json:"rel_content_confirmed_by_peer,omitempty"`
 
-	// LegacyRelInitConfirmedByPeer — read only: format version 5 stores a
+	// LegacyRelInitConfirmedByPeer, read only: format version 5 stores a
 	// single flag under this JSON key; migrateVersion copies it to BOTH
 	// fields above and zeroes it, so it is never written again. Never read
 	// anywhere else.
 	LegacyRelInitConfirmedByPeer bool `json:"rel_init_confirmed_by_peer,omitempty"`
 
 	// PendingPeerRelIdentityPub/PendingPeerRelContentPub (+ PQC
-	// companions) — relationship keys proposed by a rel_init/
+	// companions), relationship keys proposed by a rel_init/
 	// rel_init_ack arriving from THIS SAME device while
 	// RelIdentityConfirmedByPeer was already true, with BOTH keys
 	// different from the already-known PeerRelIdentityPub/
-	// PeerRelContentPub — not cryptographically distinguishable between
+	// PeerRelContentPub, not cryptographically distinguishable between
 	// a restore from the contact's bare seed (legitimate) and a
 	// replacement of their relationship keys (e.g. a compromised root
-	// IdentityKey) — see TrustLevel/TrustDanger below. A rel_init from
+	// IdentityKey), see TrustLevel/TrustDanger below. A rel_init from
 	// an UNKNOWN DevicePub never goes through here: it creates a new
 	// entry in the map, not a conflict on this one. Never applied
 	// automatically to PeerRelIdentityPub/PeerRelContentPub: only an
@@ -297,7 +297,7 @@ type DeviceRelation struct {
 
 	// RevokedIdentity/RevokedContent are set by a successfully verified
 	// "rel_revoke" knock (see shared.VerifyRelRevoke against
-	// PeerRelIdentityPub/PeerRelContentPub) — split exactly like
+	// PeerRelIdentityPub/PeerRelContentPub), split exactly like
 	// RelIdentityConfirmedByPeer/RelContentConfirmedByPeer above,
 	// because a device can revoke only one of the two keys (e.g. a nuke
 	// of the IdentityKey alone, not yet followed by one of the
@@ -312,13 +312,13 @@ type DeviceRelation struct {
 }
 
 // hasPendingConflict reports whether this entry has an unresolved
-// relationship-key conflict (TrustDanger) — see Contact.TrustLevel().
+// relationship-key conflict (TrustDanger), see Contact.TrustLevel().
 func (d *DeviceRelation) hasPendingConflict() bool {
 	return d != nil && (len(d.PendingPeerRelIdentityPub) > 0 || len(d.PendingPeerRelContentPub) > 0)
 }
 
 // ensureRelRevocations computes the missing self-revocation certificates
-// for every device of every contact — called by UnlockedSlot.SaveSlot/
+// for every device of every contact, called by UnlockedSlot.SaveSlot/
 // SaveWithDuress before every disk write under the N-slot format, not
 // from a specific key generation/rotation point: this way any code path
 // that sets RelIdentityPriv/RelContentPriv (initial bootstrap, a probe
@@ -330,7 +330,7 @@ func (d *DeviceRelation) hasPendingConflict() bool {
 // correctness matter. A rotation
 // (StartRelIdentityRotationByPub/StartRelContentRotationByPub)
 // explicitly clears the relevant field before replacing the key, so the
-// next save computes a fresh one for the new key — the old one, if
+// next save computes a fresh one for the new key, the old one, if
 // already distributed, simply stays inert (no longer verifies against
 // the current public key known to the contact).
 func (ks *Keystore) ensureRelRevocations() {
@@ -358,11 +358,11 @@ func (ks *Keystore) ensureRelRevocations() {
 }
 
 // SoleDevice returns the single entry of Contact.Devices if there's
-// exactly one, false otherwise — no known device or more than one known
+// exactly one, false otherwise, no known device or more than one known
 // always return false, never an arbitrary/silent pick. Covers the vast
 // majority of code paths that reason about "the relationship with this
 // contact" in the singular (rotation, safety number, message
-// signing/verification, invite readiness check) — correct because a
+// signing/verification, invite readiness check), correct because a
 // contact almost always has exactly one known device; with more than one
 // known, these paths return a clear error instead of guessing which
 // device to use.
@@ -377,7 +377,7 @@ func (c Contact) SoleDevice() (*DeviceRelation, bool) {
 }
 
 // SoleDeviceOrPlaceholder is like SoleDevice, but with an empty Devices
-// it returns a new, empty DeviceRelation instead of (nil, false) — used
+// it returns a new, empty DeviceRelation instead of (nil, false), used
 // by the probe cycle to generate missing relationship keys even toward a
 // contact with no known entry yet; the returned value is never written
 // into the map here, persistence still goes through the normal update
@@ -390,7 +390,7 @@ func (c Contact) SoleDeviceOrPlaceholder() (*DeviceRelation, bool) {
 }
 
 // DevicesOrPlaceholder returns c.Devices if it has at least one entry,
-// otherwise a map with just the "" placeholder entry — counterpart of
+// otherwise a map with just the "" placeholder entry, counterpart of
 // SoleDeviceOrPlaceholder for callers that iterate over ALL of the
 // contact's devices instead of limiting themselves to the single-device
 // case.
@@ -401,8 +401,8 @@ func (c Contact) DevicesOrPlaceholder() map[string]*DeviceRelation {
 	return c.Devices
 }
 
-// SoleDeviceKey is SoleDevice but also returns the DevicePub — the key
-// under which the entry lives in Devices — needed by callers that must
+// SoleDeviceKey is SoleDevice but also returns the DevicePub, the key
+// under which the entry lives in Devices, needed by callers that must
 // pass it to RoomRegistry (AddSecret/ReplaceSecret/RefreshSigningKeys):
 // without it, RefreshSigningKeys couldn't distinguish the right device
 // from another device of the same contact.
@@ -417,7 +417,7 @@ func (c Contact) SoleDeviceKey() (devicePub []byte, dev *DeviceRelation, ok bool
 }
 
 // RelEstablishedDevice returns the first device (deterministic order)
-// with the ContentKey-per-relationship established in both directions —
+// with the ContentKey-per-relationship established in both directions,
 // unlike SoleDevice() above, it doesn't stop at "exactly one device": a
 // contact with several known devices can already have a working
 // relationship on one of them while another is still a bootstrap
@@ -460,11 +460,11 @@ func (c Contact) RelRevoked() bool {
 }
 
 // ReadyDevices returns EVERY device of this contact ready to be
-// contacted/invited — RelIdentityConfirmedByPeer AND
+// contacted/invited, RelIdentityConfirmedByPeer AND
 // RelContentConfirmedByPeer (both, not a single old one: an
 // invite/handshake requires the first, but messages/files exchanged
 // inside the room still require the second too), complete relationship
-// keys, known network address — unlike SoleDevice() above it doesn't
+// keys, known network address, unlike SoleDevice() above it doesn't
 // stop at "exactly one": used by invite fan-out and by
 // replying/retrying rel_init/rotation knocks toward a specific device. A
 // device with no Address is never included: with no address there's no
@@ -486,7 +486,7 @@ func (c Contact) ReadyDevices() map[string]*DeviceRelation {
 	return out
 }
 
-// sortedDeviceKeys returns Devices' keys in deterministic order — used
+// sortedDeviceKeys returns Devices' keys in deterministic order, used
 // by AnyReadyDevice/DeviceWithPendingRelKeys below for a stable choice
 // across successive runs (direct iteration over a Go map wouldn't be),
 // not for an order with any particular meaning.
@@ -500,13 +500,13 @@ func sortedDeviceKeys(devices map[string]*DeviceRelation) []string {
 }
 
 // DeviceByPub resolves the EXACT Devices entry for a DevicePub already
-// known to the caller (e.g. an incoming knock's DevicePub field —
-// RelBootstrapPayload/RelRotatePayload — or a message sender's device
-// pub decoded from it, `dp` in tui.go) — never ambiguous, unlike
+// known to the caller (e.g. an incoming knock's DevicePub field,
+// RelBootstrapPayload/RelRotatePayload, or a message sender's device
+// pub decoded from it, `dp` in tui.go), never ambiguous, unlike
 // SoleDevice above or a deterministic choice on a partial criterion (see
 // contentPeerKeysFor/myContentPrivFor in tui.go, which pick a device by
 // filtering only on the field of interest, never on ReadyDevices() as a
-// whole: the "ready for invite" criteria — Address/RelIdentityPriv — are
+// whole: the "ready for invite" criteria, Address/RelIdentityPriv, are
 // irrelevant for encrypting/verifying content). ok=false if pub is empty
 // or doesn't match any known entry.
 func (c Contact) DeviceByPub(pub []byte) (dev *DeviceRelation, ok bool) {
@@ -519,7 +519,7 @@ func (c Contact) DeviceByPub(pub []byte) (dev *DeviceRelation, ok bool) {
 
 // RelKeysForDevice resolves LIVE, under ks.mu, the relationship-key
 // pair for an exact contact+device (the contact's STABLE identityPub,
-// the devicePub of the Contact.Devices entry) — meant to be used as a
+// the devicePub of the Contact.Devices entry), meant to be used as a
 // resolver by RoomRegistry.AddSecret/ReplaceSecret: called on EVERY
 // handshake verification, never cached, so a relationship rotation
 // (local or peer's) is reflected immediately with no need for an
@@ -543,7 +543,7 @@ func (ks *Keystore) RelKeysForDevice(identityPub, devicePub []byte) (shared.RelP
 		}
 		// A revoked IdentityKey-per-relationship (a verified "rel_revoke"
 		// knock, see applyRelRevoke) must no longer authenticate a
-		// handshake — treated as if the key didn't exist at all, the
+		// handshake, treated as if the key didn't exist at all, the
 		// same outcome as a contact/device not found.
 		if dev.RevokedIdentity {
 			return shared.RelPeerKey{}, shared.RelSigningKey{}, false
@@ -557,7 +557,7 @@ func (ks *Keystore) RelKeysForDevice(identityPub, devicePub []byte) (shared.RelP
 
 // DeviceWithPendingRelKeys returns the first device (deterministic
 // order) with a pending relationship-key conflict (TrustDanger,
-// PendingPeerRelIdentityPub/PendingPeerRelContentPub) — unlike
+// PendingPeerRelIdentityPub/PendingPeerRelContentPub), unlike
 // SoleDevice(), it works even with 2+ known devices as long as the
 // conflict is on ONE of them (the common case: a real conflict is rare,
 // two simultaneous ones on the same contact even rarer). No UI to
@@ -576,12 +576,12 @@ func (c Contact) DeviceWithPendingRelKeys() (devicePub []byte, dev *DeviceRelati
 	return nil, nil, false
 }
 
-// CloneDevices returns an INDEPENDENT copy of the Devices map — a new
+// CloneDevices returns an INDEPENDENT copy of the Devices map, a new
 // map with new *DeviceRelation values (the []byte fields stay shared
 // with the original, never a problem: they're never mutated in place,
 // only reassigned). Needed anywhere a Contact is exposed as a mutable
 // "mirror" independent of the live keystore (e.g. ContactsSnapshot,
-// cmd/main.go:convertContacts) — Devices is a map: copying the Contact struct
+// cmd/main.go:convertContacts), Devices is a map: copying the Contact struct
 // by value does NOT isolate the map, which would stay shared with the
 // original (same hashtable), and every mutation of the "clone" would
 // silently write into the live keystore too, outside ks.mu.
@@ -609,22 +609,22 @@ func (c Contact) DisplayName() string {
 }
 
 // TrustLevel is a small trust level (unknown/marginal/full), derived
-// from two independent facts already present on the contact — whether
+// from two independent facts already present on the contact, whether
 // it was verified out of band (Verified) and whether it came from a
-// third-party introduction (IntroducedBy) — with no transitive trust
+// third-party introduction (IntroducedBy), with no transitive trust
 // computation: trust in the introducer doesn't automatically propagate
 // to Verified, it remains just provenance information.
 type TrustLevel int
 
 const (
-	// TrustDanger — explicit value -1, below TrustUnknown: an unresolved
+	// TrustDanger, explicit value -1, below TrustUnknown: an unresolved
 	// relationship-key conflict (PendingPeerRelIdentityPub/
 	// PendingPeerRelContentPub populated) overrides any other level
 	// computed from Verified/IntroducedBy, even the highest
-	// (TrustVerifiedIntroduced) — see TrustLevel() below. As a trust
+	// (TrustVerifiedIntroduced), see TrustLevel() below. As a trust
 	// VALUE it's the lowest possible; as URGENCY for the user it must be
 	// treated with higher priority than a simply unverified contact
-	// (TrustUnknown/TrustIntroduced) in every list/picker — a never
+	// (TrustUnknown/TrustIntroduced) in every list/picker, a never
 	// verified contact is normal, one with a key conflict is an anomaly.
 	TrustDanger             TrustLevel = iota - 1
 	TrustUnknown                       // never verified, direct provenance (knock, QR, manual)
@@ -636,7 +636,7 @@ const (
 // TrustLevel computes the contact's trust level from its persisted
 // fields. An unresolved relationship-key conflict on ANY known device
 // (bubble-up, see DeviceRelation.hasPendingConflict) ALWAYS overrides,
-// before evaluating Verified/IntroducedBy — see TrustDanger above.
+// before evaluating Verified/IntroducedBy, see TrustDanger above.
 func (c Contact) TrustLevel() TrustLevel {
 	for _, dev := range c.Devices {
 		if dev.hasPendingConflict() {
@@ -661,14 +661,14 @@ func (c Contact) TrustLevel() TrustLevel {
 type IdentityRef struct {
 	Username    string `json:"username"`
 	IdentityPub []byte `json:"identity_pub"`        // Ed25519 pubkey (32 bytes)
-	MLKEMPub    []byte `json:"mlkem_pub,omitempty"` // durable ML-KEM-768 encapsulation key (1184 bytes) — optional, empty = classic knock toward this identity
+	MLKEMPub    []byte `json:"mlkem_pub,omitempty"` // durable ML-KEM-768 encapsulation key (1184 bytes), optional, empty = classic knock toward this identity
 }
 
 // DeviceRecord describes a device known to (also) host this same
 // identity, learned through "indoor" sync (LAN). SiblingIdentities is
 // NOT just the shared identity that led to the registration: it's the
 // COMPLETE list of sibling identities present on that device at the
-// time of the last sync — whoever sends a remote_nuke command doesn't
+// time of the last sync, whoever sends a remote_nuke command doesn't
 // know which of these will be reachable at that moment, but they're all
 // the same exact target (the same file), so they must all be tried
 // (fan-out). A later sync overwrites SiblingIdentities with the updated
@@ -682,7 +682,7 @@ type DeviceRecord struct {
 }
 
 // PendingRemoteNuke records a remote_nuke command issued by this
-// identity toward TargetDeviceID and not yet confirmed by an ack — see
+// identity toward TargetDeviceID and not yet confirmed by an ack, see
 // Keystore.PendingRemoteNukes.
 type PendingRemoteNuke struct {
 	TargetDeviceID []byte    `json:"target_device_id"`
@@ -690,19 +690,19 @@ type PendingRemoteNuke struct {
 }
 
 // DeletedContact is a permanent tombstone for a contact deleted by this
-// identity, on any of its sibling devices — see
+// identity, on any of its sibling devices, see
 // Keystore.DeletedContacts.
 type DeletedContact struct {
 	IdentityPub []byte    `json:"identity_pub"`
 	DeletedAt   time.Time `json:"deleted_at"`
 	// ConfirmedSiblings lists the DeviceIDs (from KnownDevices) known to
-	// have already adopted this same tombstone — never this device's
+	// have already adopted this same tombstone, never this device's
 	// own DeviceID, which is implicitly always confirmed. Grows only.
 	ConfirmedSiblings [][]byte `json:"confirmed_siblings,omitempty"`
 }
 
 // DangerBroadcastPending lists the identity keys of contacts not yet
-// confirmed for the danger_broadcast related to TargetDeviceID — see
+// confirmed for the danger_broadcast related to TargetDeviceID, see
 // Keystore.PendingDangerBroadcasts.
 type DangerBroadcastPending struct {
 	TargetDeviceID []byte   `json:"target_device_id"`
@@ -730,7 +730,7 @@ type SavedGroup struct {
 //
 // A keystore file can hold several independent identities (each with
 // its own Username/IdentityKey/Contacts/SavedGroups), all encrypted
-// together under the same password — see LoadAll/AddIdentity. The
+// together under the same password, see LoadAll/AddIdentity. The
 // siblings field links a loaded identity to the others in the same
 // file, so Save() on any one of them rewrites the whole list instead of
 // losing the others.
@@ -738,7 +738,7 @@ type Keystore struct {
 	Version  int    `json:"version"`
 	Username string `json:"username"`
 	// IdentityKey/MLKEMKey/MLDSAKey are the global per-identity
-	// TRANSPORT key — generates the Tor hidden service and the I2P
+	// TRANSPORT key, generates the Tor hidden service and the I2P
 	// destination (AddHiddenService/I2PDestinationPriv) and is used for
 	// the knock toward a known contact (KnockDHTag mutuality tag,
 	// EncryptKnock/DecryptKnock). It never authenticates the WebSocket
@@ -751,48 +751,48 @@ type Keystore struct {
 	MLKEMKey    []byte `json:"mlkem_key,omitempty"`
 	MLDSAKey    []byte `json:"mldsa_key,omitempty"`
 
-	// OldIdentityKey/OldMLKEMKey/OldMLDSAKey — temporary vault of the
+	// OldIdentityKey/OldMLKEMKey/OldMLDSAKey, temporary vault of the
 	// PREVIOUS root, retained ONLY for the propagation window of a
-	// continuity root rotation (StartRootRotation) — not for hosting
+	// continuity root rotation (StartRootRotation), not for hosting
 	// (the new root is already live in IdentityKey/MLKEMKey/MLDSAKey
 	// above as soon as rotation starts), but to tag/derive the
 	// announcements still outbound toward those who haven't confirmed
 	// yet (KnockDHTag with the old key, which the recipient still
-	// recognizes — see applyRootRotate/probeContacts) and to propagate
+	// recognizes, see applyRootRotate/probeContacts) and to propagate
 	// the new private material to one's own sibling devices
 	// (device_sync). Cleared only by MaybeFinalizeRootRotation when both
-	// pending lists below are empty — no time-based expiry.
+	// pending lists below are empty, no time-based expiry.
 	OldIdentityKey vaultBytes `json:"old_identity_key,omitempty"`
 	OldMLKEMKey    vaultBytes `json:"old_mlkem_key,omitempty"`
 	OldMLDSAKey    vaultBytes `json:"old_mldsa_key,omitempty"`
 
 	// RootRotationPendingContacts lists the identity keys of contacts not
 	// yet confirmed (root_rotate_ack) for the latest in-progress root
-	// rotation — same scheme as PendingDangerBroadcasts: retried on
+	// rotation, same scheme as PendingDangerBroadcasts: retried on
 	// every probe cycle toward whoever appears online, no expiry, no
 	// forced closure.
 	RootRotationPendingContacts [][]byte `json:"root_rotation_pending_contacts,omitempty"`
 
 	// RootRotationPendingDevices lists the DeviceIDs of one's own
 	// sibling devices (KnownDevices) not yet confirmed
-	// (device_sync_ack) for the latest in-progress root rotation — they
+	// (device_sync_ack) for the latest in-progress root rotation, they
 	// must receive the new private material in full (device_sync), not
 	// just an announcement: unlike a contact, they share the exact same
 	// root bit-for-bit.
 	RootRotationPendingDevices [][]byte `json:"root_rotation_pending_devices,omitempty"`
 
-	// DeviceID/DevicePriv/DevicePub — a device is the keystore FILE, not
+	// DeviceID/DevicePriv/DevicePub, a device is the keystore FILE, not
 	// the physical hardware: generated once when the file is created
 	// (New()), shared by all sibling identities in the same file
 	// (file-level field, same treatment as
-	// duress — set only on the list's first element, read through
+	// duress, set only on the list's first element, read through
 	// siblings[0] by every identity in the file, never per-sibling. Two
 	// distinct identities in the same file share the same DeviceID;
 	// identities in different logins/files, even on the same physical
 	// hardware, have distinct DeviceIDs. Never rotates with
-	// IdentityKey/MLKEMKey — a device survives an identity rotation.
+	// IdentityKey/MLKEMKey, a device survives an identity rotation.
 	// DevicePriv co-signs every outbound message (see
-	// shared.DeviceSigMsg, internal/client/client.go Send()) — not a
+	// shared.DeviceSigMsg, internal/client/client.go Send()), not a
 	// content hardening, an informational tag that's never blocking,
 	// the same principle already used for the relationship signature on
 	// messages.
@@ -800,46 +800,46 @@ type Keystore struct {
 	DevicePriv []byte `json:"device_priv,omitempty"` // Ed25519 private, 64 bytes
 	DevicePub  []byte `json:"device_pub,omitempty"`  // Ed25519 public, 32 bytes
 
-	// AdditionalDevice — false for D1 (an identity created here with
-	// New(), or restored from a bare 24 words with ImportFromMnemonic —
+	// AdditionalDevice, false for D1 (an identity created here with
+	// New(), or restored from a bare 24 words with ImportFromMnemonic,
 	// the total-disaster path, canonical address unchanged). true for an
 	// additional device (D2, D3...) born from ImportFromBackupFile (24
-	// words + file) — the "birth" of THIS device, which at that point
+	// words + file), the "birth" of THIS device, which at that point
 	// receives a fresh DeviceID (never cloned from the backup, see
 	// ImportFromBackupFile) and computes its own derived network address
-	// instead of the direct root IdentityKey — see
+	// instead of the direct root IdentityKey, see
 	// NetworkIdentityPrivKey.
 	AdditionalDevice bool `json:"additional_device,omitempty"`
 
 	// DeviceLabel is the name the user chose for THIS device (e.g.
-	// "Galaxy S22", "work laptop") — the same role as Contact.LocalName
+	// "Galaxy S22", "work laptop"), the same role as Contact.LocalName
 	// but for a device, not a contact. File-level like DeviceID (same
 	// propagation treatment to siblings). Asked at first startup
-	// (wizard, a new file's first identity — never for a second
+	// (wizard, a new file's first identity, never for a second
 	// identity added with add-identity, which shares the same device)
 	// and always renamable (`neutrino device-label`/`/sec-device-label`).
 	// Without a name chosen by the user, a device's only identifier is
 	// its DeviceID (16 random bytes): two or three different devices
-	// would become indistinguishable on screen — the reason the name
+	// would become indistinguishable on screen, the reason the name
 	// choice isn't optional in the wizard. Transmitted to the other
 	// side of an "indoor" sync (DeviceRecord.Label) so a device knows
 	// the names of the OTHER devices of the same identity, not just its
 	// own.
 	DeviceLabel string `json:"device_label,omitempty"`
 
-	// LockSecret/LockSecretIsPIN/LockDuressMarker/LockDuressPosition —
+	// LockSecret/LockSecretIsPIN/LockDuressMarker/LockDuressPosition,
 	// the interface lock on inactivity. File-level like
 	// DeviceLabel/DeviceID (same propagation treatment to siblings):
 	// the lock concerns the whole process's session, not a single
 	// identity. Ordinary fields inside the keystore's already-encrypted
-	// blob — NOT a separate Argon2id verifier like DuressConfig: the
+	// blob, NOT a separate Argon2id verifier like DuressConfig: the
 	// check always happens AFTER the keystore is already decrypted in
 	// RAM (never at bootstrap), so a direct comparison is already
 	// instant, as needed for a lock unlocked far more often than the
 	// keystore's real password.
 	//
 	// LockSecret is NEVER derived from the keystore's real password or
-	// from the duress password — an independent secret (a numeric PIN
+	// from the duress password, an independent secret (a numeric PIN
 	// on Android, a PIN or free-choice password on desktop). Empty =
 	// lock not configured (feature disabled).
 	LockSecret string `json:"lock_secret,omitempty"`
@@ -847,12 +847,12 @@ type Keystore struct {
 	// LockSecretIsPIN distinguishes the applicable rules: true for a
 	// numeric PIN (native character+position duress, see
 	// LockDuressMarker/LockDuressPosition below), false for a desktop
-	// free-choice password (no native duress — the lock's duress in
+	// free-choice password (no native duress, the lock's duress in
 	// that case coincides with the keystore's already-existing duress
 	// password, CheckDuress, shared with the initial unlock).
 	LockSecretIsPIN bool `json:"lock_secret_is_pin,omitempty"`
 
-	// LockDuressMarker/LockDuressPosition — native duress for a PIN
+	// LockDuressMarker/LockDuressPosition, native duress for a PIN
 	// only: one extra character, inserted at the configured position
 	// inside LockSecret, triggers duress. LockDuressPosition encoding: 1
 	// = before the first character (at the start); 0 = after the last
@@ -863,7 +863,7 @@ type Keystore struct {
 	LockDuressPosition int    `json:"lock_duress_position,omitempty"`
 
 	// KnownDevices lists the devices known to (also) host this identity
-	// (learned through "indoor" sync) — the list a user consults to
+	// (learned through "indoor" sync), the list a user consults to
 	// choose a remote_nuke command's target. Not needed for
 	// AUTHORIZING an incoming command (that's based solely on key
 	// possession, see the receiving side's verification): it's
@@ -873,7 +873,7 @@ type Keystore struct {
 	// NukedDevicePubs is a grows-only set of Keystore.DevicePub values
 	// (never a DeviceID: this is the value that ends up in a
 	// RelRevokePayload.DevicePub field) known to belong to a sibling
-	// that has been nuked — synced/gossiped transitively like
+	// that has been nuked, synced/gossiped transitively like
 	// KnownDevices (never pruned, same permanence principle as
 	// DeletedContacts below: an unknown-at-the-time sibling could still
 	// surface later holding a stale SiblingRevocations entry toward
@@ -888,7 +888,7 @@ type Keystore struct {
 	// but never turned back on...): a single attempt with limited
 	// backoff isn't enough, so the command stays queued and is retried
 	// on every subsequent startup of this identity until an ack
-	// arrives — see
+	// arrives, see
 	// AddPendingRemoteNuke/RemovePendingRemoteNuke/PendingRemoteNukeTargets.
 	// Per-identity like KnownDevices, not file-level like DeviceID: each
 	// identity in the file keeps its own queue, consistent with the
@@ -896,7 +896,7 @@ type Keystore struct {
 	PendingRemoteNukes []PendingRemoteNuke `json:"pending_remote_nukes,omitempty"`
 
 	// DeletedContacts is the permanent list of tombstones for contacts
-	// this identity has deleted, on any of its sibling devices — never
+	// this identity has deleted, on any of its sibling devices, never
 	// removed, regardless of how many KnownDevices have confirmed one
 	// (ConfirmedSiblings): a sibling device unknown at deletion time can
 	// surface later still holding a live copy, so a row must stay
@@ -905,31 +905,31 @@ type Keystore struct {
 	DeletedContacts []DeletedContact `json:"deleted_contacts,omitempty"`
 
 	// PendingDangerBroadcasts lists, for each target device still in
-	// PendingRemoteNukes (or already confirmed — the entry survives
+	// PendingRemoteNukes (or already confirmed, the entry survives
 	// regardless until it's empty), the usernames of contacts not yet
 	// confirmed for the related danger_broadcast, by identity key. A
 	// contact may never be online together with the authority in the
 	// same session, so a single attempt bounded to a ~90s window isn't
-	// enough —
+	// enough,
 	// probeContacts (already running periodically for an unrelated
 	// reason) resends the danger_broadcast to every contact still in
 	// this list that appears online in that cycle, until a
-	// danger_broadcast_ack arrives for each — see
+	// danger_broadcast_ack arrives for each, see
 	// SetDangerBroadcastPending/ConfirmDangerBroadcast.
 	PendingDangerBroadcasts []DangerBroadcastPending `json:"pending_danger_broadcasts,omitempty"`
 
-	// PendingDangerEnds — the exact same scheme/mechanism as
+	// PendingDangerEnds, the exact same scheme/mechanism as
 	// PendingDangerBroadcasts above, but for "danger_end": the FINAL
 	// notice ("device confirmed destroyed"), sent by the TARGET itself
 	// to every contact of ALL its sibling identities (I1, I2, I3...)
-	// right before self-deleting — a channel only the target can use in
+	// right before self-deleting, a channel only the target can use in
 	// full, since only it holds the keys for every identity present on
 	// the file. The AUTHORITY, on receiving the remote_nuke_ack, relays
 	// the exact same message to its OWN contacts (those of the
-	// identities it holds — I1, I2 in the example, never I3, which it
+	// identities it holds, I1, I2 in the example, never I3, which it
 	// never duplicated) as a safety net: whoever didn't receive the
 	// direct danger_end from the target (was offline at that exact
-	// moment) still receives it, later, from the authority — a queue
+	// moment) still receives it, later, from the authority, a queue
 	// separate from PendingDangerBroadcasts because they're two
 	// distinct messages (preliminary vs. final), even though the exact
 	// same retry-via-probeContacts mechanism applies to both.
@@ -939,30 +939,30 @@ type Keystore struct {
 	SavedGroups []SavedGroup `json:"saved_groups,omitempty"`
 
 	// SlotPendingNoise/ContactPendingIdx/ContactMirrorDuressIdx/
-	// DuressAccess are the N-slot keystore's bookkeeping fields — kept
+	// DuressAccess are the N-slot keystore's bookkeeping fields, kept
 	// inside every real identity's own already-encrypted content,
 	// never as file-level plaintext metadata.
 	//
 	// SlotPendingNoise is the growth pool (see growth_pool.go) over the
 	// file-level slot indices (slot_container.go) that are still
-	// unassigned noise — on a real identity, the genuine pool; on the
+	// unassigned noise, on a real identity, the genuine pool; on the
 	// shared duress identity, a plausible-looking but unrelated one
 	// (never the real one: otherwise a holder of only the duress
 	// password could subtract its pending count from the file's total
-	// slot count — always visible to anyone with the raw file — and
+	// slot count, always visible to anyone with the raw file, and
 	// learn exactly how many real identities exist).
 	SlotPendingNoise growthPool `json:"slot_pending_noise,omitempty"`
 
 	// ContactPendingIdx is the growth pool over this identity's own
 	// still-empty Contact placeholder indices (see
-	// slot_mirror_contact.go) — on a real identity, its own pool; on
+	// slot_mirror_contact.go), on a real identity, its own pool; on
 	// duress, the AGGREGATE pool mirroring every real identity combined
 	// (duress is the single shared decoy).
 	ContactPendingIdx growthPool `json:"contact_pending_idx,omitempty"`
 
 	// ContactMirrorDuressIdx maps one of THIS identity's own Contacts
 	// indices (key) to the duress Contacts index that mirrors it
-	// (value) — populated only on real identities, consulted when a
+	// (value), populated only on real identities, consulted when a
 	// real contact is deleted (see slot_mirror_contact.go,
 	// EmptyMirroredContact) to find and identically empty the matching
 	// duress contact. Meaningless on duress itself (duress has no "its
@@ -972,15 +972,15 @@ type Keystore struct {
 	// DuressAccess is K_i_duress sealed directly under this identity's
 	// own K_i on a real identity (available in RAM as soon as this
 	// identity's own login succeeds, no further
-	// password needed at trigger-time — see duress_access.go). On
+	// password needed at trigger-time, see duress_access.go). On
 	// duress itself, random noise of the identical shape (see
-	// DuressAccessField's doc comment) — duress has no further duress
+	// DuressAccessField's doc comment), duress has no further duress
 	// to reach.
 	DuressAccess DuressAccessField `json:"duress_access,omitempty"`
 
 	// IsDuress marks the shared decoy identity itself, so the running
 	// process can tell its own role apart once logged in (real
-	// identities carry the default false) — visible only to whoever
+	// identities carry the default false), visible only to whoever
 	// already decrypted this specific identity's own content with its
 	// own password, so it adds nothing to what that password already
 	// reveals.
@@ -989,7 +989,7 @@ type Keystore struct {
 	siblings []*Keystore // other identities in the same file (nil = isolated identity); not serialized
 
 	// duress is the automatic NUKE password's verifier (see duress.go)
-	// — shared by every identity in the same file (SetDuress propagates
+	// shared by every identity in the same file (SetDuress propagates
 	// it to the siblings), NEVER serialized in the encrypted JSON
 	// payload: it must remain readable from the file's plaintext header
 	// even without knowing the real password (see CheckDuress).
@@ -1013,7 +1013,7 @@ type Keystore struct {
 
 // New returns an empty keystore with a new Ed25519 identity key, a new
 // durable ML-KEM-768 decapsulation key, and a new device-level
-// DeviceID/signing key — the latter generated once per FILE: a second
+// DeviceID/signing key, the latter generated once per FILE: a second
 // New() for a second identity in the same file should be added with
 // AddIdentity, which doesn't touch the existing file's
 // DeviceID/DevicePriv/DevicePub.
@@ -1062,24 +1062,24 @@ func (ks *Keystore) IdentityPubKey() ed25519.PublicKey {
 }
 
 // networkOnionInfo is the HKDF info that derives an additional device's
-// network address from the root IdentityKey — a separate domain for
+// network address from the root IdentityKey, a separate domain for
 // each derivation type from the same key, never reusable for another
 // purpose (the same principle already used for
 // "neutrino-backup-v1"/"neutrino-sync-v1").
 const networkOnionInfo = "neutrino-device-onion-v1"
 
 // NetworkIdentityPrivKey returns the Ed25519 private key to pass to
-// AddHiddenService to publish THIS device's network address — addresses
+// AddHiddenService to publish THIS device's network address, addresses
 // a possible address collision with several endpoints of the same
 // identity online together. D1 (AdditionalDevice false, the common
 // case) stays unchanged: the direct root IdentityKey, the same
 // canonical address shared via QR/URI. An additional device
-// (AdditionalDevice true, born from ImportFromBackupFile — see the
+// (AdditionalDevice true, born from ImportFromBackupFile, see the
 // comment on that field) instead derives an independent key from
 // HKDF-SHA256(IdentityKey[:32], salt=DeviceID, info="neutrino-device-onion-v1")
-// — never the same as D1's, no risk of address collision, not
+// never the same as D1's, no risk of address collision, not
 // recoverable from just the mnemonic (a lost device isn't "rebuilt
-// identical", it's recreated new with a fresh DeviceID — consistent
+// identical", it's recreated new with a fresh DeviceID, consistent
 // with relationship keys after a bare restore).
 func (ks *Keystore) NetworkIdentityPrivKey() ed25519.PrivateKey {
 	if !ks.AdditionalDevice || len(ks.DeviceID) == 0 {
@@ -1089,13 +1089,13 @@ func (ks *Keystore) NetworkIdentityPrivKey() ed25519.PrivateKey {
 }
 
 // NetworkIdentityPrivKeyFor generalizes NetworkIdentityPrivKey to an
-// arbitrary DeviceID, always derived (never the direct root) — unlike
+// arbitrary DeviceID, always derived (never the direct root), unlike
 // the method above, which decides on its own whether to derive based on
 // AdditionalDevice, this one always returns
 // HKDF-SHA256(IdentityKey[:32], salt=deviceID, info="neutrino-device-onion-v1")
 // for the given deviceID. Allows computing the network address of ANY
-// device that shares this root IdentityKey — one's own sibling device
-// (continuity root rotation, remote contact-list sync — see
+// device that shares this root IdentityKey, one's own sibling device
+// (continuity root rotation, remote contact-list sync, see
 // StartRootRotation/RootRotationPendingDevices) or an additional
 // remote_nuke target, never just one's own like the method above. An
 // empty deviceID falls back to the direct root (no derivation possible
@@ -1111,7 +1111,7 @@ func (ks *Keystore) NetworkIdentityPrivKeyFor(deviceID []byte) ed25519.PrivateKe
 }
 
 // networkIdentityPrivKeyForSeed is the common core of
-// NetworkIdentityPrivKeyFor and OldNetworkIdentityPrivKeyForRotation —
+// NetworkIdentityPrivKeyFor and OldNetworkIdentityPrivKeyForRotation,
 // HKDF-SHA256(rootSeed[:32], salt=deviceID, info=networkOnionInfo),
 // parameterized on the root SEED to use instead of always reading it
 // from ks.IdentityKey (the common case). nil if rootSeed is too short or
@@ -1130,12 +1130,12 @@ func networkIdentityPrivKeyForSeed(rootSeed, deviceID []byte) ed25519.PrivateKey
 
 // OldNetworkIdentityPrivKeyForRotation returns the network address
 // derived for deviceID using the PREVIOUS root (Keystore.OldIdentityKey,
-// retained during an in-progress root rotation — see StartRootRotation)
-// instead of the current one — nil if no rotation is in progress or
+// retained during an in-progress root rotation, see StartRootRotation)
+// instead of the current one, nil if no rotation is in progress or
 // deviceID is empty. Needed to reach one's own sibling device that
 // hasn't adopted the latest rotation yet: as long as it stays on the old
 // root, ITS hidden service remains published at the address derived
-// from THAT one, not the new one — see device_sync.
+// from THAT one, not the new one, see device_sync.
 func (ks *Keystore) OldNetworkIdentityPrivKeyForRotation(deviceID []byte) ed25519.PrivateKey {
 	if len(deviceID) == 0 {
 		return nil
@@ -1151,17 +1151,17 @@ func (ks *Keystore) OldNetworkIdentityPrivKeyForRotation(deviceID []byte) ed2551
 
 // StartRootRotation starts a CONTINUITY rotation of the root
 // IdentityKey/MLKEMKey/MLDSAKey (from which one's own network address is
-// derived) — stashes the previous keys into the Old* vaults above (they
+// derived), stashes the previous keys into the Old* vaults above (they
 // serve to tag the announcements still in flight toward those who
-// haven't confirmed yet — KnockDHTag with the old key, still recognized
+// haven't confirmed yet, KnockDHTag with the old key, still recognized
 // by the recipient until it applies the announcement) and applies the
 // new ones as current IMMEDIATELY. Repopulates RootRotationPendingContacts
 // with EVERY known username in the contact list and
-// RootRotationPendingDevices with every DeviceID from KnownDevices —
+// RootRotationPendingDevices with every DeviceID from KnownDevices,
 // propagation (announcing to contacts + device_sync to siblings) is the
 // caller's responsibility (probeContacts/Once(), outside this package).
 // Error if a root rotation is already in progress (one at a time, the
-// same principle as relationship rotations) — no forced closure: the
+// same principle as relationship rotations), no forced closure: the
 // only way out is for every contact/device to confirm, or to wait
 // (never a timeout).
 func (ks *Keystore) StartRootRotation() error {
@@ -1189,11 +1189,11 @@ func (ks *Keystore) StartRootRotation() error {
 
 // applyNewRootLocked is the common core of StartRootRotation (key
 // generated here) and AdoptRootRotation (key received from a sibling
-// device) — the caller must already hold ks.mu. Stashes the current
+// device), the caller must already hold ks.mu. Stashes the current
 // root into the Old* vaults, applies the new one, repopulates
 // RootRotationPendingContacts/RootRotationPendingDevices from THIS
 // device's own contact list/KnownDevices (independent of the ones held
-// by whoever originated the rotation — this device behaves exactly like
+// by whoever originated the rotation, this device behaves exactly like
 // the device that started the rotation).
 func (ks *Keystore) applyNewRootLocked(newIdentityKey, newMLKEMKey, newMLDSAKey []byte) {
 	ks.OldIdentityKey = newVaultBytes(ks.IdentityKey)
@@ -1217,11 +1217,11 @@ func (ks *Keystore) applyNewRootLocked(newIdentityKey, newMLKEMKey, newMLDSAKey 
 }
 
 // AdoptRootRotation applies an IdentityKey/MLKEMKey/MLDSAKey root
-// received from a sibling device (device_sync) — never generated here:
+// received from a sibling device (device_sync), never generated here:
 // only ONE device generates it (StartRootRotation), every other one
 // adopts the same material, or the shared identity would split into two
 // different keys. Idempotent: if newIdentityKey already matches the
-// current root (a duplicate/delayed device_sync), a safe no-op — doesn't
+// current root (a duplicate/delayed device_sync), a safe no-op, doesn't
 // repopulate the pending lists, doesn't lose already-made progress.
 func (ks *Keystore) AdoptRootRotation(newIdentityKey, newMLKEMKey, newMLDSAKey []byte) error {
 	if len(newIdentityKey) != ed25519.PrivateKeySize {
@@ -1238,7 +1238,7 @@ func (ks *Keystore) AdoptRootRotation(newIdentityKey, newMLKEMKey, newMLDSAKey [
 
 // AckRootRotationContact removes the contact with identity key pub from
 // RootRotationPendingContacts
-// on receiving a valid root_rotate_ack — returns false if it wasn't
+// on receiving a valid root_rotate_ack, returns false if it wasn't
 // there (a late/duplicate ack, harmless). Internally calls
 // MaybeFinalizeRootRotation.
 func (ks *Keystore) AckRootRotationContact(pub []byte) bool {
@@ -1255,7 +1255,7 @@ func (ks *Keystore) AckRootRotationContact(pub []byte) bool {
 }
 
 // AckRootRotationDevice removes deviceID from RootRotationPendingDevices
-// on receiving a valid device_sync_ack — same semantics as
+// on receiving a valid device_sync_ack, same semantics as
 // AckRootRotationContact.
 func (ks *Keystore) AckRootRotationDevice(deviceID []byte) bool {
 	ks.mu.Lock()
@@ -1272,7 +1272,7 @@ func (ks *Keystore) AckRootRotationDevice(deviceID []byte) bool {
 
 // MaybeFinalizeRootRotation clears the Old* vaults ONLY when both
 // pending lists are empty (rotation confirmed by every contact and
-// every sibling device) — no time-based expiry, consistent with the
+// every sibling device), no time-based expiry, consistent with the
 // absence of a forced closure (see the comment on StartRootRotation).
 func (ks *Keystore) MaybeFinalizeRootRotation() {
 	ks.mu.Lock()
@@ -1289,7 +1289,7 @@ func (ks *Keystore) maybeFinalizeRootRotationLocked() {
 }
 
 // RootRotationPendingSnapshot returns copies of RootRotationPendingContacts
-// and RootRotationPendingDevices — contacts and sibling devices that
+// and RootRotationPendingDevices, contacts and sibling devices that
 // haven't confirmed the latest root rotation yet.
 func (ks *Keystore) RootRotationPendingSnapshot() ([][]byte, [][]byte) {
 	ks.mu.Lock()
@@ -1307,7 +1307,7 @@ func (ks *Keystore) RootRotationPendingSnapshot() ([][]byte, [][]byte) {
 
 // OldIdentityPrivKeyForRotation returns the PREVIOUS private root
 // retained during an in-progress root rotation (nil if no rotation is
-// in progress) — used ONLY to tag (KnockDHTag) root_rotate
+// in progress), used ONLY to tag (KnockDHTag) root_rotate
 // announcements still in flight toward those who haven't confirmed yet:
 // the recipient still recognizes this key, because it hasn't applied
 // the announcement yet (see StartRootRotation).
@@ -1323,7 +1323,7 @@ func (ks *Keystore) OldIdentityPrivKeyForRotation() ed25519.PrivateKey {
 
 // RootRotationInProgress reports whether a continuity root rotation is
 // currently in progress (at least one contact or sibling device not yet
-// confirmed) — used both by the caller that must decide whether to
+// confirmed), used both by the caller that must decide whether to
 // start a new one, and by tests.
 func (ks *Keystore) RootRotationInProgress() bool {
 	ks.mu.Lock()
@@ -1356,7 +1356,7 @@ func (ks *Keystore) MLDSAPubKey() *mldsa65.PublicKey {
 }
 
 // MLDSAPubBytes returns the network identity's ML-DSA-65 public key
-// already packed (1952 bytes, mldsa65.PublicKeySize) — ready for the
+// already packed (1952 bytes, mldsa65.PublicKeySize), ready for the
 // identity URI/QR, the same role as MLKEMPubBytes above. nil if MLDSAKey
 // is absent.
 func (ks *Keystore) MLDSAPubBytes() []byte {
@@ -1371,10 +1371,10 @@ func (ks *Keystore) MLDSAPubBytes() []byte {
 
 // AllAuthorityPubKeys returns the Ed25519 public keys (current AND old,
 // during an in-progress rotation) of EVERY identity present in this
-// file — itself plus every sibling. It's exactly the set a remote_nuke
+// file, itself plus every sibling. It's exactly the set a remote_nuke
 // command's target verifies NukeSig against: possessing the private key
 // of any one of these identities, wherever the holder is, is the
-// authorization to delete THIS file — no separate "authorized devices"
+// authorization to delete THIS file, no separate "authorized devices"
 // list to consult.
 func (ks *Keystore) AllAuthorityPubKeys() []ed25519.PublicKey {
 	list := ks.siblings
@@ -1391,7 +1391,7 @@ func (ks *Keystore) AllAuthorityPubKeys() []ed25519.PublicKey {
 }
 
 // AllAuthorityPubKeysMLDSA is the ML-DSA-65 counterpart of
-// AllAuthorityPubKeys above — same role, same structure (itself plus
+// AllAuthorityPubKeys above, same role, same structure (itself plus
 // every sibling, current AND old during an in-progress rotation).
 func (ks *Keystore) AllAuthorityPubKeysMLDSA() []*mldsa65.PublicKey {
 	list := ks.siblings
@@ -1408,11 +1408,11 @@ func (ks *Keystore) AllAuthorityPubKeysMLDSA() []*mldsa65.PublicKey {
 }
 
 // SiblingIdentityRefs returns Username+IdentityPub(+MLKEMPub, if
-// present) for EVERY identity of this file — itself plus every sibling
-// — used to populate DeviceRecord.SiblingIdentities when announcing
+// present) for EVERY identity of this file, itself plus every sibling
+// used to populate DeviceRecord.SiblingIdentities when announcing
 // one's own device to a peer ("indoor" sync): only each identity's
 // CURRENT key (unlike AllAuthorityPubKeys, which also includes the old
-// one during a rotation — here a currently reachable network address is
+// one during a rotation, here a currently reachable network address is
 // needed, not a historical key).
 func (ks *Keystore) SiblingIdentityRefs() []IdentityRef {
 	list := ks.siblings
@@ -1434,12 +1434,12 @@ func (ks *Keystore) SiblingIdentityRefs() []IdentityRef {
 }
 
 // SiblingKeystores returns the whole list of sibling identities present
-// in the same file (itself included, always at least one element) —
+// in the same file (itself included, always at least one element),
 // unlike AllAuthorityPubKeys/SiblingIdentityRefs, which expose only
 // public material, this returns the complete *Keystore values (private
 // key + contact list of each). Reserved for callers already fully
 // trusted, operating on behalf of EVERY identity in the file, not just
-// the active one — cmd/main.go, for the danger_end broadcast:
+// the active one, cmd/main.go, for the danger_end broadcast:
 // the target device, before self-deleting, must be able to notify the
 // contacts of ALL its sibling identities, not just the one it's running
 // as in that session. Never exposed to internal/client (which must
@@ -1465,7 +1465,7 @@ func (ks *Keystore) MLKEMDecap() *mlkem.DecapsulationKey768 {
 }
 
 // MLKEMPubBytes returns the public ML-KEM-768 encapsulation key (1184
-// bytes) derived from the durable decapsulation key — nil if absent.
+// bytes) derived from the durable decapsulation key, nil if absent.
 func (ks *Keystore) MLKEMPubBytes() []byte {
 	dk := ks.MLKEMDecap()
 	if dk == nil {
@@ -1475,7 +1475,7 @@ func (ks *Keystore) MLKEMPubBytes() []byte {
 }
 
 // DeviceIDHex returns the file's DeviceID in hexadecimal, for display
-// (e.g. /sec-devices) — empty string if absent.
+// (e.g. /sec-devices), empty string if absent.
 func (ks *Keystore) DeviceIDHex() string {
 	if len(ks.DeviceID) == 0 {
 		return ""
@@ -1484,7 +1484,7 @@ func (ks *Keystore) DeviceIDHex() string {
 }
 
 // DevicePrivKey returns the device-level Ed25519 private key (co-signs
-// every outbound message — see shared.DeviceSigMsg).
+// every outbound message, see shared.DeviceSigMsg).
 func (ks *Keystore) DevicePrivKey() ed25519.PrivateKey {
 	if len(ks.DevicePriv) == 0 {
 		return nil
@@ -1501,7 +1501,7 @@ func (ks *Keystore) DevicePubKey() ed25519.PublicKey {
 }
 
 // SetDeviceLabel sets THIS device's name (e.g. "Galaxy S22"), propagated
-// to every sibling identity of the same file — the same file-level
+// to every sibling identity of the same file, the same file-level
 // treatment as SetDuress/DeviceID. The caller calls Save() afterward.
 func (ks *Keystore) SetDeviceLabel(label string) {
 	ks.DeviceLabel = label
@@ -1510,7 +1510,7 @@ func (ks *Keystore) SetDeviceLabel(label string) {
 	}
 }
 
-// SetLockSecret sets (or replaces) the interface lock's secret — isPIN
+// SetLockSecret sets (or replaces) the interface lock's secret, isPIN
 // true for a numeric PIN (native character+position duress,
 // marker/position below), false for a desktop free-choice password
 // (marker/position ignored, the lock's duress coincides with
@@ -1540,7 +1540,7 @@ func (ks *Keystore) HasLockSecret() bool {
 }
 
 // LockCheckResult is the outcome of comparing a candidate input against
-// the lock's secret — see CheckLockSecret.
+// the lock's secret, see CheckLockSecret.
 type LockCheckResult int
 
 const (
@@ -1551,9 +1551,9 @@ const (
 
 // CheckLockSecret compares candidate against the configured lock secret
 // (LockSecret) and, if it's a PIN, against its native duress variant
-// (candidate with one extra character at the configured position — see
+// (candidate with one extra character at the configured position, see
 // LockDuressPosition). Never touches CheckDuress (the keystore's
-// general duress password) — that comparison stays the caller's
+// general duress password), that comparison stays the caller's
 // responsibility, kept separate by design.
 func (ks *Keystore) CheckLockSecret(candidate string) LockCheckResult {
 	if ks.LockSecret == "" {
@@ -1573,7 +1573,7 @@ func (ks *Keystore) CheckLockSecret(candidate string) LockCheckResult {
 
 // stripDuressMarker removes the marker character from candidate at the
 // position encoded by position (1 = at the start, 0 = at the end, N =
-// right before the Nth character of candidate WITHOUT the marker — see
+// right before the Nth character of candidate WITHOUT the marker, see
 // the comment on LockDuressPosition) and returns the resulting string.
 // ok is false if candidate doesn't have the expected length
 // (len(real)+1) or the character at that position isn't the marker.
@@ -1601,7 +1601,7 @@ func stripDuressMarker(candidate, marker string, position int) (string, bool) {
 }
 
 // NetworkStabilityOK reports whether at least "required" has elapsed
-// since the network became stable (stableSince — typically the moment
+// since the network became stable (stableSince, typically the moment
 // the Tor/I2P bootstrap published the hidden service, never persisted,
 // reset on every process restart). Meant as a precondition for a
 // relationship key: without this constraint a device just powered on by
@@ -1615,7 +1615,7 @@ func NetworkStabilityOK(stableSince time.Time, required time.Duration) bool {
 
 // decryptFile reads and decrypts the keystore's raw payload
 // (salt||nonce||ciphertext, preceded by the automatic NUKE password's
-// optional plaintext header — see duress.go/readDuressHeader).
+// optional plaintext header, see duress.go/readDuressHeader).
 func decryptFile(path, password string) ([]byte, *DuressConfig, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -1742,15 +1742,15 @@ func LoadAll(path, password string) ([]*Keystore, error) {
 		ks.duress = duress
 		ks.mu = mu
 	}
-	// DeviceID/DevicePriv/DevicePub are file-level, not per-identity —
+	// DeviceID/DevicePriv/DevicePub are file-level, not per-identity,
 	// unlike IdentityKey/MLKEMKey (which migrateVersion backfills
 	// per-entry, each identity needs its OWN), a device must be
 	// generated once for the whole file and shared by every identity it
 	// contains. list[0] is the anchor: if it's missing there, a single
-	// device is generated and propagated to every identity in the list —
+	// device is generated and propagated to every identity in the list,
 	// never a different device for each. siblings is already
 	// set above BEFORE this block: Save() below uses ks.siblings to
-	// write the whole list, not just list[0] — a reversed order would
+	// write the whole list, not just list[0], a reversed order would
 	// silently lose the file's other identities.
 	if len(list) > 0 && len(list[0].DeviceID) == 0 {
 		deviceID := make([]byte, 16)
@@ -1772,7 +1772,7 @@ func LoadAll(path, password string) ([]*Keystore, error) {
 		// survives regardless because the network address it derives
 		// is already visible/used before the user could exit without
 		// ever saving), a DeviceID regenerated on every startup would
-		// silently break the feature's whole purpose — no stable
+		// silently break the feature's whole purpose, no stable
 		// targeting for remote_nuke, no stable recognition through
 		// indoor sync.
 		if err := list[0].Save(path, password); err != nil {
@@ -1789,7 +1789,7 @@ func LoadAll(path, password string) ([]*Keystore, error) {
 // pruneOrphanPlaceholderDevices removes, for each contact, the ""
 // placeholder device when it coexists with another device already
 // confirmed in both directions (RelIdentityConfirmedByPeer and
-// RelContentConfirmedByPeer) — a placeholder that never received a
+// RelContentConfirmedByPeer), a placeholder that never received a
 // response from the contact (no PeerRelIdentityPub/PeerRelContentPub)
 // carries no useful information once a real relationship already exists
 // with them, and its mere presence makes
@@ -1820,7 +1820,7 @@ func pruneOrphanPlaceholderDevices(ks *Keystore) bool {
 	return pruned
 }
 
-// Load decrypts and loads a single identity from the given path — used
+// Load decrypts and loads a single identity from the given path, used
 // where it doesn't matter which identity is returned (e.g. checking the
 // password). Use LoadAll to correctly handle a keystore with several
 // identities.
@@ -1842,7 +1842,7 @@ func AddIdentity(existing []*Keystore, newKs *Keystore) ([]*Keystore, error) {
 			return nil, errors.New(i18n.T("keystore.err_identity_exists", newKs.Username))
 		}
 	}
-	// The device belongs to the whole FILE, not the single identity —
+	// The device belongs to the whole FILE, not the single identity,
 	// newKs always inherits DeviceID/DevicePriv/DevicePub from the
 	// existing file (whatever New() had generated for it is discarded),
 	// otherwise two identities in the same login/file would end up with
@@ -1855,14 +1855,14 @@ func AddIdentity(existing []*Keystore, newKs *Keystore) ([]*Keystore, error) {
 		newKs.DeviceLabel = existing[0].DeviceLabel
 		// mu: shared by ALL sibling identities of the same file (not its
 		// own, generated by New() before knowing it would end up in an
-		// already-existing file) — Save() marshals the whole list
+		// already-existing file), Save() marshals the whole list
 		// together, a per-instance mutex would leave two identities of
 		// the same file free to mutate concurrently without excluding
 		// each other.
 		newKs.mu = existing[0].mu
 		// duress: like DeviceID above, the automatic NUKE password is
 		// shared by the whole FILE, not the single identity (SetDuress
-		// already propagates it to every sibling) — but newKs.duress
+		// already propagates it to every sibling), but newKs.duress
 		// is nil (never set by New(), an unexported/unserialized
 		// field) until copied here explicitly. Without this line,
 		// Save() called on the new identity (runAddIdentity) would
@@ -1882,8 +1882,8 @@ func AddIdentity(existing []*Keystore, newKs *Keystore) ([]*Keystore, error) {
 
 // RemoveIdentity removes the username identity from the list and
 // relinks the remaining siblings (Save() on any of them will rewrite
-// just the updated list). Refuses to empty a file's last identity — a
-// keystore must always contain at least one — and to remove a username
+// just the updated list). Refuses to empty a file's last identity, a
+// keystore must always contain at least one, and to remove a username
 // that doesn't exist in the list.
 func RemoveIdentity(list []*Keystore, username string) ([]*Keystore, error) {
 	if len(list) <= 1 {
@@ -1907,7 +1907,7 @@ func RemoveIdentity(list []*Keystore, username string) ([]*Keystore, error) {
 }
 
 // Save encrypts the keystore (the whole list of linked identities, if
-// any — see LoadAll/AddIdentity — otherwise just the current identity)
+// any, see LoadAll/AddIdentity, otherwise just the current identity)
 // and writes it to disk atomically. The snapshot and the write happen
 // under ks.mu, so concurrent saves never interleave and the file always
 // ends up holding the latest one; the key derivation, independent of
@@ -1981,12 +1981,12 @@ func (ks *Keystore) Save(path, password string) error {
 }
 
 // AddContact adds or updates a contact in the keystore. Deduplication
-// by IdentityPub — a contact's real unique identity, never by Username:
+// by IdentityPub, a contact's real unique identity, never by Username:
 // two contacts can legitimately share the same self-declared username
 // (e.g. a contact did a nuke and reappeared with a new identity under
-// the same name they chose — there can be countless contacts sharing a
+// the same name they chose, there can be countless contacts sharing a
 // display name in the address book, each with a different URI, and the
-// check must be on that, not on the name) — the same convention used by
+// check must be on that, not on the name), the same convention used by
 // MergeContacts (contact-list sync).
 func (ks *Keystore) AddContact(c Contact) {
 	ks.mu.Lock()
@@ -2001,13 +2001,13 @@ func (ks *Keystore) AddContact(c Contact) {
 }
 
 // ContactsSnapshot returns a copy of Contacts, safe to iterate over
-// without holding any lock — for every caller not already guaranteed
+// without holding any lock, for every caller not already guaranteed
 // to run in mutual exclusion with AddContact/DeleteContactByPub (e.g.
 // event-driven probe/rotation on a network goroutine, or a UI building
 // a list while a network goroutine mutates the contact list in
 // parallel), instead of iterating ks.Contacts directly. The fields'
 // individual []byte values aren't duplicated: a caller must never write
-// into one in place — changes go through
+// into one in place, changes go through
 // UpdateContactByPub/SetContactDevice/AddContact.
 func (ks *Keystore) ContactsSnapshot() []Contact {
 	ks.mu.Lock()
@@ -2015,7 +2015,7 @@ func (ks *Keystore) ContactsSnapshot() []Contact {
 	out := make([]Contact, len(ks.Contacts))
 	copy(out, ks.Contacts)
 	// Devices is a map (a reference type): the copy() above duplicates
-	// only the Contact struct, not the map itself — without this, every
+	// only the Contact struct, not the map itself, without this, every
 	// *DeviceRelation would stay the SAME live keystore object, mutable
 	// by callers outside ks.mu. See Contact.CloneDevices.
 	for i := range out {
@@ -2025,7 +2025,7 @@ func (ks *Keystore) ContactsSnapshot() []Contact {
 }
 
 // ContactIdentityPubs returns the Ed25519 pubkeys of every known
-// contact — used by the "knock mutuality" getter (knownContactPubsFn,
+// contact, used by the "knock mutuality" getter (knownContactPubsFn,
 // passed to server.RunOnListener) invoked by an HTTP goroutine for
 // every incoming knock, instead of iterating ks.Contacts directly, which
 // would race with AddContact/DeleteContactByPub.
@@ -2040,7 +2040,7 @@ func (ks *Keystore) ContactIdentityPubs() [][]byte {
 }
 
 // AppendKnownDevice registers or updates (by DeviceID) a device known
-// to also host this identity — learned through "indoor" sync or
+// to also host this identity, learned through "indoor" sync or
 // inserted manually. A later sync overwrites the record entirely
 // (DevicePub/Label/SiblingIdentities may have changed meanwhile), never
 // a simple field-by-field merge. A no-op if rec.DeviceID is this same
@@ -2080,12 +2080,12 @@ func (ks *Keystore) KnownDevicesSnapshot() []DeviceRecord {
 }
 
 // MergeKnownDevices applies AppendKnownDevice to every entry in
-// incoming — used to adopt a sibling's own KnownDevices list wholesale
+// incoming, used to adopt a sibling's own KnownDevices list wholesale
 // at sync time, so knowledge of a sibling spreads transitively: if peer
 // C already knows sibling B, syncing with C also makes B known here,
 // even without ever syncing with B directly. Returns how many entries
 // were brand new (added), as opposed to updates of an already-known
-// device — ignores any entry for this same device's own DeviceID (see
+// device, ignores any entry for this same device's own DeviceID (see
 // AppendKnownDevice).
 func (ks *Keystore) MergeKnownDevices(incoming []DeviceRecord) (added int) {
 	ks.mu.Lock()
@@ -2126,7 +2126,7 @@ func (ks *Keystore) isDeviceNukedLocked(devicePub []byte) bool {
 	return false
 }
 
-// MarkDeviceNuked records devicePub as nuked — idempotent, grows-only
+// MarkDeviceNuked records devicePub as nuked, idempotent, grows-only
 // (never pruned: an unknown-at-the-time sibling could still surface
 // later holding a stale SiblingRevocations entry toward it, same
 // permanence principle as Keystore.DeletedContacts).
@@ -2144,7 +2144,7 @@ func (ks *Keystore) markDeviceNukedLocked(devicePub []byte) bool {
 	return true
 }
 
-// MergeNukedDevicePubs unions incoming into NukedDevicePubs — same
+// MergeNukedDevicePubs unions incoming into NukedDevicePubs, same
 // transitive-gossip semantics as MergeKnownDevices: once any sibling
 // learns a device was nuked, that knowledge spreads to every sibling it
 // syncs with, not only the one that originated it.
@@ -2171,7 +2171,7 @@ func (ks *Keystore) NukedDevicePubsSnapshot() [][]byte {
 }
 
 // AddPendingRemoteNuke registers targetDeviceID as a not-yet-confirmed
-// remote_nuke command — a no-op if already present (a repeated request
+// remote_nuke command, a no-op if already present (a repeated request
 // before an ack arrives doesn't reset RequestedAt, it stays that of the
 // first attempt). The caller calls Save() afterward.
 func (ks *Keystore) AddPendingRemoteNuke(targetDeviceID []byte) {
@@ -2189,7 +2189,7 @@ func (ks *Keystore) AddPendingRemoteNuke(targetDeviceID []byte) {
 }
 
 // RemovePendingRemoteNuke removes targetDeviceID from the queue (called
-// on the first remote_nuke_ack received for that device) — returns true
+// on the first remote_nuke_ack received for that device), returns true
 // if there really was an entry to remove, so the caller knows whether a
 // save is needed.
 func (ks *Keystore) RemovePendingRemoteNuke(targetDeviceID []byte) bool {
@@ -2206,7 +2206,7 @@ func (ks *Keystore) RemovePendingRemoteNuke(targetDeviceID []byte) bool {
 
 // PendingRemoteNukeTargets resolves every PendingRemoteNukes.TargetDeviceID
 // against KnownDevices, returning the complete DeviceRecord (with
-// SiblingIdentities) needed to redo the fan-out on every startup — a
+// SiblingIdentities) needed to redo the fan-out on every startup, a
 // TargetDeviceID with no matching entry in KnownDevices anymore (should
 // never happen: KnownDevices is never pruned) is silently dropped,
 // there's no way to redirect it without knowing where.
@@ -2226,7 +2226,7 @@ func (ks *Keystore) PendingRemoteNukeTargets() []DeviceRecord {
 }
 
 // SetDangerBroadcastPending registers the contacts with identity keys pubs as not yet
-// confirmed for the danger_broadcast related to targetDeviceID — called
+// confirmed for the danger_broadcast related to targetDeviceID, called
 // once, when the remote_nuke command is issued (cmdRemoteNuke).
 // Overwrites any preexisting entry for the same targetDeviceID. The
 // caller calls Save() afterward.
@@ -2237,7 +2237,7 @@ func (ks *Keystore) SetDangerBroadcastPending(targetDeviceID []byte, pubs [][]by
 }
 
 // ConfirmDangerBroadcast removes the contact with identity key pub from targetDeviceID's
-// unconfirmed list (called on receiving a danger_broadcast_ack) — if
+// unconfirmed list (called on receiving a danger_broadcast_ack), if
 // the list becomes empty, the whole entry is removed. Returns true if
 // something changed, so the caller knows whether a save is needed.
 func (ks *Keystore) ConfirmDangerBroadcast(targetDeviceID, pub []byte) bool {
@@ -2249,7 +2249,7 @@ func (ks *Keystore) ConfirmDangerBroadcast(targetDeviceID, pub []byte) bool {
 }
 
 // SetDangerEndPending registers the contacts with identity keys pubs as not yet confirmed
-// for the danger_end related to targetDeviceID — same scheme as
+// for the danger_end related to targetDeviceID, same scheme as
 // SetDangerBroadcastPending, a separate queue. The caller calls Save()
 // afterward.
 func (ks *Keystore) SetDangerEndPending(targetDeviceID []byte, pubs [][]byte) {
@@ -2259,7 +2259,7 @@ func (ks *Keystore) SetDangerEndPending(targetDeviceID []byte, pubs [][]byte) {
 }
 
 // ConfirmDangerEnd removes the contact with identity key pub from targetDeviceID's unconfirmed
-// list (called on receiving a danger_end_ack) — same scheme as
+// list (called on receiving a danger_end_ack), same scheme as
 // ConfirmDangerBroadcast, a separate queue.
 func (ks *Keystore) ConfirmDangerEnd(targetDeviceID, pub []byte) bool {
 	ks.mu.Lock()
@@ -2343,7 +2343,7 @@ func clonePubs(pubs [][]byte) [][]byte {
 }
 
 // UpdateContactsLastAck updates in bulk the last-ack timestamp for the
-// given contacts — map keys are string(IdentityPub), not Username (two
+// given contacts, map keys are string(IdentityPub), not Username (two
 // contacts can share the same Username, never the same IdentityPub).
 // Meant to be called once per probe cycle (not per single ack): Save()
 // rederives the key with Argon2id on every call, expensive by design,
@@ -2365,7 +2365,7 @@ func (ks *Keystore) UpdateContactsLastAck(acks map[string]time.Time) bool {
 
 // UpdateContactsLastSeen updates in bulk the last-time-reached-over-TCP
 // timestamp from a probe cycle (a weaker signal than LastAckAt: it only
-// proves the onion address responds, not an authenticated round-trip) —
+// proves the onion address responds, not an authenticated round-trip),
 // map keys are string(IdentityPub), same reason as UpdateContactsLastAck
 // above. Same batching reason: a single Save() per cycle, not one per
 // reached contact.
@@ -2383,7 +2383,7 @@ func (ks *Keystore) UpdateContactsLastSeen(seen map[string]time.Time) bool {
 }
 
 // GetContactByPub returns a copy of the contact with this exact
-// IdentityPub — UNIQUE by construction (see AddContact): a contact is
+// IdentityPub, UNIQUE by construction (see AddContact): a contact is
 // identified by its identity key, never by its self-declared username,
 // which several contacts can share. The copy (Devices included, see
 // CloneDevices) never aliases the keystore: a change must go through
@@ -2402,7 +2402,7 @@ func (ks *Keystore) GetContactByPub(pub []byte) (Contact, bool) {
 }
 
 // UpdateContactByPub runs fn on the live contact with this exact
-// IdentityPub, under ks.mu — the only way to change a contact's fields
+// IdentityPub, under ks.mu, the only way to change a contact's fields
 // (or its Devices) in place without racing a concurrent save, read or
 // other update. fn must not call any other Keystore method (ks.mu is not
 // reentrant) and must not retain c beyond its own call. Returns false,
@@ -2420,7 +2420,7 @@ func (ks *Keystore) UpdateContactByPub(pub []byte, fn func(c *Contact)) bool {
 }
 
 // SetContactDevice writes dev as the Devices entry devKey of the contact
-// with this exact IdentityPub, under ks.mu — the commit step for a
+// with this exact IdentityPub, under ks.mu, the commit step for a
 // caller that worked on a copy of one device (GetContactByPub): the
 // contact's other fields and devices stay as they are now, never
 // overwritten with the copy's older values. dropPlaceholder also
@@ -2441,7 +2441,7 @@ func (ks *Keystore) SetContactDevice(pub []byte, devKey string, dev DeviceRelati
 // relBundleEdLen/relBundleMLKEMLen/relBundleMLDSALen are the fixed
 // (never variable) lengths of the three secrets packed together in
 // OldRelIdentityPriv/OldRelContentPriv (a single vault instead of three)
-// — Ed25519 priv (64), ML-KEM-768 "d||z" seed (64), ML-DSA-65 seed (32).
+// Ed25519 priv (64), ML-KEM-768 "d||z" seed (64), ML-DSA-65 seed (32).
 const (
 	relBundleEdLen    = ed25519.PrivateKeySize
 	relBundleMLKEMLen = 64
@@ -2457,7 +2457,7 @@ func packRelBundle(edPriv, mlkemSeed, mldsaSeed []byte) []byte {
 }
 
 // genRelKeyMaterial generates a new Ed25519 pair + its two PQC
-// companions (ML-KEM-768, ML-DSA-65) — the same trio generated together
+// companions (ML-KEM-768, ML-DSA-65), the same trio generated together
 // for every relationship key (IdentityKey-per-contact or
 // ContentKey-per-contact).
 func genRelKeyMaterial() (edPriv, mlkemSeed, mldsaSeed []byte, err error) {
@@ -2476,7 +2476,7 @@ func genRelKeyMaterial() (edPriv, mlkemSeed, mldsaSeed []byte, err error) {
 	return []byte(priv), mlkemDK.Bytes(), seed, nil
 }
 
-// findContactIdxByPubLocked assumes ks.mu is already held — used for
+// findContactIdxByPubLocked assumes ks.mu is already held, used for
 // the automatic/knock-driven case (never a command typed by the user)
 // where the contact's real IdentityPub is already known in the call's
 // context (see GetContactByPub).
@@ -2491,7 +2491,7 @@ func (ks *Keystore) findContactIdxByPubLocked(pub []byte) int {
 
 // StartRelIdentityRotationByPub starts rotation of the
 // IdentityKey-per-relationship (+ PQC companions) toward EVERY ready
-// device of a contact (Contact.ReadyDevices) — an independent secret
+// device of a contact (Contact.ReadyDevices), an independent secret
 // generated for each, never a guessed choice on just ONE (no UI to
 // choose which device to rotate). A device whose ContentKey is already
 // rotating is silently skipped (never two keys in flight at once on the
@@ -2502,7 +2502,7 @@ func (ks *Keystore) findContactIdxByPubLocked(pub []byte) int {
 // state, it fails only if NONE could be started. Returns the keys
 // (DevicePub) actually put into rotation. Never ambiguous: searches by
 // IdentityPub, never by username (acceptable only after a picker has
-// already disambiguated any namesakes — see
+// already disambiguated any namesakes, see
 // cmdStartRelRotation, tui.go).
 func (ks *Keystore) StartRelIdentityRotationByPub(pub []byte) ([]string, error) {
 	ks.mu.Lock()
@@ -2552,7 +2552,7 @@ func (ks *Keystore) StartRelIdentityRotationByPub(pub []byte) ([]string, error) 
 }
 
 // StartRelContentRotationByPub is the counterpart of
-// StartRelIdentityRotationByPub for the ContentKey-per-relationship —
+// StartRelIdentityRotationByPub for the ContentKey-per-relationship,
 // the same fan-out over every ready device, the same mutual guard per
 // device.
 func (ks *Keystore) StartRelContentRotationByPub(pub []byte) ([]string, error) {
@@ -2603,15 +2603,15 @@ func (ks *Keystore) StartRelContentRotationByPub(pub []byte) ([]string, error) {
 }
 
 // MarkRelIdentityConfirmed closes the IdentityKey-per-relationship
-// rotation for ONE device of a contact after its confirmation — clears
+// rotation for ONE device of a contact after its confirmation, clears
 // the flag and the old key. devicePub identifies the exact device (the
 // incoming ack's RelRotatePayload.DevicePub field, already available to
 // the caller): with an empty or non-matching devicePub it falls back to
 // Contact.SoleDevice() (a peer that doesn't send it). Returns false if
 // no rotation was in progress
 // for that device. Searches the contact by IdentityPub (never by
-// username): triggered by an incoming "rel_identity_rotate_ack" —
-// automatic, never a name typed with a picker available — must stay
+// username): triggered by an incoming "rel_identity_rotate_ack",
+// automatic, never a name typed with a picker available, must stay
 // unique even with namesake contacts in the list.
 func (ks *Keystore) MarkRelIdentityConfirmed(pub, devicePub []byte) bool {
 	ks.mu.Lock()
@@ -2633,7 +2633,7 @@ func (ks *Keystore) MarkRelIdentityConfirmed(pub, devicePub []byte) bool {
 }
 
 // MarkRelContentConfirmed is the counterpart of MarkRelIdentityConfirmed
-// for the ContentKey-per-relationship — the same devicePub resolution
+// for the ContentKey-per-relationship, the same devicePub resolution
 // with the same fallback.
 func (ks *Keystore) MarkRelContentConfirmed(pub, devicePub []byte) bool {
 	ks.mu.Lock()
@@ -2655,13 +2655,13 @@ func (ks *Keystore) MarkRelContentConfirmed(pub, devicePub []byte) bool {
 }
 
 // MarkDeviceRevoked applies a verified revocation (shared.VerifyRelRevoke,
-// already checked by the caller — see applyRelRevoke) to ONE device of
-// a contact — the same devicePub resolution and the same fallback as
+// already checked by the caller, see applyRelRevoke) to ONE device of
+// a contact, the same devicePub resolution and the same fallback as
 // MarkRelIdentityConfirmed/MarkRelContentConfirmed above. revokeIdentity/
 // revokeContent reflect which of the two certificates were present and
 // valid in the received knock (RelRevokePayload.IdentitySig/ContentSig,
 // never both absent in a valid announcement). Setting an already-true
-// flag is a safe no-op (revocation is never regressive) — returns false
+// flag is a safe no-op (revocation is never regressive), returns false
 // only if the contact or device wasn't found, never for "already
 // revoked".
 func (ks *Keystore) MarkDeviceRevoked(pub, devicePub []byte, revokeIdentity, revokeContent bool) bool {
@@ -2689,11 +2689,11 @@ func (ks *Keystore) MarkDeviceRevoked(pub, devicePub []byte, revokeIdentity, rev
 
 // AckSiblingRevocation marks Acked=true on every entry of the
 // Contact.SiblingRevocations pool referring to peerDevicePub, on
-// receiving a "rel_revoke_ack" — best-effort: an ack doesn't carry the
+// receiving a "rel_revoke_ack", best-effort: an ack doesn't carry the
 // identity of the sibling that materially sent the revocation (only the
 // REVOKED device, peerDevicePub), so it doesn't distinguish between
 // different siblings with independent relationships toward the same
-// contact device — harmless, Acked is only a retry optimization for the
+// contact device, harmless, Acked is only a retry optimization for the
 // nuke sequence, never a security-relevant datum. Returns false only if
 // the contact wasn't found or the pool had no relevant entry.
 func (ks *Keystore) AckSiblingRevocation(pub, peerDevicePub []byte) bool {
@@ -2715,7 +2715,7 @@ func (ks *Keystore) AckSiblingRevocation(pub, peerDevicePub []byte) bool {
 
 // ConfirmPendingRelKeys closes a relationship-key conflict (TrustDanger)
 // on a contact's device that actually has a pending conflict, after an
-// explicit out-of-band user confirmation (/sec-verify) — promotes
+// explicit out-of-band user confirmation (/sec-verify), promotes
 // PendingPeerRelIdentityPub/PendingPeerRelContentPub (+ PQC companions)
 // to PeerRelIdentityPub/PeerRelContentPub, clears Verified (the
 // previous trust applied to the old keys, it must be regained with a
@@ -2723,7 +2723,7 @@ func (ks *Keystore) AckSiblingRevocation(pub, peerDevicePub []byte) bool {
 // stays unchanged (a historical fact about how the contact was added,
 // independent of the keys). Searches the contact by IdentityPub, never
 // by username, for the same reason as MarkRelIdentityConfirmed above;
-// the device is resolved with Contact.DeviceWithPendingRelKeys() — never
+// the device is resolved with Contact.DeviceWithPendingRelKeys(), never
 // an arbitrary choice: if more than one device has a simultaneous
 // pending conflict (a rare case, no UI to choose which), it stays on
 // the first in deterministic order.
@@ -2763,7 +2763,7 @@ func (ks *Keystore) ConfirmPendingRelKeys(pub []byte) bool {
 	return true
 }
 
-// DeleteContactByPub removes the contact with the given IdentityPub —
+// DeleteContactByPub removes the contact with the given IdentityPub,
 // the key is a contact's only truly unique identifier.
 func (ks *Keystore) DeleteContactByPub(pub []byte) bool {
 	ks.mu.Lock()
@@ -2805,7 +2805,7 @@ func (ks *Keystore) GetSavedGroup(nameOrID string) (SavedGroup, bool) {
 }
 
 // SavedGroupsSnapshot returns a copy of SavedGroups (each Members slice
-// included), safe to iterate without holding any lock — same role as
+// included), safe to iterate without holding any lock, same role as
 // ContactsSnapshot for the saved groups.
 func (ks *Keystore) SavedGroupsSnapshot() []SavedGroup {
 	ks.mu.Lock()

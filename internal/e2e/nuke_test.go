@@ -30,7 +30,7 @@ import (
 // decoyName is the decoy identity's username the harness creates for in.
 func decoyName(in *Instance) string { return in.Name + "-duress" }
 
-// waitIdentity waits until in's TUI runs as username — across the
+// waitIdentity waits until in's TUI runs as username, across the
 // re-entry after a nuke, when the agent socket is recreated.
 func waitIdentity(t *testing.T, in *Instance, username string, timeout time.Duration) {
 	t.Helper()
@@ -122,7 +122,7 @@ func TestDuressPassword(t *testing.T) {
 	from := alice.LineCount("Console")
 	alice.Send("/sec-duress")
 	enterSecrets(alice, "")
-	alice.Wait("Console", `empty password — operation cancelled`, from, shortWait)
+	alice.Wait("Console", `empty password, operation cancelled`, from, shortWait)
 	alice.Send("/sec-duress")
 	enterSecrets(alice, identityPassword("alice"))
 	alice.Wait("Console", `cannot be the same as a real identity's password`, from, shortWait)
@@ -146,7 +146,7 @@ func TestDuressPassword(t *testing.T) {
 	loginFails(t, alice)
 }
 
-// TestNukeExpress: /nukex wipes the real identity at once — the process
+// TestNukeExpress: /nukex wipes the real identity at once, the process
 // keeps running as the decoy identity, which holds none of the real
 // contacts; contacts are told the relationship is revoked, a second
 // /nukex changes nothing, and the real password no longer logs in while
@@ -203,8 +203,8 @@ func TestNukeTimeout(t *testing.T) {
 	waitIdentity(t, alice, decoyName(alice), longWait)
 }
 
-// TestClearAll: /sec-clear-all asks for confirmation — "n" keeps
-// everything — and with "y" the process exits and the configuration
+// TestClearAll: /sec-clear-all asks for confirmation, "n" keeps
+// everything, and with "y" the process exits and the configuration
 // directory (keystore, config, saved QR codes) is gone.
 func TestClearAll(t *testing.T) {
 	r := NewRun(t)

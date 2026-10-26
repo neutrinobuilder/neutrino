@@ -29,7 +29,7 @@ import (
 // username included) under passwordFile+duressPasswordIdentity, and
 // one noise placeholder. Fills in the slot-model bookkeeping on
 // both (SlotPendingNoise, ContactPendingIdx, DuressAccess) before
-// sealing them — the caller does not need to set these itself.
+// sealing them, the caller does not need to set these itself.
 //
 // Returns the resulting UnlockedSlot for real, ready for the caller to
 // keep using this session exactly as if it had just been loaded from

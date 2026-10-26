@@ -36,7 +36,7 @@ func validProof(t *testing.T, secret, nonceClient []byte) []byte {
 	return shared.ComputeRoomProof(roomKey, nonceClient)
 }
 
-// staticResolver builds a resolver that always returns the same key pair —
+// staticResolver builds a resolver that always returns the same key pair,
 // convenient for tests that aren't about live resolution, just the
 // propagation of the value.
 func staticResolver(peerKey shared.RelPeerKey, signingKey shared.RelSigningKey) func() (shared.RelPeerKey, shared.RelSigningKey, bool) {
@@ -108,7 +108,7 @@ func TestRoomRegistryLookupReturnsIdentityPub(t *testing.T) {
 // TestRoomRegistryResolvesKeysLive verifies the structural property that
 // prevents stale-signature handshake failures between contacts whose
 // relationship was re-established: the secret registers a RESOLVER, not a
-// key pair — a rotation of the IdentityKey-per-relationship AFTER the
+// key pair, a rotation of the IdentityKey-per-relationship AFTER the
 // secret is already registered is reflected immediately on the next
 // LookupSecret, with no separate refresh call needed.
 func TestRoomRegistryResolvesKeysLive(t *testing.T) {
@@ -123,7 +123,7 @@ func TestRoomRegistryResolvesKeysLive(t *testing.T) {
 	_, oldSigningPriv, _ := ed25519.GenerateKey(rand.Reader)
 
 	// current* is mutated "in the background" (simulates a relationship
-	// rotation, e.g. keystore.Contact.RelIdentityPriv updated) — the
+	// rotation, e.g. keystore.Contact.RelIdentityPriv updated), the
 	// resolver reads it again on every call, never just once.
 	current := struct {
 		peerPub     ed25519.PublicKey
@@ -165,7 +165,7 @@ func TestRoomRegistryResolvesKeysLive(t *testing.T) {
 // TestRoomRegistryResolveKeysScopedPerDevice verifies that a contact with
 // two known devices invited into the SAME room has two memberSecret
 // entries with the same identityPub but different devicePub and SO two
-// independent resolvers — a relationship rotation on ONE of the two must
+// independent resolvers, a relationship rotation on ONE of the two must
 // never be reflected on the other, which stays valid with its own keys.
 func TestRoomRegistryResolveKeysScopedPerDevice(t *testing.T) {
 	reg := serverhs.NewRoomRegistry()
@@ -198,7 +198,7 @@ func TestRoomRegistryResolveKeysScopedPerDevice(t *testing.T) {
 	}
 	_, _, _, _, _, gotB, _, okB := reg.LookupSecret(nonce, validProof(t, secretB, nonce))
 	if !okB || !bytes.Equal(gotB.Pub, peerBPub) {
-		t.Errorf("device B: peerKey altered by device A's rotation — want unchanged %x, got %x", peerBPub, gotB.Pub)
+		t.Errorf("device B: peerKey altered by device A's rotation, want unchanged %x, got %x", peerBPub, gotB.Pub)
 	}
 }
 
@@ -244,7 +244,7 @@ func TestRoomRegistryReplaceSecret(t *testing.T) {
 	}
 	_, roomID, label, _, _, _, _, ok := reg.LookupSecret(nonce, validProof(t, newSecret, nonce))
 	if !ok || roomID != "room-1" || label != "alice" {
-		t.Fatalf("ReplaceSecret: the new secret is invalid — ok=%v roomID=%q label=%q", ok, roomID, label)
+		t.Fatalf("ReplaceSecret: the new secret is invalid, ok=%v roomID=%q label=%q", ok, roomID, label)
 	}
 }
 

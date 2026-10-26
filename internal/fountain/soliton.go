@@ -17,7 +17,7 @@ package fountain
 
 import "math"
 
-// Standard parameters of the robust soliton distribution (Luby, 2002) —
+// Standard parameters of the robust soliton distribution (Luby, 2002),
 // the same reference values used in the literature (c=0.1, δ=0.05). Fixed:
 // encoder and decoder must agree on the same distribution to independently
 // derive the same degree from a SymbolID, not meant to be adjustable per
@@ -28,7 +28,7 @@ const (
 )
 
 // degreeCDF precomputes the robust soliton distribution's cumulative
-// distribution function for k source blocks — once per transfer (k
+// distribution function for k source blocks, once per transfer (k
 // doesn't change within the same transfer). cdf[i] for i in [1,k]; cdf[0]
 // stays 0 and is never used (the minimum possible degree is 1).
 func degreeCDF(k int) []float64 {
@@ -67,7 +67,7 @@ func degreeCDF(k int) []float64 {
 	return cdf
 }
 
-// sampleDegree inverts the CDF for a uniform value r in [0,1) — linear
+// sampleDegree inverts the CDF for a uniform value r in [0,1), linear
 // search: k is at most a few thousand blocks per transfer, and the CDF is
 // recomputed only once per transfer, not per symbol, so a binary search
 // isn't needed here.
@@ -81,7 +81,7 @@ func sampleDegree(cdf []float64, r float64) int {
 }
 
 // symbolIndices derives, from SymbolID and k, the same degree and the same
-// set of source blocks on both the encoder and decoder side — no
+// set of source blocks on both the encoder and decoder side, no
 // additional field needs to be transmitted beyond the ID itself.
 func symbolIndices(id uint32, k int, cdf []float64) []int {
 	rng := newSplitmix64(id)

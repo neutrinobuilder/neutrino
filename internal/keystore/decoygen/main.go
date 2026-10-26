@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Command decoygen compresses decoy_names.json into decoy_names.json.xz —
+// Command decoygen compresses decoy_names.json into decoy_names.json.xz,
 // the artifact actually go:embed'd into the binary (see decoy_names.go).
 // The plain JSON stays the auditable source of truth in the repository;
 // re-run this (go generate ./internal/keystore) whenever decoy_names.json

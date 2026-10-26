@@ -37,7 +37,7 @@ type deliveryTestMsg struct {
 }
 
 // newDeliveryTestHub is the equivalent, in this internal package, of
-// newTestHub (hub_test.go, package server_test) — duplicated instead of
+// newTestHub (hub_test.go, package server_test), duplicated instead of
 // shared because roomDelivery isn't reachable from Hub's public API, so
 // these tests must live in the internal package.
 func newDeliveryTestHub(t *testing.T, ids []string) (hub *Hub, conns map[string]*websocket.Conn) {
@@ -87,7 +87,7 @@ func readDeliveryMsg(t *testing.T, conn *websocket.Conn, d time.Duration) (deliv
 }
 
 // hasPending reports whether identityPub still has at least one
-// unacknowledged entry in its queue — same package, internal state reached
+// unacknowledged entry in its queue, same package, internal state reached
 // directly without going through a public accessor.
 func hasPending(rd *roomDelivery, identityPub string) bool {
 	cq := rd.queueFor(identityPub)
@@ -99,7 +99,7 @@ func hasPending(rd *roomDelivery, identityPub string) bool {
 // TestRoomDeliveryDispatchAssignsIncreasingGSeqAndEchoesSender covers the
 // core of the mechanism: increasing gseq per message, delivered right away
 // to all known connected (live) members AND to the sender itself
-// (self-echo, required client-side — see the comment on Dispatch), the
+// (self-echo, required client-side, see the comment on Dispatch), the
 // latter in the same per-member pending queue as anyone else (see
 // TestRoomDeliverySenderEntersOwnQueueUntilSelfAck).
 func TestRoomDeliveryDispatchAssignsIncreasingGSeqAndEchoesSender(t *testing.T) {
@@ -150,7 +150,7 @@ func TestRoomDeliveryDispatchAssignsIncreasingGSeqAndEchoesSender(t *testing.T) 
 // sender disconnects exactly between gseq assignment and delivery of its
 // own self-echo, that self-echo is not lost forever: the sender enters its
 // own per-member pending queue like anyone else, and only leaves it once it
-// explicitly acknowledges (Ack, client-side the "self_relay_ack" frame) —
+// explicitly acknowledges (Ack, client-side the "self_relay_ack" frame),
 // not an implicit ack on mere delivery of the self-echo.
 func TestRoomDeliverySenderEntersOwnQueueUntilSelfAck(t *testing.T) {
 	hub, conns := newDeliveryTestHub(t, []string{"a", "b"})
@@ -208,7 +208,7 @@ func TestRoomDeliveryAckRemovesFromContactQueue(t *testing.T) {
 
 // TestRoomDeliveryQueuesForOfflineMemberAndDeliversOnReconnect verifies
 // that a member KNOWN to the room but not connected at this instant
-// (absent from live) still remains a recipient — Dispatch queues it without
+// (absent from live) still remains a recipient, Dispatch queues it without
 // attempting delivery; when it (re)connects (SetLive, a new session
 // userID) RetryAndEvict delivers the backlog, with no queue migration
 // needed (the key stays its root identityPub, stable across the
@@ -254,7 +254,7 @@ func TestRoomDeliveryQueuesForOfflineMemberAndDeliversOnReconnect(t *testing.T) 
 // TestRoomDeliveryRetryAndEvictResendsAfterBackoff covers the last-mile
 // retry: an entry with an expired backoff is retransmitted verbatim to
 // whoever is connected now. nextRetry forced into the past instead of
-// waiting for deliveryRetryDelay (20s) — same package, internal state
+// waiting for deliveryRetryDelay (20s), same package, internal state
 // accessible.
 func TestRoomDeliveryRetryAndEvictResendsAfterBackoff(t *testing.T) {
 	hub, conns := newDeliveryTestHub(t, []string{"a", "b"})
@@ -291,7 +291,7 @@ func TestRoomDeliveryRetryAndEvictResendsAfterBackoff(t *testing.T) {
 }
 
 // TestRoomDeliveryRetryAndEvictKicksOnOverload covers the kick for a
-// saturated queue (outboundQueueSize) — closes the connection with
+// saturated queue (outboundQueueSize), closes the connection with
 // statusQueueOverloaded (never StatusPolicyViolation, reserved for
 // /grp-ban) and forgets the queue.
 func TestRoomDeliveryRetryAndEvictKicksOnOverload(t *testing.T) {
@@ -325,7 +325,7 @@ func TestRoomDeliveryRetryAndEvictKicksOnOverload(t *testing.T) {
 // TestRoomDeliveryRedispatchReplacesQueuedFrame covers a message
 // re-encrypted by its sender under a new generation (same msgID): it
 // keeps the gseq first assigned, and the copy still queued for a member
-// that hasn't acknowledged it is replaced by the new frame — the next
+// that hasn't acknowledged it is replaced by the new frame, the next
 // retry delivers the new ciphertext, never the refused one.
 func TestRoomDeliveryRedispatchReplacesQueuedFrame(t *testing.T) {
 	hub, conns := newDeliveryTestHub(t, []string{"a", "b"})

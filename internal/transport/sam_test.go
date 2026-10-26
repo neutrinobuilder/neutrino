@@ -69,7 +69,7 @@ func (b *fakeSAMBridge) handleConn(conn net.Conn) {
 	rw.Flush()
 
 	// Next command (SESSION CREATE / STREAM ACCEPT / STREAM CONNECT), if
-	// present — samHello alone (samDialRaw) sends no others.
+	// present, samHello alone (samDialRaw) sends no others.
 	cmdLine, err := rw.ReadString('\n')
 	if err != nil {
 		return
@@ -288,11 +288,11 @@ func TestSamSessionCreateRespectsCtxTimeout(t *testing.T) {
 			t.Fatal("samSessionCreate: want an error for the ctx timeout")
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal("samSessionCreate didn't unblock within the ctx timeout — the read ignores ctx")
+		t.Fatal("samSessionCreate didn't unblock within the ctx timeout, the read ignores ctx")
 	}
 }
 
-// TestSamDialRespectsCtxTimeout — same guarantee as above, for STREAM CONNECT.
+// TestSamDialRespectsCtxTimeout, same guarantee as above, for STREAM CONNECT.
 func TestSamDialRespectsCtxTimeout(t *testing.T) {
 	silence := make(chan struct{})
 	t.Cleanup(func() { close(silence) })
@@ -315,13 +315,13 @@ func TestSamDialRespectsCtxTimeout(t *testing.T) {
 			t.Fatal("samDial: want an error for the ctx timeout")
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal("samDial didn't unblock within the ctx timeout — the read ignores ctx")
+		t.Fatal("samDial didn't unblock within the ctx timeout, the read ignores ctx")
 	}
 }
 
 // TestSamListenerAcceptUnblocksOnClose verifies the same guarantee
 // extended to Accept() (net.Listener, no per-call ctx available: here
-// the correct context to honor is l.ctx, canceled by Close()) — a
+// the correct context to honor is l.ctx, canceled by Close()), a
 // Close() during an in-flight STREAM ACCEPT (a SAM bridge that replies
 // to HELLO but then stays silent) must not leave Accept() blocked
 // forever, even after the listener is closed.
@@ -351,7 +351,7 @@ func TestSamListenerAcceptUnblocksOnClose(t *testing.T) {
 			t.Fatal("Accept: want an error after Close")
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal("Accept didn't unblock within the timeout after Close — the read ignores l.ctx")
+		t.Fatal("Accept didn't unblock within the timeout after Close, the read ignores l.ctx")
 	}
 }
 
@@ -362,7 +362,7 @@ func TestFanInListenerAcceptsFromLocal(t *testing.T) {
 	}
 	// A fake SAM bridge that replies to HELLO but then stays silent on
 	// STREAM ACCEPT (blocks indefinitely, never an error nor a success)
-	// — avoids the intrinsic race of a SAM address that fails
+	// avoids the intrinsic race of a SAM address that fails
 	// IMMEDIATELY: that failure would arrive on errCh at an unpredictable
 	// moment relative to the "local" connection this test verifies, and
 	// select() between the two might pick the error.

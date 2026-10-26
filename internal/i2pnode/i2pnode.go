@@ -15,7 +15,7 @@
 
 // Package i2pnode manages the i2pd process embedded in the binary.
 // On linux/amd64 and linux/arm64 (e.g. Termux/Android) the i2pd binary
-// is embedded directly (go:embed, static musl/Alpine build — see
+// is embedded directly (go:embed, static musl/Alpine build, see
 // download_build_i2pd.sh); on other platforms the system `i2pd` daemon is
 // used as a fallback, the same scheme as internal/tornode for Tor.
 //
@@ -65,7 +65,7 @@ func (n *Node) SAMAddr() string { return n.samAddr }
 // LogCh returns the i2pd process's log channel, one line per element.
 // Buffered (2000 elements, a ring buffer: when full it discards the
 // oldest line, not the newly arriving one, so a later dump always shows
-// the most recent events — the ones useful for understanding a timeout).
+// the most recent events, the ones useful for understanding a timeout).
 func (n *Node) LogCh() <-chan string { return n.logCh }
 
 // Close stops the i2pd process and releases its resources (extracted
@@ -112,9 +112,9 @@ func StartI2p(ctx context.Context) (*Node, error) {
 	// Local DoH proxy for reseed: the i2pd binary is static (musl) and
 	// its system resolver reads /etc/resolv.conf, unusable on
 	// Android/Termux (DNS there goes through netd/Bionic, not that
-	// file) — every reseed lookup fails with "Host not found". The proxy
+	// file), every reseed lookup fails with "Host not found". The proxy
 	// resolves hosts via DNS-over-HTTPS in Go, bypassing the system
-	// resolver entirely — applied on every platform, not just Android:
+	// resolver entirely, applied on every platform, not just Android:
 	// it also keeps the system DNS resolver (often
 	// the ISP's, in the clear) from seeing I2P reseed requests. See
 	// internal/dohresolver.
@@ -163,7 +163,7 @@ func StartI2p(ctx context.Context) (*Node, error) {
 	}
 
 	// cmd.Wait() must be called exactly once in the process's lifetime
-	// (otherwise panic "exec: Wait was already called") — this goroutine
+	// (otherwise panic "exec: Wait was already called"), this goroutine
 	// is the only place that does it, both for reaping and for detecting
 	// an early exit (e.g. a crash) while waitSAMReady is still waiting.
 	exitedCh := make(chan error, 1)
@@ -190,8 +190,8 @@ func StartI2p(ctx context.Context) (*Node, error) {
 // platform, otherwise the one found on the system PATH.
 func resolveBinary() (path string, cleanup func(), err error) {
 	if runtime.GOOS == "android" {
-		// The real binary (libi2pd.so, PurpleI2P/i2pd-android — a
-		// standalone ELF, not disguised) isn't go:embed — it arrives in
+		// The real binary (libi2pd.so, PurpleI2P/i2pd-android, a
+		// standalone ELF, not disguised) isn't go:embed, it arrives in
 		// the APK via jniLibs/<abi>/ and is already executable
 		// (755) because it's extracted by the PackageManager into
 		// nativeLibraryDir: no writing, no chmod, no cleanup.
@@ -244,7 +244,7 @@ func extractBinary() (path string, cleanup func(), err error) {
 // given file. No-op on platforms other than macOS. Needed because the
 // official i2pd binary for macOS isn't signed at all: on Apple Silicon
 // the kernel refuses to map an unsigned Mach-O as executable, even
-// ad-hoc — same reason, same solution as internal/tornode.adhocSignDarwin
+// ad-hoc, same reason, same solution as internal/tornode.adhocSignDarwin
 // for Tor. codesign is part of the operating system (doesn't require
 // Xcode).
 func adhocSignDarwin(path string) error {
@@ -292,7 +292,7 @@ func waitSAMReady(ctx context.Context, samAddr string, timeout time.Duration, ex
 // drainLog non-blockingly collects every line already arrived on ch (the
 // i2pd log buffered during startup) into a single string, so it can be
 // included in the error when the process never manages to open the SAM
-// bridge — otherwise those lines stay buffered in the channel and are
+// bridge, otherwise those lines stay buffered in the channel and are
 // lost when Start returns an error (the Node, and therefore LogCh(), is
 // never returned to the caller on that path).
 func drainLog(ch <-chan string) string {
@@ -312,17 +312,17 @@ func drainLog(ch <-chan string) string {
 
 // ansiEscapeRe recognizes ANSI escape sequences (terminal colors, e.g.
 // "\x1b[1;36m"/"\x1b[0m") that i2pd writes unconditionally to its own
-// stdout even with "--log=stdout" — unlike Tor (internal/tornode), which
+// stdout even with "--log=stdout", unlike Tor (internal/tornode), which
 // never colors its own log. Without this cleanup the sequences would
 // arrive intact at the log channel and end up displayed as literal text
 // (e.g. "␛[1;36minfo␛[0m") in whatever screen shows them
-// (screens/network_log.go on Android, the desktop TUI's "Network" tab —
+// (screens/network_log.go on Android, the desktop TUI's "Network" tab,
 // both consume the same internal/i2pnode.Node.LogCh(), so fixing it here
 // in one place covers both platforms).
 var ansiEscapeRe = regexp.MustCompile("\x1b\\[[0-9;]*m")
 
 // logWriter forwards the i2pd process's stdout/stderr lines to the log
-// channel — the same scheme as torWriter in internal/tornode, without
+// channel, the same scheme as torWriter in internal/tornode, without
 // progress parsing (i2pd exposes no granular signal like "Bootstrapped
 // X%").
 type logWriter struct {
@@ -346,7 +346,7 @@ func (w *logWriter) Write(p []byte) (int, error) {
 		case w.ch <- line:
 		default:
 			// Channel full: discard the oldest line to make room for the
-			// new one, not the other way around — otherwise a later dump
+			// new one, not the other way around, otherwise a later dump
 			// would show only the oldest events (e.g. the first seconds
 			// of startup), never the ones close to a timeout.
 			select {

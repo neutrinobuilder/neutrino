@@ -74,10 +74,10 @@ func TestBuildPodSnapshot(t *testing.T) {
 		t.Errorf("IdentitySig mismatch")
 	}
 	if len(target.IdentitySig) == 0 {
-		t.Fatal("IdentitySig empty — ensureRelRevocations should have populated it")
+		t.Fatal("IdentitySig empty, ensureRelRevocations should have populated it")
 	}
 	if len(target.DHTag) == 0 {
-		t.Fatal("DHTag empty — the recipient's server would silently ignore this knock")
+		t.Fatal("DHTag empty, the recipient's server would silently ignore this knock")
 	}
 	wantTag, err := shared.KnockDHTag(ks.IdentityPrivKey(), ed25519.PublicKey(contactIdentityPub))
 	if err != nil {
@@ -98,7 +98,7 @@ func TestBuildPodSnapshot(t *testing.T) {
 	}
 
 	// The whole point of the snapshot is to carry nothing an attacker
-	// could use to decrypt/impersonate — verify no private key material
+	// could use to decrypt/impersonate, verify no private key material
 	// (RelIdentityPriv, the root IdentityKey, etc.) ever reaches the
 	// marshaled form. DHTag is deliberately NOT covered by this check:
 	// it's a derived, non-reversible artifact (can't recover the private
@@ -132,7 +132,7 @@ func TestBuildPodSnapshotSkipsContactsWithNoRevocation(t *testing.T) {
 		Username:    "bob",
 		IdentityPub: contactIdentityPub,
 		Devices: map[string]*DeviceRelation{
-			string(devicePub): {}, // no RelIdentityPriv/RelContentPriv ever set — nothing to revoke
+			string(devicePub): {}, // no RelIdentityPriv/RelContentPriv ever set, nothing to revoke
 		},
 	})
 

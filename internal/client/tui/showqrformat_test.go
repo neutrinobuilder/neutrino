@@ -22,7 +22,7 @@ import (
 )
 
 // TestHandleInputShowQREntersFormatChoice verifies "/show-qr" only opens
-// the format picker, like `neutrino show-qr`'s CLI prompt — it must never
+// the format picker, like `neutrino show-qr`'s CLI prompt, it must never
 // jump straight to the animated QR.
 func TestHandleInputShowQREntersFormatChoice(t *testing.T) {
 	m := &model{}

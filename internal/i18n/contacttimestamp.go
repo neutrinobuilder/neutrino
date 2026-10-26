@@ -21,24 +21,24 @@ import (
 )
 
 // ContactTimestampWidth is the fixed width (in runes) of every string
-// returned by FormatContactTimestamp — "mmm dd hh:mm", 3+1+2+1+5 — used to
+// returned by FormatContactTimestamp, "mmm dd hh:mm", 3+1+2+1+5, used to
 // align the column even when there's no real timestamp (see
 // tui.go:renderContactLine).
 const ContactTimestampWidth = 12
 
 // ContactTimestampPlaceholder replaces FormatContactTimestamp's output
-// when a contact has never been successfully probed — the same "mmm dd
+// when a contact has never been successfully probed, the same "mmm dd
 // hh:mm" shape but with dashes, not just "--:--" padded with spaces: on
 // screen, the two kinds of lines (a real timestamp and this placeholder)
 // stay visually in the same shape, not just the same character width
 // (already guaranteed, 12 as ContactTimestampWidth).
 const ContactTimestampPlaceholder = "--- -- --:--"
 
-// FormatContactTimestamp formats t as "Month Day HH:MM" — ONLY for the
+// FormatContactTimestamp formats t as "Month Day HH:MM", ONLY for the
 // Contacts list, on both platforms. Different from shared.TimeLayout (used
 // everywhere else in the app, the Tor log format with seconds/
 // milliseconds, month always in English since Go's time.Format never
-// localizes on its own) — here the month name instead follows Active(),
+// localizes on its own), here the month name instead follows Active(),
 // resolved from the catalog (keys month.01..month.12, always 3 runes per
 // language). Day always two digits (%02d, not %d): a constant width
 // (ContactTimestampWidth) regardless of the day of the month, needed for

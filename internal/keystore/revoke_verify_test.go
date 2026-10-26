@@ -25,7 +25,7 @@ import (
 
 // TestRelKeysForDeviceRejectsRevokedIdentity verifies that a device with
 // RevokedIdentity=true (a verified "rel_revoke" knock) must no longer
-// authenticate a handshake — treated as if the device didn't exist at
+// authenticate a handshake, treated as if the device didn't exist at
 // all (ok=false), the same outcome as a contact/device not found or
 // incomplete keys.
 func TestRelKeysForDeviceRejectsRevokedIdentity(t *testing.T) {
@@ -66,7 +66,7 @@ func TestRelKeysForDeviceRejectsRevokedIdentity(t *testing.T) {
 
 // TestRelKeysForDeviceIgnoresRevokedContent verifies that
 // RevokedContent (without RevokedIdentity) doesn't prevent the
-// handshake from authenticating — the two revocations are independent,
+// handshake from authenticating, the two revocations are independent,
 // the same principle already established for
 // RelIdentityConfirmedByPeer/RelContentConfirmedByPeer.
 func TestRelKeysForDeviceIgnoresRevokedContent(t *testing.T) {

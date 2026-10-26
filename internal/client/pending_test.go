@@ -50,7 +50,7 @@ func TestSendRegistersPendingForKnownRecipients(t *testing.T) {
 
 // TestSendBlockedByBackpressureDoesNotAdvanceState covers the pending
 // slot cap (PendingSlotLimit): once the threshold toward a recipient is
-// exceeded, a new Send must stop BEFORE touching ratchet/outMsgSeq — a
+// exceeded, a new Send must stop BEFORE touching ratchet/outMsgSeq, a
 // blocked attempt must never consume a chain step for a message that
 // wasn't even written to the wire.
 func TestSendBlockedByBackpressureDoesNotAdvanceState(t *testing.T) {
@@ -84,7 +84,7 @@ func TestSendBlockedByBackpressureDoesNotAdvanceState(t *testing.T) {
 
 // TestSenderKeyDeliveriesDontBlockSend: a rotation in a room of six
 // sends the new sender_key to every peer, each delivery pending until
-// that peer acks; a chat message sent right after must still go out —
+// that peer acks; a chat message sent right after must still go out,
 // only chat messages count toward the slot limit.
 func TestSenderKeyDeliveriesDontBlockSend(t *testing.T) {
 	cli := New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
@@ -164,7 +164,7 @@ func TestSendSenderKeyReliableSkipsPeerServedByRotation(t *testing.T) {
 // TestSendSenderKeyReliableRespectsDeferral: a peer whose new
 // sender_key was deferred by the rotation (backlog of the previous
 // generation still unacknowledged) doesn't get it from the distribution
-// retry either — only once the backlog is acknowledged.
+// retry either, only once the backlog is acknowledged.
 func TestSendSenderKeyReliableRespectsDeferral(t *testing.T) {
 	cli := New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
 	conn, frames := newCapturingTestWSConn(t)
@@ -253,7 +253,7 @@ func TestHandleAckClearsPendingEntry(t *testing.T) {
 
 // TestUnregisterUserDropsPendingWaiter covers the reason UnregisterUser
 // exists (see client.go): a member who left the room must not leave a
-// message waiting forever — their departure counts as "confirmed by
+// message waiting forever, their departure counts as "confirmed by
 // the others", never as a permanent stall.
 func TestUnregisterUserDropsPendingWaiter(t *testing.T) {
 	cli := New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})
@@ -275,7 +275,7 @@ func TestUnregisterUserDropsPendingWaiter(t *testing.T) {
 
 // TestRetryDueResendsSameFrameVerbatim covers the queue's central design
 // constraint: a retransmission resends EXACTLY the frame already written
-// the first time (same ciphertext, same idx/kid/mseq) — never a new
+// the first time (same ciphertext, same idx/kid/mseq), never a new
 // ratchet step for a message still unconfirmed.
 func TestRetryDueResendsSameFrameVerbatim(t *testing.T) {
 	cli := New("127.0.0.1", 0, "me", nil, false, nil, nil, nil, shared.RelSigningKey{}, shared.RelPeerKey{})

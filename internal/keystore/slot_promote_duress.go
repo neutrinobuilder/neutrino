@@ -17,7 +17,7 @@ package keystore
 
 // PromoteDuress returns a new UnlockedSlot for the shared duress
 // identity, reachable directly from u (K_i_duress wrapped under u's
-// own K_i — DuressAccess/OpenDuressAccess, no password needed). A nuke
+// own K_i, DuressAccess/OpenDuressAccess, no password needed). A nuke
 // trigger (cmdNukeX, executeRemoteNuke, duress at the lock screen) uses
 // this to keep the running process alive AS duress instead of
 // terminating or returning to the login screen. Duress elevated this
@@ -25,7 +25,7 @@ package keystore
 // is the same shared duress every real identity in the file already
 // reaches.
 //
-// PasswordIdentity is left empty on the returned UnlockedSlot — u only
+// PasswordIdentity is left empty on the returned UnlockedSlot, u only
 // knows the REAL identity's own password, never duress's; a later
 // operation that needs it (RewrapOwnSlot, AddRealIdentity) simply isn't
 // available on a promoted session.
