@@ -1,0 +1,602 @@
+<title>Neutrino — TUI color map</title>
+<style>
+  :root {
+    --bg: #f5f5f3;
+    --bg-elev: #ffffff;
+    --bg-sunken: #ecece8;
+    --border: #dcdcd6;
+    --text: #1b1d1f;
+    --text-dim: #62666c;
+    --text-faint: #9a9da2;
+    --accent: #2f7d82;
+    --accent-soft: #e4f0ef;
+    --code-bg: #eeeeea;
+    --shadow: 0 1px 2px rgba(20, 20, 18, 0.06);
+    --dead-bg: #f2ece2;
+    --dead-text: #8a7f6c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #13161a;
+      --bg-elev: #1a1e23;
+      --bg-sunken: #0f1215;
+      --border: #2a2f36;
+      --text: #e7e9ea;
+      --text-dim: #9aa1a9;
+      --text-faint: #6b7178;
+      --accent: #6fb8bb;
+      --accent-soft: #1c2b2b;
+      --code-bg: #0f1215;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --dead-bg: #211d16;
+      --dead-text: #a89a80;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #13161a;
+    --bg-elev: #1a1e23;
+    --bg-sunken: #0f1215;
+    --border: #2a2f36;
+    --text: #e7e9ea;
+    --text-dim: #9aa1a9;
+    --text-faint: #6b7178;
+    --accent: #6fb8bb;
+    --accent-soft: #1c2b2b;
+    --code-bg: #0f1215;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --dead-bg: #211d16;
+    --dead-text: #a89a80;
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f5f3;
+    --bg-elev: #ffffff;
+    --bg-sunken: #ecece8;
+    --border: #dcdcd6;
+    --text: #1b1d1f;
+    --text-dim: #62666c;
+    --text-faint: #9a9da2;
+    --accent: #2f7d82;
+    --accent-soft: #e4f0ef;
+    --code-bg: #eeeeea;
+    --shadow: 0 1px 2px rgba(20, 20, 18, 0.06);
+    --dead-bg: #f2ece2;
+    --dead-text: #8a7f6c;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", ui-sans-serif, sans-serif;
+    line-height: 1.5;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", "Roboto Mono", monospace;
+  }
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+  }
+  header.page {
+    margin-bottom: 2.5rem;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 650;
+    margin: 0.4rem 0 0.6rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    color: var(--text-dim);
+    max-width: 62ch;
+    font-size: 0.98rem;
+  }
+  .lede code {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    background: var(--code-bg);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  section.group {
+    margin-top: 2.75rem;
+  }
+  section.group h2 {
+    font-size: 1.05rem;
+    font-weight: 650;
+    margin: 0 0 0.2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  section.group p.note {
+    margin: 0.35rem 0 1rem;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    max-width: 64ch;
+  }
+
+  .rowset {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-elev);
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    min-width: 560px;
+  }
+  thead th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    font-weight: 600;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 0.62rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-sunken); }
+
+  .swatch-cell { display: inline-flex; align-items: center; gap: 0.55rem; white-space: nowrap; }
+  .swatch {
+    width: 14px; height: 14px; border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .colorname { font-weight: 600; }
+  .ansi { color: var(--text-faint); font-size: 0.78rem; }
+
+  .demo-dot, .demo-name {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .demo-color-label {
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+
+  .tag-demo {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.82rem;
+    padding: 0.08em 0.45em;
+    border-radius: 4px;
+    background: var(--code-bg);
+    white-space: nowrap;
+  }
+  p.note > .tag-demo:first-child { margin-left: -0.45em; }
+  .meaning { color: var(--text); }
+  .meaning .sub { display: block; color: var(--text-dim); font-size: 0.82rem; margin-top: 0.15rem; }
+
+  /* retired section: content no longer reachable in the current TUI */
+  section.retired h2 { color: var(--text-dim); }
+  section.retired .rowset { opacity: 0.72; }
+  .retired-badge {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    color: var(--dead-text);
+    background: var(--dead-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15em 0.5em;
+  }
+
+  footer.page {
+    margin-top: 3.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 560px) {
+    main { padding: 2rem 1rem 4rem; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+
+<main>
+  <header class="page">
+    <div class="eyebrow">neutrino · internal/client/tui/tui.go</div>
+    <h1>TUI Color Map</h1>
+    <p class="lede">
+      The TUI always uses the same set of eight colors, applied in different places with
+      different meanings depending on context. This page collects every place where they are
+      <strong>still</strong> used in the current TUI.
+    </p>
+  </header>
+
+  <section class="group">
+    <h2>"Tor"/"I2P" tab status bar</h2>
+    <p class="note"><span class="tag-demo">Tor: ● out ● in</span>, <span class="tag-demo">H.S.:</span>, make up the bar at the top of the network tab (labeled "Tor" or "I2P" depending on the network chosen at startup). By the time the interface starts, the hidden service is already published, so H.S. tracks the outbound circuit itself: <span class="tag-demo">◌ …</span> before the first circuit check, <span class="tag-demo">●</span> green once a circuit is active, <span class="tag-demo">✗</span> red if the circuit is later lost.</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Out</th><th>In</th><th>H.S.</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td class="meaning">Startup — no circuit check completed yet (H.S. shows <span class="tag-demo">◌ …</span>)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td class="meaning">Outbound circuit active, inbound (reachability of your own hidden service) not yet confirmed</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td class="meaning">Outbound and inbound both confirmed</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td class="meaning">Circuits lost after being active — outbound and inbound reset (H.S. shows <span class="tag-demo">✗</span>, distinct from the gray startup state above)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Tab Bar</h2>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Element</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffffff"></span><span class="colorname">white</span><span class="ansi">15</span></span></td>
+            <td>Active tab (non-chat)</td>
+            <td class="meaning">The currently selected tab — Console, Tor, Contacts, Groups, File</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td>Inactive tab (non-chat)</td>
+            <td class="meaning">Non-selected, non-chat tab — same list: Console, Tor, Contacts, Groups, File</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td>Chat tab name, connected</td>
+            <td class="meaning">Any chat room while its connection is active, whether it's the selected tab or not</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td>Chat tab name, reconnecting and selected</td>
+            <td class="meaning">A reconnecting room keeps a green name only while it's the currently selected tab — the red dot below is what signals the reconnect attempt, not the name color</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td>Chat tab name, reconnecting and not selected</td>
+            <td class="meaning">A reconnecting room that isn't the selected tab shows a gray name instead of green</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffff00"></span><span class="colorname">yellow</span><span class="ansi">11</span></span></td>
+            <td>Unread badge marker</td>
+            <td class="meaning">Tab with unread messages</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td>Console marker</td>
+            <td class="meaning">Console has an error not yet seen</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td>Reconnecting tab marker</td>
+            <td class="meaning">Room that is attempting to reconnect — shown together with the name color rule above</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Contact List</h2>
+    <p class="note">Each contact row carries two independent reachability markers — neither is derived from the other, so any combination of the two can appear (e.g. a contact can show as unreachable on marker 1 while marker 2 is still green, if their last <code>probe_ack</code> arrived before the connection to them broke).</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Marker 1 — do I reach them?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td class="meaning">◌ — never probed, or outcome unknown</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td class="meaning">● — reachable</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td class="meaning">✗ — not reachable</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Marker 2, independent of marker 1:</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Marker 2 — do they reach me?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td class="meaning">◌ — unknown, no <code>probe_ack</code> from them yet</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td class="meaning">● — reciprocity confirmed, they replied with a <code>probe_ack</code></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td class="meaning">✗ — no confirmation ever arrived despite reaching them continuously for several probe cycles; not a diagnosis (indistinguishable from being removed from their address book, our own probe never landing, or a one-way NAT/firewall issue — the protocol deliberately doesn't reveal which)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Next, on the same line as the contact, comes the relationship key tag:</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Element</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="tag-demo">[REL:C64130FC]</span></td>
+            <td class="meaning">Relationship key (ContentKey) established in both directions with this contact</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[REL:········]</span></td>
+            <td class="meaning">Relationship key exchange not yet completed with this contact</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The address book groups contacts by trust level; each group heading is colored. A contact whose relationship keys no longer match what was previously known (a potential key-substitution attack, requiring re-verification) is pulled into a dedicated group shown first, above every other group:</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Group heading</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="tag-demo">KEY CONFLICT</span></td>
+            <td class="meaning">Relationship-key mismatch detected — shown first regardless of the contact's prior trust level, since this is an urgency signal, not a trust ranking</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="tag-demo">VERIFIED & INTRODUCED</span></td>
+            <td class="meaning">Verified in person, introduced by another contact</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="tag-demo">VERIFIED CONTACTS</span></td>
+            <td class="meaning">Verified in person, added directly</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffff00"></span><span class="colorname">yellow</span><span class="ansi">11</span></span></td>
+            <td><span class="tag-demo">INTRODUCED CONTACTS (UNVERIFIED)</span></td>
+            <td class="meaning">Introduced by another contact, not yet verified in person</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="tag-demo">UNVERIFIED</span></td>
+            <td class="meaning">Not yet verified, added directly — here the contact <strong>is</strong> in the address book, just unverified</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Tor Indicator</h2>
+    <p class="note">"Tor" tab at the top.</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>State</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td>●</td>
+            <td class="meaning">No active outbound Tor circuit</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffff00"></span><span class="colorname">yellow</span><span class="ansi">11</span></span></td>
+            <td>●</td>
+            <td class="meaning">Outbound active, but inbound (reachability of one's own hidden service) not yet confirmed</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td>●</td>
+            <td class="meaning">Outbound and inbound both confirmed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Room Member Bar</h2>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Marker</th><th>Name</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ffff"></span><span class="colorname">cyan</span><span class="ansi">14</span></span></td>
+            <td class="meaning">Your own entry, when connected — never goes through the relationship-key check (which would require looking yourself up in your own address book), a dedicated color instead of the green used for other members with an established relationship</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td class="meaning">Connected to the room right now, relationship key (ContentKey) established with this member</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffff00"></span><span class="colorname">yellow</span><span class="ansi">11</span></span></td>
+            <td class="meaning">Connected, but with no relationship key established yet with this member</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td class="meaning">Not connected — they left, declined the invite, or were banned</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td class="meaning">Not connected due to an abnormal disconnection (crash), not a voluntary exit</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Chat Messages</h2>
+    <p class="note">Each message line carries up to three independent tags in brackets — signature (REL), device (DEV), post-quantum (PQC) — plus the ACK marker. The REL tag communicates two things at once: what the <strong>individual message's</strong> signature proves, and whether the relationship with that sender is a saved, persisted one or only born from the room's ephemeral bootstrap (sender not among saved contacts).</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Element</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ffff"></span><span class="colorname">cyan</span><span class="ansi">14</span></span></td>
+            <td><span class="tag-demo">alice:</span></td>
+            <td class="meaning">Sender name when the message is yours</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="tag-demo">bob:</span></td>
+            <td class="meaning">Sender name when the message is from another user</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[no signature]</span></td>
+            <td class="meaning">No content signature present on the message</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[REL:........]</span></td>
+            <td class="meaning">Signature present but no ContentKey candidate known yet for the sender (neither persisted nor ephemeral) — verification not yet possible</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[REL:c64130fc]</span></td>
+            <td class="meaning">Valid signature, verified against a <strong>persisted</strong> ContentKey (saved contact with an established address-book relationship)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffff00"></span><span class="colorname">yellow</span><span class="ansi">11</span></span></td>
+            <td><span class="tag-demo">[REL:c64130fc]</span></td>
+            <td class="meaning">Valid signature, but verified against an <strong>ephemeral</strong> ContentKey (born only from the room's bootstrap, sender not among saved contacts) — same coloring as Android (<code>room_tab.go</code>, <code>theme.ColorNameWarning</code>)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="tag-demo">[signature invalid]</span></td>
+            <td class="meaning">At least one ContentKey candidate is known, but none of them verifies the message's signature</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[your message]</span></td>
+            <td class="meaning">Your own messages: no meaningful self-verification (a per-recipient signature, never a single "your own" ContentKey to show)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[DEV:........]</span></td>
+            <td class="meaning">Device tag, always present (never omitted, same line format for every message) — placeholder while the sender's device identifier isn't known yet (never on your own messages: your own device is always known)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">[DEV:a1b2c3d4]</span></td>
+            <td class="meaning">Known device identifier, unchanged from the last message seen from this sender</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ffff00"></span><span class="colorname">yellow</span><span class="ansi">11</span></span></td>
+            <td><span class="tag-demo">[DEV:a1b2c3d4]</span></td>
+            <td class="meaning">Device identifier just changed from the last message seen from this sender (key rotation or new device)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#ff0000"></span><span class="colorname">red</span><span class="ansi">9</span></span></td>
+            <td><span class="tag-demo">[PQC]</span></td>
+            <td class="meaning">Message without the additional ML-DSA-65 signature (post-quantum protection off for this message)</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="tag-demo">[PQC]</span></td>
+            <td class="meaning">Message also protected by an additional ML-DSA-65 signature</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td><span class="tag-demo">○</span></td>
+            <td class="meaning">Your own broadcast message, no peer has confirmed receipt yet</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ff00"></span><span class="colorname">green</span><span class="ansi">10</span></span></td>
+            <td><span class="tag-demo">✓3</span></td>
+            <td class="meaning">Number of peers who confirmed receipt</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Command Palette</h2>
+    <p class="note">Command autocomplete (typing <code>/</code>) — purely aesthetic colors, not status colors.</p>
+    <div class="rowset">
+      <table>
+        <thead><tr><th>Color</th><th>Element</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#5f5fd7"></span><span class="colorname">purple</span><span class="ansi">62</span></span></td>
+            <td>Highlighted entry background</td>
+            <td class="meaning">Row of the command/contact currently selected in a picker</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#00ffff"></span><span class="colorname">cyan</span><span class="ansi">14</span></span></td>
+            <td>Command name</td>
+            <td class="meaning">Command name in the suggestion list</td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#808080"></span><span class="colorname">gray</span><span class="ansi">8</span></span></td>
+            <td>Argument</td>
+            <td class="meaning">Argument placeholder, e.g. <span class="tag-demo">&lt;name&gt;</span></td>
+          </tr>
+          <tr>
+            <td><span class="swatch-cell"><span class="swatch" style="background:#c0c0c0"></span><span class="colorname">dim white</span><span class="ansi">7</span></span></td>
+            <td>Description</td>
+            <td class="meaning">Explanatory text for the command</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="page">
+    Standard ANSI colors (7/8/9/10/11/14/15/62) — the exact rendering depends on the user's
+    terminal theme; the swatches here use the default xterm values.
+    Generated from <code class="mono">internal/client/tui/tui.go</code>.
+  </footer>
+</main>

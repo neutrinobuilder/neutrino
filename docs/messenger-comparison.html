@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neutrino — Messenger Comparison</title>
+<style>
+:root {
+  --ink:#1A2230;--paper:#F2F5F8;--surface:#FFFFFF;--surf2:#F5F7FA;
+  --accent:#1667A0;--acc-dim:#E8F2FB;--muted:#637890;--border:#C6D0DA;--strong:#96AABB;
+  --yes-bg:#EBF7EE;--yes-fg:#166534;--no-bg:#FEF0F0;--no-fg:#B91C1C;
+  --par-bg:#FFF8E6;--par-fg:#7C4A0A;--na-fg:#9AAABB;
+  --hi-bg:#E6F1FB;--hi-bd:#1667A0;--rd-fg:#0B5D87;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Consolas','Liberation Mono',monospace;
+  --t1:#0D5C42;--t2:#105890;--t3:#8A5210;--t4:#8A1010;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --ink:#D6E4F4;--paper:#090E17;--surface:#0D1520;--surf2:#111A28;
+  --accent:#56A0DC;--acc-dim:#081828;--muted:#7898B4;--border:#182638;--strong:#2A3E54;
+  --yes-bg:#071E14;--yes-fg:#4ADE80;--no-bg:#1E0808;--no-fg:#F87171;
+  --par-bg:#1C1506;--par-fg:#FBBF24;--na-fg:#445E76;
+  --hi-bg:#081A2C;--hi-bd:#56A0DC;--rd-fg:#56A8DC;
+  --t1:#0A3D2C;--t2:#0A3A60;--t3:#5C360A;--t4:#5C0A0A;
+}}
+:root[data-theme="light"] {
+  --ink:#1A2230;--paper:#F2F5F8;--surface:#FFFFFF;--surf2:#F5F7FA;
+  --accent:#1667A0;--acc-dim:#E8F2FB;--muted:#637890;--border:#C6D0DA;--strong:#96AABB;
+  --yes-bg:#EBF7EE;--yes-fg:#166534;--no-bg:#FEF0F0;--no-fg:#B91C1C;
+  --par-bg:#FFF8E6;--par-fg:#7C4A0A;--na-fg:#9AAABB;
+  --hi-bg:#E6F1FB;--hi-bd:#1667A0;--rd-fg:#0B5D87;
+  --t1:#0D5C42;--t2:#105890;--t3:#8A5210;--t4:#8A1010;
+}
+:root[data-theme="dark"] {
+  --ink:#D6E4F4;--paper:#090E17;--surface:#0D1520;--surf2:#111A28;
+  --accent:#56A0DC;--acc-dim:#081828;--muted:#7898B4;--border:#182638;--strong:#2A3E54;
+  --yes-bg:#071E14;--yes-fg:#4ADE80;--no-bg:#1E0808;--no-fg:#F87171;
+  --par-bg:#1C1506;--par-fg:#FBBF24;--na-fg:#445E76;
+  --hi-bg:#081A2C;--hi-bd:#56A0DC;--rd-fg:#56A8DC;
+  --t1:#0A3D2C;--t2:#0A3A60;--t3:#5C360A;--t4:#5C0A0A;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);font-size:14px;background:var(--paper);color:var(--ink);}
+.topbar{height:3px;background:var(--accent);}
+.hdr{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;padding:1.8rem 2rem 1.4rem;background:var(--surface);border-bottom:1px solid var(--border);}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .4rem;}
+h1{margin:0 0 .25rem;font-size:1.45rem;font-weight:700;line-height:1.15;color:var(--ink);}
+.sub{margin:0;font-size:.83rem;color:var(--muted);}
+.hdr-cnt{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;}
+.hdr-cnt strong{color:var(--ink);display:block;font-size:1.6rem;font-weight:700;line-height:1;}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem 1.1rem;padding:.55rem 2rem;background:var(--surf2);border-bottom:1px solid var(--border);font-size:11.5px;color:var(--muted);}
+.li{display:inline-flex;align-items:center;gap:.35rem;}
+.tier-legend{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;padding:.5rem 2rem;background:var(--surf2);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);}
+.tl{display:inline-flex;align-items:center;gap:.4rem;}
+.tl-dot{font-family:var(--mono);font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:3px;color:#fff;letter-spacing:.05em;}
+.td1{background:var(--t1);}.td2{background:var(--t2);}.td3{background:var(--t3);}.td4{background:var(--t4);}
+.wrap{overflow-x:auto;padding:1.5rem 2rem 2rem;}
+table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12.5px;}
+td:first-child,th:first-child{position:sticky;left:0;z-index:2;}
+.cat th{background:var(--accent);color:rgba(255,255,255,.95);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:4px 8px;text-align:center;border:1px solid rgba(0,0,0,.15);white-space:nowrap;}
+.cat th.empty{background:var(--surface);border-color:var(--border);z-index:3;}
+.fh th{background:var(--surface);color:var(--muted);font-size:10.5px;font-weight:600;padding:6px 6px 5px;border:1px solid var(--border);text-align:center;vertical-align:bottom;line-height:1.3;min-width:70px;}
+.fh th:first-child{text-align:left;min-width:168px;border-right:2px solid var(--strong);z-index:3;}
+td{border:1px solid var(--border);padding:7px 8px;text-align:center;vertical-align:middle;background:var(--surface);}
+tr:nth-child(even) td{background:var(--surf2);}
+tr:hover td{background:var(--acc-dim)!important;}
+td:first-child{text-align:left;border-right:2px solid var(--strong);padding:9px 14px;background:var(--surface)!important;}
+tr:nth-child(even) td:first-child{background:var(--surf2)!important;}
+tr.hi td{background:var(--hi-bg)!important;}
+tr.hi td:first-child{border-left:3px solid var(--hi-bd);padding-left:11px;}
+/* tier separators */
+tr.tier-hdr td{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:6px 14px;border:none;color:#fff;}
+tr.tier-hdr td:first-child{position:sticky;left:0;z-index:3;}
+tr.tier-1 td{background:var(--t1);}
+tr.tier-2 td{background:var(--t2);}
+tr.tier-3 td{background:var(--t3);}
+tr.tier-4 td{background:var(--t4);}
+tr.tier-1 td:first-child{background:var(--t1)!important;}
+tr.tier-2 td:first-child{background:var(--t2)!important;}
+tr.tier-3 td:first-child{background:var(--t3)!important;}
+tr.tier-4 td:first-child{background:var(--t4)!important;}
+tr.tier-hdr:hover td{filter:brightness(1.08);}
+/* icons */
+.y,.n,.p{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;line-height:1;}
+.y{background:var(--yes-bg);color:var(--yes-fg);}
+.n{background:var(--no-bg);color:var(--no-fg);}
+.p{background:var(--par-bg);color:var(--par-fg);font-size:12px;}
+.na{color:var(--na-fg);font-size:15px;}
+.rd{color:var(--rd-fg);font-family:var(--mono);font-size:10px;font-weight:600;white-space:nowrap;}
+sup.fn-ref{font-family:var(--mono);font-size:11px;color:var(--accent);vertical-align:super;margin-left:2px;font-weight:700;}
+.tx{font-size:11px;white-space:nowrap;}
+.mt{color:var(--muted);}
+.ph-si,.ph-no{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:3px;}
+.ph-si{background:var(--no-bg);color:var(--no-fg);}
+.ph-no{background:var(--yes-bg);color:var(--yes-fg);}
+.fsh{font-size:11px;font-weight:600;color:var(--yes-fg);white-space:nowrap;}
+.fss{font-size:11px;color:var(--yes-fg);white-space:nowrap;}
+.fsp{font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap;}
+.fsm{font-size:11px;color:var(--par-fg);white-space:nowrap;}
+.fsn{font-size:11px;color:var(--no-fg);white-space:nowrap;}
+.mn{font-weight:600;font-size:13px;display:block;}
+.ms{font-size:10.5px;color:var(--muted);display:block;margin-top:1px;}
+.badge{display:inline-block;font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--accent);color:#fff;padding:1px 5px 2px;border-radius:3px;margin-left:7px;vertical-align:middle;}
+.fn{padding:1rem 2rem 1.5rem;font-size:11.5px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border);}
+.fn p{margin:0 0 .4rem;}.fn p:last-child{margin:0;}.fn strong{color:var(--ink);}
+.backup{padding:2rem 2rem 2.5rem;border-top:2px solid var(--border);background:var(--surf2);}
+.backup-title{font-size:1rem;font-weight:700;color:var(--ink);margin:0 0 1.5rem;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;}
+.backup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:1.5rem 2.5rem;}
+.backup-block h3{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+.backup-block p{font-size:.78rem;color:var(--muted);line-height:1.6;margin:0 0 .5rem;}
+.backup-block p:last-child{margin:0;}
+.backup-block ul{font-size:.78rem;color:var(--muted);line-height:1.6;margin:.25rem 0 0;padding-left:1.2rem;}
+.backup-block li{margin:.3rem 0;}
+.backup-block strong{color:var(--ink);}
+.backup-block code{font-family:var(--mono);font-size:.75rem;background:var(--surface);padding:1px 5px;border-radius:3px;color:var(--ink);}
+.backup-tbl{border-collapse:collapse;margin:.6rem 0 .4rem;font-size:.78rem;width:100%;}
+.backup-tbl th,.backup-tbl td{border:1px solid var(--border);padding:4px 10px;text-align:center;}
+.backup-tbl th{background:var(--surface);color:var(--muted);font-weight:600;font-size:.72rem;}
+.backup-tbl td:first-child{text-align:left;color:var(--ink);font-weight:500;}
+.backup-note{font-size:.74rem;color:var(--accent);font-style:italic;margin-top:.5rem!important;}
+.gl{padding:2rem 2rem 3rem;border-top:2px solid var(--border);}
+.gl-title{font-size:1rem;font-weight:700;color:var(--ink);margin:0 0 1.5rem;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;}
+.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:2rem 2.5rem;}
+.gl-sec h3{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 1rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+.gl-sec dl{margin:0;}
+.gl-sec dt{font-weight:600;font-size:.82rem;color:var(--ink);margin:.75rem 0 .2rem;}
+.gl-sec dt:first-child{margin-top:0;}
+.gl-aka{font-weight:400;color:var(--muted);font-size:.78rem;}
+.gl-sec dd{margin:0;font-size:.78rem;color:var(--muted);line-height:1.6;}
+.gl-sub{font-size:.75rem;display:block;margin-top:.15rem;padding-left:.6rem;color:var(--muted);}
+.gl-sec code{font-family:var(--mono);font-size:.75rem;background:var(--surf2);padding:1px 5px;border-radius:3px;color:var(--ink);}
+@media(max-width:600px){
+  .hdr,.wrap,.legend,.tier-legend,.fn,.gl,.backup{padding-left:1rem;padding-right:1rem;}
+  h1{font-size:1.2rem;}
+  .gl-grid{grid-template-columns:1fr;}
+  .backup-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"></div>
+
+<header class="hdr">
+  <div>
+    <p class="eyebrow">Neutrino · September 2026</p>
+    <h1>Messenger Comparison — Privacy &amp; Security</h1>
+    <p class="sub">26 messengers · split into 4 privacy tiers · 20 features · Updated September 26, 2026</p>
+  </div>
+  <div class="hdr-cnt"><strong>26</strong>messengers<br>20 features</div>
+</header>
+
+<div class="legend">
+  <span class="li"><span class="y">✓</span> Yes</span>
+  <span class="li"><span class="n">✗</span> No</span>
+  <span class="li"><span class="p">△</span> Partial</span>
+  <span class="li"><span class="na">—</span> N/A</span>
+  <span class="li"><span class="rd">◈ roadmap</span> In development</span>
+  <span class="li"><span class="ph-si">YES</span> / <span class="ph-no">NO</span> Requires phone number (red = less privacy)</span>
+</div>
+
+<div class="tier-legend">
+  <span class="tl"><span class="tl-dot td1">F1</span> Structural anonymity — P2P/Tor, untraceable identity</span>
+  <span class="tl"><span class="tl-dot td2">F2</span> High privacy — strong E2E, no phone number</span>
+  <span class="tl"><span class="tl-dot td3">F3</span> Partial privacy — real E2E but with compromises</span>
+  <span class="tl"><span class="tl-dot td4">F4</span> Surveillance / insecure — no E2E or active surveillance</span>
+</div>
+
+<div class="wrap">
+<table>
+<thead>
+<tr class="cat">
+  <th class="empty"></th>
+  <th colspan="2">ACCESS</th>
+  <th colspan="3">NETWORK</th>
+  <th colspan="4">ENCRYPTION</th>
+  <th colspan="1">SERVER</th>
+  <th colspan="3">FEATURES</th>
+  <th colspan="1">PAYMENTS</th>
+  <th colspan="2">VERIFICATION</th>
+  <th colspan="2">CLIENT</th>
+  <th colspan="1">CODE</th>
+  <th colspan="7">PLATFORMS</th>
+</tr>
+<tr class="fh">
+  <th>Messenger</th>
+  <th>Requires<br>phone</th>
+  <th>Identity type</th>
+  <th>Architecture</th>
+  <th>Built-in<br>Tor</th>
+  <th>Built-in<br>I2P</th>
+  <th>E2E protocol</th>
+  <th>Forward<br>secrecy</th>
+  <th>Sealed<br>sender</th>
+  <th>Post-<br>quantum</th>
+  <th>Zero<br>persistence</th>
+  <th>DM E2E</th>
+  <th>Groups<br>E2E</th>
+  <th>File<br>transfer</th>
+  <th>Built-in<br>crypto</th>
+  <th>Message<br>signing</th>
+  <th>Safety<br>numbers</th>
+  <th>Terminal<br>client</th>
+  <th>Single<br>binary</th>
+  <th>Open<br>source</th>
+  <th>Linux</th>
+  <th>macOS</th>
+  <th>Apple<br>Silicon</th>
+  <th>Windows</th>
+  <th>Android</th>
+  <th>Android<br>(Termux)</th>
+  <th>iOS</th>
+</tr>
+</thead>
+<tbody>
+
+<!-- ═══════════════════════════════════════════════════ TIER 1 ═══ -->
+<tr class="tier-hdr tier-1">
+  <td>F1 — Structural anonymity</td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+
+<tr class="hi">
+  <td><span class="mn">Neutrino</span><span class="badge" style="display:block;margin-left:0;margin-top:3px;">this project</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Ed25519 pubkey<br>(.onion/.b32.i2p)</span></td>
+  <td><span class="tx">P2P</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">⁸</sup></td>
+  <td><span class="tx">SenderKeys<br>(two-member & group)</span></td>
+  <td><span class="fsp">message<br>(DR+sym)</span><sup class="fn-ref">⁴</sup></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">³⁷</sup></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="tx">encrypted ·<br>signed</span><sup class="fn-ref">⁹</sup></td>
+  <td><span class="rd">◈ Bitcoin (SP) ·<br>Monero</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">²</sup></td>
+  <td><span class="tx">native TUI</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="rd">◈</span><sup class="fn-ref">³</sup></td>
+  <td><span class="rd">◈</span><sup class="fn-ref">³</sup></td>
+  <td><span class="rd">◈</span><sup class="fn-ref">³</sup></td>
+  <td><span class="rd">◈</span><sup class="fn-ref">³</sup></td>
+  <td><span class="y">✓</span><sup class="fn-ref">³</sup></td>
+  <td><span class="n">✗</span><sup class="fn-ref">³</sup></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Briar</span><span class="ms">Briar Project · Android</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Local pubkey</span></td>
+  <td><span class="tx">Direct P2P</span><sup class="fn-ref">¹⁸</sup></td>
+  <td><span class="y">✓</span><sup class="fn-ref">¹⁴</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Bramble Handshake<br>(BHP)</span></td>
+  <td><span class="fss">session</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span><sup class="fn-ref">²⁷</sup></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx mt">QR first<br>contact</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Ricochet Refresh</span><span class="ms">Open Privacy · P2P Tor</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">.onion<br>address</span></td>
+  <td><span class="tx">P2P via Tor</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">TLS via Tor only<br>(no app-layer E2E)</span></td>
+  <td><span class="fss">session</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx mt">verification via<br>.onion</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Cwtch</span><span class="ms">Open Privacy · anonymous Tor groups</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">.onion<br>address</span></td>
+  <td><span class="tx">P2P via Tor</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">NOISE<br>Protocol</span><sup class="fn-ref">¹³</sup></td>
+  <td><span class="fss">session</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">SimpleX</span><span class="ms">SimpleX Chat · anonymous relays</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">None<br>(single-use queues)</span></td>
+  <td><span class="tx">SMP relay</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Double Ratchet<br>(DR)</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">²⁸</sup></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════ TIER 2 ═══ -->
+<tr class="tier-hdr tier-2">
+  <td>F2 — High privacy</td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Session</span><span class="ms">Signal fork · Oxen DHT</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Pubkey<br>Ed25519</span></td>
+  <td><span class="tx">DHT Oxen</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Session Protocol<br>(proprietary)</span></td>
+  <td><span class="fsn">none</span><sup class="fn-ref">¹⁵</sup></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="rd">◈ roadmap</span><sup class="fn-ref">²⁹</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Signal</span><span class="ms">Signal Messenger LLC</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone<br>number</span></td>
+  <td><span class="tx">Centralized</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">X3DH +<br>Double Ratchet (DR)</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">³⁰</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Threema</span><span class="ms">Threema GmbH · Switzerland</span></td>
+  <td><span class="ph-no">NO</span><sup class="fn-ref">⁵</sup></td>
+  <td><span class="tx">Threema ID<br>(random)</span></td>
+  <td><span class="tx">Centralized<br>(CH)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">NaCl /<br>Curve25519</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="rd">◈ roadmap</span><sup class="fn-ref">³¹</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Wire</span><span class="ms">Wire Swiss GmbH · EU</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">@username /<br>email</span></td>
+  <td><span class="tx">Centralized<br>(EU)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">MLS (RFC 9420),<br>ex-Proteus</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Element / Matrix</span><span class="ms">Element.io · federated homeservers</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">@user:homeserver</span></td>
+  <td><span class="tx">Federated</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Megolm + Olm</span></td>
+  <td><span class="fsm">partial<br>(Megolm)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="rd">◈ roadmap</span><sup class="fn-ref">³²</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="tx mt">gomuks <sup class="fn-ref">¹</sup></span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Jami</span><span class="ms">GNU Project · P2P DHT</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Jami ID<br>(pubkey hash)</span></td>
+  <td><span class="tx">P2P DHT<br>(OpenDHT)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">DTLS-SRTP /<br>Curve25519</span></td>
+  <td><span class="fss">session</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Tox</span><span class="ms">TokTok Project · DHT</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Tox ID<br>(persistent pubkey)</span></td>
+  <td><span class="tx">DHT Tox</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">NaCl /<br>Curve25519</span></td>
+  <td><span class="fss">session</span><sup class="fn-ref">¹¹</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx mt">Toxic<br>(official)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">bitchat</span><span class="ms">permissionlesstech · Bluetooth mesh + Nostr</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Device pubkey<br>(Curve25519+Ed25519)</span></td>
+  <td><span class="tx">P2P BLE mesh<br>+ Nostr</span><sup class="fn-ref">¹⁹</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Noise (XX/X)<br>+ Nostr</span><sup class="fn-ref">²⁰</sup></td>
+  <td><span class="fsm">partial<br>(live BLE only)</span><sup class="fn-ref">²⁰</sup></td>
+  <td><span class="p">△</span><sup class="fn-ref">²¹</sup></td>
+  <td><span class="n">✗</span><sup class="fn-ref">³³</sup></td>
+  <td><span class="p">△</span><sup class="fn-ref">²²</sup></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="p">△</span><sup class="fn-ref">²³</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span><sup class="fn-ref">²⁴</sup></td>
+  <td><span class="tx mt">QR<br>fingerprint</span><sup class="fn-ref">²⁵</sup></td>
+  <td><span class="tx mt">bitchat-tui</span><sup class="fn-ref">²⁶</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Delta Chat</span><span class="ms">Merlinux · E2E over email</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Email address</span></td>
+  <td><span class="tx">Decentralized<br>(email)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Autocrypt /<br>OpenPGP</span></td>
+  <td><span class="fsn">none</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="rd">◈ roadmap</span><sup class="fn-ref">³⁴</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════ TIER 3 ═══ -->
+<tr class="tier-hdr tier-3">
+  <td>F3 — Partial privacy</td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+
+<tr>
+  <td><span class="mn">WhatsApp</span><span class="ms">Meta Platforms Inc.</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone<br>number</span></td>
+  <td><span class="tx">Centralized<br>(Meta)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Signal<br>Protocol</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span><sup class="fn-ref">³⁵</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">iMessage</span><span class="ms">Apple Inc. · Apple ecosystem only</span></td>
+  <td><span class="ph-si">YES</span><sup class="fn-ref">⁶</sup></td>
+  <td><span class="tx">Phone /<br>Apple ID</span></td>
+  <td><span class="tx">Centralized<br>(Apple)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">IDS<br>proprietary</span></td>
+  <td><span class="fsh">message</span><sup class="fn-ref">¹⁰</sup></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">¹⁰</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Viber</span><span class="ms">Rakuten · Luxembourg</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone<br>number</span></td>
+  <td><span class="tx">Centralized<br>(Rakuten)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Signal<br>Protocol</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span><sup class="fn-ref">¹⁶</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Keet</span><span class="ms">Holepunch · Hyperswarm DHT</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Pubkey</span></td>
+  <td><span class="tx">DHT<br>Hyperswarm</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">NOISE<br>Protocol</span></td>
+  <td><span class="fss">session</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Radar Chat</span><span class="ms">Signal + Lightning Network</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone<br>number</span></td>
+  <td><span class="tx">Centralized</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Signal<br>Protocol</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Telegram</span><span class="ms">Telegram Messenger Inc.</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone +<br>@username</span></td>
+  <td><span class="tx">Centralized</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">MTProto 2.0</span></td>
+  <td><span class="fsm">partial<br>(secret chats only)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Line</span><span class="ms">LY Corporation · Japan</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone +<br>LINE ID</span></td>
+  <td><span class="tx">Centralized<br>(Japan)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Letter Sealing<br>(proprietary)</span></td>
+  <td><span class="fsm">partial</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="p">△</span><sup class="fn-ref">¹⁷</sup></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">KakaoTalk</span><span class="ms">Kakao Corp · South Korea</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Phone<br>number</span></td>
+  <td><span class="tx">Centralized<br>(Korea)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">RSA + AES-CTR<br>(Secret Chat only)</span></td>
+  <td><span class="fsn">none</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<!-- ═══════════════════════════════════════════════════ TIER 4 ═══ -->
+<tr class="tier-hdr tier-4">
+  <td>F4 — Surveillance / insecure</td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Facebook Messenger</span><span class="ms">Meta Platforms Inc.</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Facebook<br>account</span></td>
+  <td><span class="tx">Centralized<br>(Meta)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">Signal<br>Protocol</span></td>
+  <td><span class="fsh">message</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span><sup class="fn-ref">⁷</sup></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Snapchat</span><span class="ms">Snap Inc.</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">Username +<br>phone</span></td>
+  <td><span class="tx">Centralized<br>(Snap)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">partial<br>(recent texts only)</span></td>
+  <td><span class="fsn">none</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="p">△</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">Discord</span><span class="ms">Discord Inc.</span></td>
+  <td><span class="ph-no">NO</span></td>
+  <td><span class="tx">Username<br>(email)</span></td>
+  <td><span class="tx">Centralized</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="tx">✗ text ·<br>✓ audio/video</span><sup class="fn-ref">¹²</sup></td>
+  <td><span class="fsn">none</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span><sup class="fn-ref">³⁶</sup></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+<tr>
+  <td><span class="mn">WeChat</span><span class="ms">Tencent · China · state surveillance</span></td>
+  <td><span class="ph-si">YES</span></td>
+  <td><span class="tx">WeChat ID +<br>phone</span></td>
+  <td><span class="tx">Centralized<br>(Tencent)</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="fsn">none</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="n">✗</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="y">✓</span></td>
+  <td><span class="na">—</span></td>
+  <td><span class="y">✓</span></td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<div class="fn">
+  <p><strong>Symbol legend:</strong> △ Partial = feature present but limited or conditional. — N/A = not applicable. ◈ roadmap = planned, not yet implemented.</p>
+  <p><em>¹ gomuks</em> — terminal client for Matrix, a separate and unofficial project.</p>
+  <p><em>² Neutrino — safety numbers</em> — manual comparison like elsewhere, reinforced by <code>/grp-contact-send</code>, which requires a mandatory out-of-band contact method for whoever receives the contact card — the app won't let you proceed without a way to verify outside the channel. The code is always visible via <code>/cnt-info</code>.</p>
+  <p><em>³ Neutrino — builds available today</em> — Linux x86-64 and linux/arm64 (also runs on Android under Termux), Tor+i2pd embedded, are built and distributed (<code>build_neutrino.sh</code>). macOS builds (Intel + Apple Silicon) are in testing, not yet distributed. The native Android app (Fyne, same crypto/network logic as desktop) is implemented and undergoing live testing on real devices. Windows is technically reachable (Go compiles for every platform) but not yet built — see docs/technical-manual.md, "Platforms and anonymous networks" section. iOS is not planned: every Neutrino device is also a server, iOS allows neither a background network service nor child processes, and distribution requires an identified developer — see the README, "iOS" section.</p>
+  <p><em>⁴ per-msg (DR+sym)</em> — common baseline everywhere: SenderKeys, a shared session key that advances via a symmetric ratchet (a one-directional HMAC-SHA256 chain) with every message — per-message forward secrecy. In groups (N&gt;2) that's the whole story: as with the Double Ratchet, recovery from a compromise requires an explicit sender-key rotation, no post-compromise security (PCS). In rooms with exactly two people, where a pairwise DH ratchet is tractable (unlike groups, where fan-out prevents it), a DH ratchet is folded into the same state — reconstructing on top of SenderKeys the two classic Double Ratchet components, not a separate subsystem, no new frame on the wire. Under normal conditions whoever steals the state reads exactly one more message beyond the ones already intercepted: from the next one on, the chain is secure again (post-compromise security).</p>
+  <p><em>⁵ Threema and phone number</em> — not required: identity is a random Threema ID. The number can optionally be added for contact discovery, but it is not necessary.</p>
+  <p><em>⁶ iMessage</em> — real E2E only between Apple devices. Messages to Android/other platforms fall back to unencrypted SMS. iCloud backup (enabled by default) can make messages accessible to Apple and to authorities. Contact Key Verification (iOS 17+) is available but hidden in settings (△ Safety numbers).</p>
+  <p><em>⁷ Facebook Messenger</em> — E2E by default only since December 2023, 1:1 DMs only; large groups are not all E2E yet. Meta retains full metadata (who talks to whom, when, how often) regardless of encrypted content.</p>
+  <p><em>⁸ Neutrino — built-in I2P</em> — alternative network to Tor. The embedded <code>i2pd</code> binary covers Linux x86-64 and linux/arm64 (Termux included), and Intel macOS in the builds in testing; on Apple Silicon (arm64) it requires the <code>i2pd</code> daemon installed separately, no official native build available.</p>
+  <p><em>⁹ Neutrino — encrypted and signed file transfer</em> — the content is encrypted once with a random symmetric key; the name, size, and that same key are encrypted separately for each recipient with the relationship key shared specifically with them, which also signs the whole exchange — no external certification needed, the key is already known from the moment the two users became mutual contacts.</p>
+  <p><em>¹⁰ iMessage — per-message forward secrecy</em> — PQ3 protocol (post-quantum), rollout completed March 2024; previously per-session.</p>
+  <p><em>¹¹ Tox — per-session forward secrecy</em> — known Key Compromise Impersonation (KCI) vulnerability: whoever compromises a user's long-term private key can impersonate them to others, on top of reading their past messages.</p>
+  <p><em>¹² Discord — E2E on audio/video only</em> — text chats and attachments remain non-E2E (readable by Discord Inc.); audio/video calls have been E2E since 2024 via the DAVE protocol, full rollout May 2026.</p>
+  <p><em>¹³ Cwtch — E2E protocol unconfirmed</em> — the Tapir library used by Cwtch is described by the Open Privacy blog as based on a 3DH handshake; the "NOISE Protocol" label is neither confirmed nor denied by official sources.</p>
+  <p><em>¹⁴ Briar — Tor bridges and project status</em> — supports the obfs4/meek pluggable transports to bypass censorship on public Tor relays, confirmed in use in Iran/China/Russia. As of July 9, 2026 the project is officially in maintenance mode: only critical security fixes, no new feature development — in 2025 the team had considered shutting the project down entirely, and only continued due to community support, not a project relaunch. No timeline given for resolving the stated long-standing issues (battery usage, unreliable background operation on Android, no account/attachment backup).</p>
+  <p><em>¹⁵ Session — no forward secrecy</em> — removed in 2021, never restored. A "V2 Protocol" with forward secrecy has been announced but not yet released.</p>
+  <p><em>¹⁶ Viber — partial safety numbers</em> — "Trusted Contacts list": less explicit and prominent than Signal/Neutrino's code comparison.</p>
+  <p><em>¹⁷ Line — Apple Silicon support unverifiable</em> — no official or reliable third-party source found confirming or denying a native arm64 build.</p>
+  <p><em>¹⁸ Briar — direct P2P over Bluetooth/WiFi, not a mesh</em> — besides Tor, Briar can sync messages over local Bluetooth or WiFi with no internet, but only <strong>single-hop</strong>: between two devices that are already mutual contacts and physically in range (roughly 10-30 meters) at the same time. No automatic relay through intermediate devices toward contacts never met in person — "multi-hop via social mesh" is research the project itself states is not yet implemented (GitLab issue #1816). It also requires an in-person QR exchange beforehand to become contacts: there's no discovery of nearby strangers. In practice: useful only within already-connected, physically nearby circles, not a network that spreads through a crowd of strangers who simply installed the app. Worth noting too: at the 10-30 meter range Bluetooth/WiFi actually needs, two people are almost always close enough to just talk or signal to each other directly — the real use case isn't "generic blackout resilience" but the much narrower "silent/discreet communication when you can't afford to speak, while still standing right next to each other".</p>
+  <p><em>¹⁹ bitchat — real multi-hop mesh, unlike Briar (note ¹⁸)</em> — automatic relay through intermediate devices with an initial TTL of 7, source-routed when a bidirectionally-confirmed path exists, otherwise controlled flooding with LRU deduplication (1000 packets, 5 minutes). Bluetooth LE range remains 10-30 meters per single hop, but the relay chain extends effective reach beyond that, without requiring the two endpoints to already be mutual contacts for public chat (DMs, on the other hand, still require an established Noise session). Source: the project's official WHITEPAPER.md.</p>
+  <p><em>²⁰ bitchat — three distinct protocols, forward secrecy on only one of them</em> — Noise <code>XX</code> (Curve25519 + ChaCha20-Poly1305 + SHA-256) for live sessions inside the Bluetooth mesh, with mutual authentication and forward secrecy; Noise <code>X</code> (one-way) for "sealed" mail delivered offline by intermediate couriers, authenticated but <strong>without</strong> forward secrecy — compromising the recipient's static key exposes mail not yet delivered; XChaCha20-Poly1305 with HKDF-SHA256 from secp256k1 ECDH for the Nostr-relay bridge (internet path between mutual favorites), also without forward secrecy. Source: the project's official WHITEPAPER.md.</p>
+  <p><em>²¹ bitchat — partial sealed sender</em> — couriers relaying offline sealed mail learn neither sender, recipient, nor content (opaque addressing via an HMAC of the UTC day). On the live Bluetooth mesh, however, the 8-byte sender ID travels in the clear in every packet header and never rotates: a passive listener can enumerate participants and track their movements over time — a weakness the whitepaper itself explicitly acknowledges.</p>
+  <p><em>²² bitchat — partial zero persistence</em> — no server of its own (P2P mesh + third-party Nostr relays), but every mesh node keeps a local cache of the public history (gossip sync) for up to 6 hours, persisted to disk; the external Nostr relays used for the internet bridge may retain the encrypted envelopes under their own policy, outside bitchat's control.</p>
+  <p><em>²³ bitchat — partial E2E groups</em> — default public channels are Ed25519-signed broadcasts but sent <strong>in the clear</strong>, readable by anyone within mesh range. Only optional password-protected channels are encrypted, with a shared symmetric key derived via Argon2id and then used with AES-256-GCM — known to every channel member, not an individual per-member sender key.</p>
+  <p><em>²⁴ bitchat — partial message signing</em> — only public announcements and broadcast messages on the mesh are Ed25519-signed (the TTL byte is excluded from the signature, so relays can decrement it without invalidating it). Private messages (DMs) are authenticated by the Noise session's AEAD, not by a separate verifiable signature.</p>
+  <p><em>²⁵ bitchat — QR verification undermined by a known vulnerability</em> — the fingerprint (SHA-256 of the Noise static key) is verified via an in-person scanned QR code, the same principle as Briar. In July 2025, researcher Alex Rodocea documented a flaw in the "Favorites" system that allows intercepting/substituting identity keys and impersonating an already-verified contact. After an independent audit reported five vulnerabilities (one critical: a buffer overflow in signature parsing), the authors added an explicit warning to the official repository: "has not received external security review and may contain vulnerabilities [...] do not rely on its security whatsoever until it has been reviewed." Sources: GitHub <code>permissionlesstech/bitchat</code> issue #376; Trail of Bits, <em>Building secure messaging is hard</em> (July 18, 2025).</p>
+  <p><em>²⁶ bitchat-tui</em> — an unofficial Rust reimplementation of bitchat's Bluetooth mesh protocol, a native terminal client for Linux/macOS/Windows; not maintained by the bitchat team, no guarantee of ongoing compatibility with the official app.</p>
+  <p><em>²⁷ Briar — PQC in the official project</em> — no evidence found of post-quantum cryptography in the official Bramble Handshake. An unofficial fork ("Zerion") claims PQC support, but it is a separate project, not maintained by the Briar team.</p>
+  <p><em>²⁸ SimpleX — non-NIST post-quantum</em> — post-quantum key sntrup761 (not ML-KEM) combined with X25519, in production since v5.1 (April 2024) for direct chats. Sources consulted do not confirm whether the same scheme covers group chats.</p>
+  <p><em>²⁹ Session — post-quantum announced, not shipped</em> — a "Session Protocol V2" with ML-KEM support has been announced but was still in the design phase as of December 2025 (same V2 already cited in note ¹⁵ for forward secrecy).</p>
+  <p><em>³⁰ Signal — PQXDH + SPQR</em> — PQXDH (Kyber-1024 + X25519) for the initial key exchange since September 2023; the post-quantum triple ratchet SPQR for ongoing forward secrecy has been rolling out since October 2025.</p>
+  <p><em>³¹ Threema — post-quantum announced, not verified in production</em> — a partnership with IBM Research on post-quantum cryptography has been announced; no PQC scheme was found actually deployed in the production protocol at the time of verification.</p>
+  <p><em>³² Element / Matrix — IETF draft only</em> — post-quantum ciphersuites for MLS (the group protocol Matrix aims to converge on) exist only as an IETF draft; no PQC implementation in Element clients.</p>
+  <p><em>³³ bitchat — GitHub proposal only</em> — post-quantum cryptography has only been proposed as an issue in the official repository (#225), never adopted or placed on a roadmap by the maintainers.</p>
+  <p><em>³⁴ Delta Chat — Autocrypt 2</em> — a post-quantum extension of the OpenPGP format Delta Chat is built on, proposed with a 2026 target, not yet implemented.</p>
+  <p><em>³⁵ WhatsApp — no specific announcement</em> — no WhatsApp-specific official announcement found, unlike parent company Meta, which has stated PQC plans for Messenger; WhatsApp's protocol derives from Signal but adoption of PQXDH/SPQR is unconfirmed.</p>
+  <p><em>³⁶ Discord — DAVE remains classical</em> — the DAVE protocol (note ¹²) uses classical MLS with ECDSA signatures, no post-quantum component.</p>
+  <p><em>³⁷ Neutrino — hybrid post-quantum</em> — hybrid X25519 + ML-KEM-768 (FIPS 203) scheme for the WebSocket handshake, sender_key delivery, and knocks; the identity keys (transport key and the relationship key with each contact) additionally carry parallel ML-DSA-65 (FIPS 204) signatures on key rotation and remote self-destruction, plus an optional per-room ML-DSA-65 signature on chat messages.</p>
+  <p><em>Snapchat</em> — "Snaps" (photos/videos) have been E2E since 2018; it's text chat that is only opt-in/partial, not the other way around. Metadata (who talks to whom, when, how often) remains visible to Snap regardless of encrypted content.</p>
+  <p><em>Discord</em> — no E2E: all messages are readable in plaintext by Discord Inc. Permanent server-side logs. Cooperation with authorities is standard.</p>
+  <p><em>WeChat</em> — a tool of Chinese state surveillance: Tencent is legally required to provide the Chinese government access to all communications. All messages are archived, indexed and available. Living in China without WeChat is practically impossible.</p>
+  <p><em>Telegram</em> — regular chats and all groups/channels are NOT E2E (Telegram holds the keys). Only "secret chats" (manually started, mobile only, 1:1 only) are E2E with partial forward secrecy. In 2024 founder Pavel Durov was arrested in France; Telegram subsequently changed its cooperation policies with authorities.</p>
+  <p><em>Keet</em> — open source: the Hypercore protocol is OSS, the Keet app is closed source (△).</p>
+</div>
+
+<div class="backup">
+<h2 class="backup-title">Backup, migration and multi-device sync</h2>
+<div class="backup-grid">
+  <section class="backup-block">
+    <h3>What identity consists of</h3>
+    <p>A user's identity is made up of three pieces: the <strong>Ed25519 identity key</strong> (defines the .onion address on Tor or the .b32.i2p address on I2P, depending on the network chosen at startup — the only unrecoverable piece of data), the <strong>durable post-quantum keys</strong> (ML-KEM-768 for key exchange, ML-DSA-65 for signatures — generated independently, not derived from the 24 words), and the <strong>contact list</strong> (name, address and keys for each person, including the keys dedicated to each relationship — one authenticates the connection, one signs and encrypts what's exchanged with them — generated automatically when they're added).</p>
+  </section>
+  <section class="backup-block">
+    <h3>PC → phone migration</h3>
+    <p>Migration happens via an <strong>encrypted archive</strong>: the PC exports everything into an encrypted file or a sequence of QR codes; the phone imports it — under Termux from the file or the <code>.chunk</code> parts saved next to each QR, in the native Android app (in testing) also by scanning the QR codes. Offline channel, no server.</p>
+  </section>
+  <section class="backup-block">
+    <h3>Contact export — encrypted file or QR</h3>
+    <p>The <code>neutrino sync export</code> command exports the contact list in encrypted form, choosing between two channels:</p>
+    <ul>
+      <li><strong>Encrypted file</strong> — a single binary file (<code>NTRINO</code> format) transferable via USB, cloud or any medium. The encryption key is derived from the identity seed (HKDF), never transmitted.</li>
+      <li><strong>QR code</strong> — the address book is automatically split into chunks and shown as a sequence of QR codes, printable or scannable offline, without writing anything to disk.</li>
+    </ul>
+    <p>The <code>neutrino sync import &lt;file|chunk…&gt;</code> command accepts a file or one or more QR chunks and merges the contacts non-destructively: union by identity key, no contact ever deleted. Chunks can be imported in separate sessions.</p>
+    <p class="backup-note">The entire transfer happens offline — no server involved, no plaintext data on disk.</p>
+  </section>
+  <section class="backup-block">
+    <h3>Multi-device sync (hybrid)</h3>
+    <p>Hybrid approach when the two contact lists diverge:</p>
+    <ul>
+      <li><strong>Automatic, same local network</strong> — <code>/sec-indoor-sync</code>: two devices holding the SAME identity on the same Wi-Fi/LAN find each other on their own (UDP multicast, no Tor/I2P needed — they already share the identity key, so no key exchange is required) and merge their address books. Union per contact (by identity key), never a deletion: an existing entry only takes the other side's non-empty local name or updated ML-KEM key.</li>
+      <li><strong>Manual, any time</strong> — <code>neutrino sync export</code>/<code>sync import</code>: when the devices aren't on the same network, one exports the address book as an encrypted file or QR code, the other imports and merges it.</li>
+    </ul>
+  </section>
+  <section class="backup-block">
+    <h3>Identity backup — two-tier scheme</h3>
+    <p><strong>Level 1 — 24 words (BIP-39).</strong> The hidden service's Ed25519 seed (32 bytes) is encoded as 24 mnemonic words. The user writes them down on paper on first launch. Restoring with only the 24 words → same .onion, empty contacts, post-quantum keys regenerated from scratch (independent of the seed, not recoverable from the words alone).</p>
+    <p><strong>Level 2 — encrypted file.</strong> Full backup (contacts, saved groups, post-quantum keys) encrypted with a key derived from the 24 words themselves (HKDF). Stored on USB or cloud. A full restore creates an additional device of the same identity: it gets its own network address, and the relationship keys with each contact are negotiated again, never copied.</p>
+    <table class="backup-tbl">
+      <tr><th></th><th>24 words only</th><th>24 words + file</th></tr>
+      <tr><td>Same .onion address</td><td><span class="y">✓</span></td><td><span class="n">✗</span> (own address, additional device)</td></tr>
+      <tr><td>Contact list</td><td><span class="n">✗</span></td><td><span class="y">✓</span></td></tr>
+      <tr><td>Post-quantum keys</td><td><span class="n">✗</span></td><td><span class="y">✓</span></td></tr>
+    </table>
+    <p class="backup-note">One secret to remember, two levels of recovery — the same model as modern hardware wallets.</p>
+  </section>
+  <section class="backup-block">
+    <h3>Decoy identity password (duress)</h3>
+    <p>Besides the real password, every keystore has a mandatory <strong>decoy identity</strong> with its own password. Entered at unlock time, it opens the decoy — an ordinary-looking identity — and at the same instant overwrites every other identity in the file with random bytes. Designed for a coercion scenario: whoever forces you to unlock the device sees a normal login and has no way of knowing that a real identity existed and has just been destroyed. On the Android app in testing the same password wipes identity and address book instead, indistinguishable from a plain wrong password.</p>
+  </section>
+</div>
+</div>
+
+<div class="gl">
+<h2 class="gl-title">Glossary — terms and acronyms</h2>
+<div class="gl-grid">
+<section class="gl-sec">
+<h3>Security concepts</h3>
+<dl>
+<dt>E2E — End-to-End (encryption)</dt>
+<dd>Encryption happens on the sender's device and is decrypted only on the reader's device. No server, company or intermediary can read the content.</dd>
+<dt>Forward secrecy</dt>
+<dd>If someone obtains today's cryptographic keys, they cannot decrypt past conversations, because every session or message uses different keys that are destroyed after use.<br>
+<span class="gl-sub">• <em>per-session</em> — the keys change on every new connection</span><br>
+<span class="gl-sub">• <em>per-message</em> — every single message has its own unique key</span></dd>
+<dt>Sealed sender</dt>
+<dd>The server that routes messages doesn't know the identity of who wrote them: the "who sent this" information is encrypted inside the payload and visible only to the recipient.</dd>
+<dt>Zero persistence</dt>
+<dd>The server doesn't save any message to disk. If the process restarts, everything disappears.</dd>
+<dt>Safety numbers</dt>
+<dd>Alphanumeric codes derived from the users' cryptographic keys. If two people compare them outside the platform and they match, they know with certainty they're talking to each other.<br>
+<span class="gl-sub">• In most messengers: manual comparison</span><br>
+<span class="gl-sub">• In Neutrino: manual comparison like elsewhere, but with a mandatory out-of-band contact method required by <code>/grp-contact-send</code> — you can't send a contact card without stating a way to verify it outside the app</span></dd>
+<dt>Message signing</dt>
+<dd>Every message carries a digital signature that proves who wrote it and that the content wasn't altered in transit.</dd>
+</dl>
+</section>
+<section class="gl-sec">
+<h3>Cryptographic protocols</h3>
+<dl>
+<dt>Double Ratchet</dt>
+<dd>Protocol developed by Signal. Each message uses a different key generated by a "chain" that advances irreversibly. Periodically the two parties exchange new ephemeral public keys. Used by Signal, WhatsApp.</dd>
+<dt>SenderKeys</dt>
+<dd>Protocol for group messaging: each member distributes a symmetric key that advances via a symmetric ratchet. More efficient than Double Ratchet for large groups. Used by Signal (groups) and Neutrino (rooms).</dd>
+<dt>X3DH — Extended Triple Diffie-Hellman</dt>
+<dd>Initial key agreement used by Signal and WhatsApp to establish a shared secret even if one of the users is offline. Precedes Double Ratchet in the startup sequence.</dd>
+<dt>NOISE Protocol</dt>
+<dd>Framework for secure communication protocols, designed for simplicity and formal verifiability. Used by Briar, Keet, Ricochet Refresh and Cwtch.</dd>
+<dt>MTProto 2.0</dt>
+<dd>Telegram's proprietary protocol. Used in E2E mode only in 1:1 "secret chats". All group chats and channels are not E2E.</dd>
+<dt>Megolm + Olm</dt>
+<dd>Matrix/Element's cryptographic protocols. Olm = Double Ratchet for direct messages; Megolm = a group protocol similar to SenderKeys but with per-session-only forward secrecy.</dd>
+<dt>AES-256-GCM</dt>
+<dd>Industry-standard symmetric encryption algorithm. Used by all modern messengers for the actual message content.</dd>
+<dt>ECIES</dt>
+<dd>Elliptic-curve asymmetric encryption scheme. Used in Neutrino to distribute session keys to peers.</dd>
+<dt>ML-KEM — Module-Lattice Key Encapsulation Mechanism</dt>
+<dd>Post-quantum key exchange mechanism standardized by NIST (FIPS 203, known as Kyber during standardization). Used in hybrid form, never alone, alongside a classical elliptic curve: Neutrino (ML-KEM-768) and Signal (Kyber-1024, pre-standardization name).</dd>
+<dt>ML-DSA — Module-Lattice Digital Signature Algorithm</dt>
+<dd>Post-quantum digital signature scheme standardized by NIST (FIPS 204, known as Dilithium during standardization). Used by Neutrino (ML-DSA-65) alongside its existing Ed25519 signatures on the network identity.</dd>
+<dt>MLS — Messaging Layer Security (RFC 9420)</dt>
+<dd>IETF-standardized protocol for group messaging, designed for forward secrecy and post-compromise security that stay efficient even in very large groups. Used by Wire; Matrix aims to converge on it; Discord uses it in classic form (no post-quantum components) for audio/video calls via the DAVE protocol.</dd>
+</dl>
+</section>
+<section class="gl-sec">
+<h3>Network architectures</h3>
+<dl>
+<dt>P2P — Peer-to-Peer</dt>
+<dd>There is no central server: participants connect directly to each other. Whoever hosts the room acts as a relay, but only during the session.</dd>
+<dt>Centralized</dt>
+<dd>All messages pass through the servers of the company running the service. The company has access to metadata and, if encryption is absent or in its hands, to content as well.</dd>
+<dt>Federated</dt>
+<dd>Like email: many independent servers communicate with each other. A user registers on one but can message someone on another. No single company controls the entire network.</dd>
+<dt>DHT — Distributed Hash Table</dt>
+<dd>Distributed system for finding other users without a central server: each node holds a small portion of the global index. Used by Session (Oxen), Keet (Hyperswarm), Tox, Jami (OpenDHT).</dd>
+<dt>SMP relay <span class="gl-aka">(SimpleX)</span></dt>
+<dd>Messages pass through relay servers that only receive encrypted blobs without knowing who the sender or recipient is. No persistent identity.</dd>
+<dt>Tor — The Onion Router</dt>
+<dd>Anonymization network: traffic passes through at least three intermediate nodes, each of which only knows the adjacent node. Makes it very difficult to associate a connection with a physical IP.</dd>
+<dt>Hidden service / .onion address</dt>
+<dd>A service reachable only via Tor. The address is mathematically derived from the server's public key. It has no fixed IP, and the two ends of the connection don't know each other's IP addresses.</dd>
+<dt>I2P — Invisible Internet Project</dt>
+<dd>Anonymization network alternative to Tor, using unidirectional tunnels — separate ones for inbound and outbound traffic — instead of Tor's bidirectional circuit, plus "garlic" routing (multiple encrypted messages bundled into one packet). A service reachable on I2P has a <code>.b32.i2p</code> address, conceptually analogous to Tor's <code>.onion</code> hidden service. Used by Neutrino as an alternative network to Tor.</dd>
+</dl>
+</section>
+<section class="gl-sec">
+<h3>Identity and keys</h3>
+<dl>
+<dt>Public key / private key</dt>
+<dd>A mathematically linked pair: the <em>public</em> key is shared and identifies the user; the <em>private</em> key stays secret and is used to sign and decrypt.</dd>
+<dt>Ed25519</dt>
+<dd>Elliptic-curve digital signature algorithm. Fast, compact keys (32 bytes). Used in Neutrino for contact identity and to derive the network address (.onion on Tor, .b32.i2p on I2P).</dd>
+<dt>Relationship keys</dt>
+<dd>Randomly generated key pairs, independent for each contact — never shared, never global. One authenticates the connection with that specific contact, the other signs and encrypts the messages and files exchanged with them. Exchanged automatically as soon as two users add each other to their address book.</dd>
+<dt>BIP-39 / mnemonic seed</dt>
+<dd>Standard that encodes 32 bytes of secret as 24 common words. Universal standard for backing up cryptographic keys. In Neutrino, the 24 words encode the Ed25519 seed of the identity (Tor hidden service or I2P destination, depending on the network chosen at startup).</dd>
+<dt>Autocrypt / OpenPGP</dt>
+<dd>E2E encryption standard for email. Used by Delta Chat as a transparent encryption layer over regular email providers. No forward secrecy.</dd>
+</dl>
+</section>
+</div>
+</div>
+
+</body>
+</html>

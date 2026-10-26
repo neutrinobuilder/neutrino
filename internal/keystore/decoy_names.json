@@ -1,0 +1,100 @@
+{
+  "it": {
+    "male": {
+      "common": ["Marco", "Andrea", "Luca", "Matteo", "Alessandro", "Francesco", "Davide", "Simone", "Stefano", "Giuseppe", "Antonio", "Giovanni"],
+      "medium": ["Roberto", "Paolo", "Massimo", "Claudio", "Fabio", "Riccardo", "Daniele", "Michele"],
+      "rare": ["Leonardo", "Tommaso", "Edoardo", "Gianmarco"]
+    },
+    "female": {
+      "common": ["Giulia", "Francesca", "Chiara", "Sara", "Valentina", "Martina", "Alessia", "Elena", "Anna", "Laura", "Elisa", "Federica"],
+      "medium": ["Silvia", "Monica", "Cristina", "Barbara", "Simona", "Roberta", "Paola", "Alessandra"],
+      "rare": ["Beatrice", "Ginevra", "Ludovica", "Camilla"]
+    }
+  },
+  "en": {
+    "male": {
+      "common": ["James", "John", "Robert", "Michael", "David", "William", "Richard", "Joseph", "Thomas", "Daniel", "Mark", "Paul"],
+      "medium": ["Kevin", "Brian", "Jason", "Jeffrey", "Ryan", "Gary", "Eric", "Stephen"],
+      "rare": ["Nathaniel", "Benedict", "Harrison", "Maxwell"]
+    },
+    "female": {
+      "common": ["Mary", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Karen", "Emily", "Amy", "Michelle"],
+      "medium": ["Rebecca", "Laura", "Stephanie", "Catherine", "Christine", "Samantha", "Victoria", "Megan"],
+      "rare": ["Guinevere", "Octavia", "Wilhelmina", "Rosalind"]
+    }
+  },
+  "fr": {
+    "male": {
+      "common": ["Jean", "Pierre", "Michel", "Alain", "Philippe", "Nicolas", "Julien", "Thomas", "Antoine", "Mathieu", "Olivier", "Laurent"],
+      "medium": ["Sébastien", "Vincent", "Pascal", "Christophe", "Frédéric", "Benoît", "Guillaume", "Arnaud"],
+      "rare": ["Côme", "Aymeric", "Hadrien", "Bastien"]
+    },
+    "female": {
+      "common": ["Marie", "Nathalie", "Isabelle", "Sylvie", "Catherine", "Nicole", "Françoise", "Camille", "Julie", "Sophie", "Laura", "Émilie"],
+      "medium": ["Céline", "Aurélie", "Delphine", "Virginie", "Stéphanie", "Audrey", "Pauline", "Clémence"],
+      "rare": ["Apolline", "Bérénice", "Ombeline", "Mélisande"]
+    }
+  },
+  "de": {
+    "male": {
+      "common": ["Thomas", "Michael", "Andreas", "Stefan", "Christian", "Markus", "Peter", "Wolfgang", "Matthias", "Klaus", "Jürgen", "Frank"],
+      "medium": ["Daniel", "Sebastian", "Alexander", "Martin", "Florian", "Tobias", "Jan", "Felix"],
+      "rare": ["Leopold", "Wendelin", "Konstantin", "Ferdinand"]
+    },
+    "female": {
+      "common": ["Maria", "Petra", "Sabine", "Monika", "Andrea", "Claudia", "Birgit", "Susanne", "Anna", "Julia", "Sarah", "Nicole"],
+      "medium": ["Katrin", "Stefanie", "Christina", "Melanie", "Nadine", "Franziska", "Jana", "Laura"],
+      "rare": ["Hildegard", "Roswitha", "Gudrun", "Ottilie"]
+    }
+  },
+  "es": {
+    "male": {
+      "common": ["José", "Antonio", "Manuel", "Francisco", "Juan", "David", "Javier", "Daniel", "Carlos", "Miguel", "Rafael", "Pedro"],
+      "medium": ["Alejandro", "Sergio", "Diego", "Fernando", "Pablo", "Ángel", "Víctor", "Raúl"],
+      "rare": ["Leocadio", "Eustaquio", "Herminio", "Hermenegildo"]
+    },
+    "female": {
+      "common": ["María", "Carmen", "Ana", "Isabel", "Dolores", "Pilar", "Teresa", "Laura", "Marta", "Cristina", "Elena", "Sara"],
+      "medium": ["Patricia", "Raquel", "Beatriz", "Silvia", "Rocío", "Alicia", "Natalia", "Lucía"],
+      "rare": ["Presentación", "Encarnación", "Remedios", "Asunción"]
+    }
+  },
+  "ro": {
+    "male": {
+      "common": ["Ion", "Gheorghe", "Vasile", "Mihai", "Ioan", "Andrei", "Alexandru", "Florin", "Cristian", "Marian", "Adrian", "Ștefan"],
+      "medium": ["Daniel", "Marius", "Cătălin", "Bogdan", "Radu", "Sorin", "Lucian", "Valentin"],
+      "rare": ["Teodor", "Vlad", "Horațiu", "Emanuel"]
+    },
+    "female": {
+      "common": ["Maria", "Elena", "Ioana", "Ana", "Mihaela", "Gabriela", "Daniela", "Cristina", "Andreea", "Alexandra", "Simona", "Camelia"],
+      "medium": ["Raluca", "Diana", "Carmen", "Monica", "Laura", "Roxana", "Adriana", "Oana"],
+      "rare": ["Smaranda", "Voichița", "Ancuța", "Mariana"]
+    }
+  },
+  "ru": {
+    "male": {
+      "common": ["Александр", "Сергей", "Дмитрий", "Андрей", "Алексей", "Иван", "Михаил", "Владимир", "Николай", "Евгений", "Юрий", "Виктор"],
+      "medium": ["Артём", "Максим", "Денис", "Роман", "Олег", "Павел", "Константин", "Игорь"],
+      "rare": ["Святослав", "Ярослав", "Аркадий", "Феликс"]
+    },
+    "female": {
+      "common": ["Елена", "Ольга", "Татьяна", "Наталья", "Марина", "Светлана", "Ирина", "Анна", "Юлия", "Екатерина", "Мария", "Виктория"],
+      "medium": ["Оксана", "Людмила", "Галина", "Валентина", "Нина", "Вера", "Алла", "Полина"],
+      "rare": ["Серафима", "Агриппина", "Евдокия", "Доминика"]
+    }
+  },
+  "intl": {
+    "zh": {
+      "male": {"common": ["Wei", "Jun", "Lei", "Tao", "Yang", "Hao", "Chen", "Ming"], "medium": [], "rare": []},
+      "female": {"common": ["Li", "Mei", "Fang", "Ying", "Xia", "Yan", "Jing", "Hui"], "medium": [], "rare": []}
+    },
+    "ar": {
+      "male": {"common": ["Mohammed", "Ahmed", "Ali", "Hassan", "Omar", "Youssef", "Khalid", "Karim"], "medium": [], "rare": []},
+      "female": {"common": ["Fatima", "Aisha", "Layla", "Noor", "Yasmin", "Amira", "Sara", "Salma"], "medium": [], "rare": []}
+    },
+    "sa": {
+      "male": {"common": ["Santiago", "Mateo", "Sebastián", "Nicolás", "Joaquín", "Agustín", "Emiliano", "Thiago"], "medium": [], "rare": []},
+      "female": {"common": ["Valentina", "Camila", "Sofía", "Isabella", "Valeria", "Antonella", "Martina", "Luciana"], "medium": [], "rare": []}
+    }
+  }
+}
